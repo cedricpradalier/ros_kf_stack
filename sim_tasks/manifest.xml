@@ -1,0 +1,20 @@
+<package>
+  <description brief="sim_tasks">
+
+     sim_tasks
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/sim_tasks</url>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="task_manager_lib"/>
+  <depend package="button_server"/>
+  <depend package="topic_tools"/>
+  <depend package="tf"/>
+
+</package>
+
+
