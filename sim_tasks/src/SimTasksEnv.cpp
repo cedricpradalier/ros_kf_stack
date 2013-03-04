@@ -14,6 +14,7 @@ SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
 
     buttonsSub = nh.subscribe("/buttons",10,&SimTasksEnv::buttonCallback,this);
     muxSub = nh.subscribe("/mux/selected",10,&SimTasksEnv::muxCallback,this);
+    pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",10,&SimTasksEnv::pointCloudCallback,this);
     velPub = nh.advertise<geometry_msgs::Twist>(auto_topic,1);
 }
 

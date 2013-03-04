@@ -39,6 +39,15 @@ gencfg()
 ROSBUILD_ADD_LIBRARY( TaskGoTo SHARED tasks/TaskGoTo.cpp)
 TARGET_LINK_LIBRARIES(TaskGoTo dl)
 
+ROSBUILD_ADD_LIBRARY( TaskGoToAngle SHARED tasks/TaskGoToAngle.cpp)
+TARGET_LINK_LIBRARIES(TaskGoToAngle dl)
+
+ROSBUILD_ADD_LIBRARY( TaskFollowShore SHARED tasks/TaskFollowShore.cpp)
+TARGET_LINK_LIBRARIES(TaskFollowShore dl)
+
+ROSBUILD_ADD_LIBRARY( TaskRotate SHARED tasks/TaskRotate.cpp)
+TARGET_LINK_LIBRARIES(TaskRotate dl)
+
 ROSBUILD_ADD_LIBRARY( TaskWaitForAuto SHARED tasks/TaskWaitForAuto.cpp)
 TARGET_LINK_LIBRARIES(TaskWaitForAuto dl)
 

@@ -8,6 +8,8 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "pcl_ros/point_cloud.h"
+#include "pcl/point_types.h"
 #include "boost/algorithm/string.hpp"
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
@@ -20,6 +22,7 @@ namespace sim_tasks {
             bool paused;
             ros::Subscriber buttonsSub;
             ros::Subscriber muxSub;
+            ros::Subscriber pointCloudSub;
             ros::Publisher velPub;
             ros::ServiceClient muxClient;
             tf::TransformListener listener;
@@ -45,9 +48,14 @@ namespace sim_tasks {
                 }
             }
 
+            void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg) {
+                pcl::fromROSMsg(*msg, pointCloud);
+            }
+
             bool manualControl;
             std::string joystick_topic;
             std::string auto_topic;
+            pcl::PointCloud<pcl::PointXYZ> pointCloud;
 
         public:
             SimTasksEnv(ros::NodeHandle & nh);
@@ -101,6 +109,8 @@ namespace sim_tasks {
                 pose.header.stamp = transform.stamp_;
                 return pose;
             }
+
+            pcl::PointCloud<pcl::PointXYZ> getPointCloud() const {return pointCloud;}
 
             void publishVelocity(double linear, double angular) {
                 geometry_msgs::Twist cmd;
