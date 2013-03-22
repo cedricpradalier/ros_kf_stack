@@ -11,14 +11,30 @@ TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv)
     : TaskDefinitionWithConfig<TaskFollowShoreConfig,TaskFollowShore>("FollowShore","Follow the shore of the lake",true,-1.)
 {
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
+    outOfStartBox = false;
+    backToStartBox = false;
 }
 
 TaskIndicator TaskFollowShore::iterate()
 {
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
-    double r = hypot(cfg.goal_y-tpose.y,cfg.goal_x-tpose.x);
-    if (r < cfg.dist_goal) {
-		return TaskStatus::TASK_COMPLETED;
+    const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
+
+    double scalarProduct = cos(finishLine.theta)*(finishLine.x-tpose.x)+sin(finishLine.theta)*(finishLine.y-tpose.y);
+    double r = hypot(finishLine.y-tpose.y,finishLine.x-tpose.x);
+
+#ifdef DEBUG_GOTO
+    ROS_INFO("scalarProduct %.3f - dist_goal %.3f\n",scalarProduct,r);
+#endif
+    
+    if ((backToStartBox) && (fabs(scalarProduct) < 0.1)) {
+	    return TaskStatus::TASK_COMPLETED;
+    }
+    else if ((outOfStartBox) && (r < cfg.dist_goal)) {
+        backToStartBox = true;
+    }
+    else if ((!outOfStartBox) && (r > cfg.dist_goal)) {
+        outOfStartBox = true;
     }
 
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
@@ -33,7 +49,7 @@ TaskIndicator TaskFollowShore::iterate()
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
         theta_i=atan2(pointCloud[i].y,pointCloud[i].x);
-        if (remainder(cfg.angle-theta_i,2*M_PI)<cfg.angle_range) {
+        if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {
 	            mindistance=distance_i;
@@ -55,9 +71,6 @@ TaskIndicator TaskFollowShore::iterate()
     } else {
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         distance_error = cfg.distance-mindistance;
-        if (angle_error>M_PI) {
-            angle_error-=2*M_PI;
-        }
         rot = - cfg.k_alpha*angle_error + ((cfg.angle<0)?+1:-1)*cfg.k_d*distance_error;
     }
 #ifdef DEBUG_GOTO

@@ -45,8 +45,11 @@ TARGET_LINK_LIBRARIES(TaskGoToAngle dl)
 ROSBUILD_ADD_LIBRARY( TaskFollowShore SHARED tasks/TaskFollowShore.cpp)
 TARGET_LINK_LIBRARIES(TaskFollowShore dl)
 
-ROSBUILD_ADD_LIBRARY( TaskRotate SHARED tasks/TaskRotate.cpp)
-TARGET_LINK_LIBRARIES(TaskRotate dl)
+ROSBUILD_ADD_LIBRARY( TaskFindFinishLine SHARED tasks/TaskFindFinishLine.cpp)
+TARGET_LINK_LIBRARIES(TaskFindFinishLine dl)
+
+ROSBUILD_ADD_LIBRARY( TaskJoinOtherShore SHARED tasks/TaskJoinOtherShore.cpp)
+TARGET_LINK_LIBRARIES(TaskJoinOtherShore dl)
 
 ROSBUILD_ADD_LIBRARY( TaskWaitForAuto SHARED tasks/TaskWaitForAuto.cpp)
 TARGET_LINK_LIBRARIES(TaskWaitForAuto dl)

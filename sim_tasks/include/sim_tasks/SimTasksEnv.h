@@ -56,6 +56,7 @@ namespace sim_tasks {
             std::string joystick_topic;
             std::string auto_topic;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
+            geometry_msgs::Pose2D finishLine2D;
 
         public:
             SimTasksEnv(ros::NodeHandle & nh);
@@ -127,6 +128,9 @@ namespace sim_tasks {
             void setManualControl();
             void setComputerControl();
             bool getManualControl() const {return manualControl;}
+
+            void setFinishLine2D(geometry_msgs::Pose2D pose) {finishLine2D = pose;}
+            geometry_msgs::Pose2D getFinishLine2D() const {return finishLine2D;}
     };
 
 };

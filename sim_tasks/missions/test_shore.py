@@ -12,11 +12,12 @@ tc = TaskClient(server_node,default_period)
 
 tc.WaitForAuto()
 try:
-    tc.FollowShore(angle=1.57,goal_x=14.0,goal_y=-8.0)
-    tc.FollowShore(angle=1.57,goal_x=-11.0,goal_y=3.0)
-    tc.GoTo(goal_x=-3.2,goal_y=4.0)
-    tc.FollowShore(angle=1.57,goal_x=11.5,goal_y=4.0)
-    tc.FollowShore(angle=1.57,goal_x=-3.2,goal_y=4.0)
+    tc.FindFinishLine(angle=1.57)
+    tc.FollowShore(angle=1.57)
+    tc.JoinOtherShore()
+    tc.FindFinishLine(angle=1.57)
+    tc.FollowShore(angle=1.57)
+    tc.JoinOtherShore()
 
 except TaskException, e:
     rospy.logerr("Exception caught: " + str(e))

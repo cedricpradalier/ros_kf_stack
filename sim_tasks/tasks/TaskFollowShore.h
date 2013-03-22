@@ -13,6 +13,8 @@ namespace sim_tasks {
 
         protected:
             boost::shared_ptr<SimTasksEnv> env;
+            bool outOfStartBox;
+            bool backToStartBox;
         public:
             TaskFollowShore(boost::shared_ptr<TaskEnvironment> env); 
             virtual ~TaskFollowShore() {};
