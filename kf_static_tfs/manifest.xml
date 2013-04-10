@@ -1,0 +1,15 @@
+<package>
+  <description brief="kf_static_tfs">
+
+     kf_static_tfs
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/kf_static_tfs</url>
+  <depend package="tf"/>
+
+</package>
+
+
