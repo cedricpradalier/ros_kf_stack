@@ -14,9 +14,9 @@ SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
     muxClient = nh.serviceClient<topic_tools::MuxSelect>("/mux/select");
 
     buttonsSub = nh.subscribe("/buttons",10,&SimTasksEnv::buttonCallback,this);
-    muxSub = nh.subscribe("/mux/selected",10,&SimTasksEnv::muxCallback,this);
-    pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",10,&SimTasksEnv::pointCloudCallback,this);
-    utmPositionSub = nh.subscribe("/vrep/hokuyoSensor",10,&SimTasksEnv::utmPositionCallback,this);
+    muxSub = nh.subscribe("/mux/selected",1,&SimTasksEnv::muxCallback,this);
+    pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",1,&SimTasksEnv::pointCloudCallback,this);
+    utmPositionSub = nh.subscribe("/gps/utm",1,&SimTasksEnv::utmPositionCallback,this);
     velPub = nh.advertise<geometry_msgs::Twist>(auto_topic,1);
 }
 
