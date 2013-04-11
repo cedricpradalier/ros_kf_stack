@@ -1,0 +1,19 @@
+<package>
+  <description brief="sim_gps">
+
+     sim_gps
+
+  </description>
+  <author>violette</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/sim_gps</url>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="tf"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+
+</package>
+
+
