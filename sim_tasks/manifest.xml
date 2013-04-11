@@ -10,6 +10,7 @@
   <url>http://ros.org/wiki/sim_tasks</url>
   <depend package="sensor_msgs"/>
   <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
   <depend package="task_manager_lib"/>
   <depend package="button_server"/>
   <depend package="topic_tools"/>
