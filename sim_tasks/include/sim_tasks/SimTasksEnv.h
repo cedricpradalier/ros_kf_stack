@@ -8,6 +8,7 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "nav_msgs/Odometry.h"
 #include "pcl_ros/point_cloud.h"
 #include "pcl/point_types.h"
 #include "boost/algorithm/string.hpp"
@@ -23,6 +24,7 @@ namespace sim_tasks {
             ros::Subscriber buttonsSub;
             ros::Subscriber muxSub;
             ros::Subscriber pointCloudSub;
+			ros::Subscriber utmPositionSub;
             ros::Publisher velPub;
             ros::ServiceClient muxClient;
             tf::TransformListener listener;
@@ -52,10 +54,18 @@ namespace sim_tasks {
                 pcl::fromROSMsg(*msg, pointCloud);
             }
 
+            void utmPositionCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+                utmPosition = msg->pose;
+                utmPositionStamp = msg->header.stamp;
+            }
+
             bool manualControl;
             std::string joystick_topic;
             std::string auto_topic;
+            std::string position_source;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
+			geometry_msgs::PoseWithCovariance utmPosition;
+            ros::Time utmPositionStamp;
             geometry_msgs::Pose2D finishLine2D;
 
         public:
@@ -65,49 +75,83 @@ namespace sim_tasks {
             ros::NodeHandle & getNodeHandle() {return nh;}
 
             geometry_msgs::Pose2D getPose2D() const {
-                tf::StampedTransform transform;
-                try{
-                    listener.lookupTransform("/world","/rosControlledBubbleRob", 
-                            ros::Time(0), transform);
-                }
-                catch (tf::TransformException ex){
-                    ROS_ERROR("%s",ex.what());
-                }
                 geometry_msgs::Pose2D pose;
-                pose.theta = tf::getYaw(transform.getRotation());
-                pose.x = transform.getOrigin().x();
-                pose.y = transform.getOrigin().y();
+                std::string source;
+                if (nh.getParam("sourceData",source)) {
+                    if (source == "tf") {
+                        tf::StampedTransform transform;
+                        try{
+                            listener.lookupTransform("/world","/rosControlledBubbleRob", 
+                                    ros::Time(0), transform);
+                        }
+                        catch (tf::TransformException ex){
+                            ROS_ERROR("%s",ex.what());
+                        }
+                        pose.theta = tf::getYaw(transform.getRotation());
+                        pose.x = transform.getOrigin().x();
+                        pose.y = transform.getOrigin().y();
+                    }
+                    else if (source == "utm") {
+						geometry_msgs::Pose utmPose = utmPosition.pose;
+						pose.x = utmPose.position.x;
+						pose.y = utmPose.position.y;
+						pose.theta = tf::getYaw(utmPose.orientation);
+                    }
+                    else ROS_ERROR("Parameter sourceData unwell defined");
+                }
+                else ROS_ERROR("Parameter sourceData undefined");
                 return pose;
             }
 
             geometry_msgs::Pose getPose() const {
-                tf::StampedTransform transform;
-                try{
-                    listener.lookupTransform("/world","/rosControlledBubbleRob", 
-                            ros::Time(0), transform);
-                }
-                catch (tf::TransformException ex){
-                    ROS_ERROR("%s",ex.what());
-                }
                 geometry_msgs::Pose pose;
-                tf::quaternionTFToMsg(transform.getRotation(),pose.orientation);
-                tf::pointTFToMsg(transform.getOrigin(),pose.position);
+                std::string source;
+                if (nh.getParam("sourceData",source)) {
+                    if (source == "tf") {
+		                tf::StampedTransform transform;
+				        try{
+					        listener.lookupTransform("/world","/rosControlledBubbleRob", 
+							        ros::Time(0), transform);
+					    }
+					    catch (tf::TransformException ex){
+						    ROS_ERROR("%s",ex.what());
+					    }
+					    tf::quaternionTFToMsg(transform.getRotation(),pose.orientation);
+					    tf::pointTFToMsg(transform.getOrigin(),pose.position);
+                    }
+                    else if (source == "utm") {
+						pose = utmPosition.pose;
+                    }
+                    else ROS_ERROR("Parameter sourceData unwell defined");
+                }
+                else ROS_ERROR("Parameter sourceData undefined");
                 return pose;
             }
 
             geometry_msgs::PoseStamped getPoseStamped() const {
-                tf::StampedTransform transform;
-                try{
-                    listener.lookupTransform("/world","/rosControlledBubbleRob", 
-                            ros::Time(0), transform);
-                }
-                catch (tf::TransformException ex){
-                    ROS_ERROR("%s",ex.what());
-                }
                 geometry_msgs::PoseStamped pose;
-                tf::quaternionTFToMsg(transform.getRotation(),pose.pose.orientation);
-                tf::pointTFToMsg(transform.getOrigin(),pose.pose.position);
-                pose.header.stamp = transform.stamp_;
+                std::string source;
+                if (nh.getParam("sourceData",source)) {
+                    if (source == "tf") {
+		                tf::StampedTransform transform;
+				        try{
+					        listener.lookupTransform("/world","/rosControlledBubbleRob", 
+							        ros::Time(0), transform);
+			            }
+					    catch (tf::TransformException ex){
+						    ROS_ERROR("%s",ex.what());
+				        }
+						tf::quaternionTFToMsg(transform.getRotation(),pose.pose.orientation);
+						tf::pointTFToMsg(transform.getOrigin(),pose.pose.position);
+						pose.header.stamp = transform.stamp_;
+                    }
+                    else if (source == "utm") {
+						pose.pose = utmPosition.pose;
+						pose.header.stamp = utmPositionStamp;
+                    }
+                    else ROS_ERROR("Parameter sourceData unwell defined");
+                }
+                else ROS_ERROR("Parameter sourceData undefined");
                 return pose;
             }
 
