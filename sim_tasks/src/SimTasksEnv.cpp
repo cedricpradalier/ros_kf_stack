@@ -5,16 +5,18 @@
 using namespace sim_tasks;
 
 SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
-    nh(n), paused(false), manualControl(true), joystick_topic("/teleop/twistCommand"), auto_topic("/mux/autoCommand")
+    nh(n), paused(false), manualControl(true), joystick_topic("/teleop/twistCommand"), auto_topic("/mux/autoCommand"), position_source("utm")
 {
     nh.getParam("joystick_topic",joystick_topic);
     nh.getParam("auto_topic",auto_topic);
+    nh.getParam("position_source",position_source);
 
     muxClient = nh.serviceClient<topic_tools::MuxSelect>("/mux/select");
 
     buttonsSub = nh.subscribe("/buttons",10,&SimTasksEnv::buttonCallback,this);
-    muxSub = nh.subscribe("/mux/selected",10,&SimTasksEnv::muxCallback,this);
-    pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",10,&SimTasksEnv::pointCloudCallback,this);
+    muxSub = nh.subscribe("/mux/selected",1,&SimTasksEnv::muxCallback,this);
+    pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",1,&SimTasksEnv::pointCloudCallback,this);
+    utmPositionSub = nh.subscribe("/gps/utm",1,&SimTasksEnv::utmPositionCallback,this);
     velPub = nh.advertise<geometry_msgs::Twist>(auto_topic,1);
 }
 
