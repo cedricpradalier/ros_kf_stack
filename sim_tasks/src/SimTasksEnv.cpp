@@ -17,6 +17,8 @@ SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
     muxSub = nh.subscribe("/mux/selected",1,&SimTasksEnv::muxCallback,this);
     pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",1,&SimTasksEnv::pointCloudCallback,this);
     utmPositionSub = nh.subscribe("/gps/utm",1,&SimTasksEnv::utmPositionCallback,this);
+    scanSub = nh.subscribe("/lidar/scan",1,&SimTasksEnv::scanCallback,this);
+    compassSub = nh.subscribe("/imu/data",1,&SimTasksEnv::compassCallback,this);
     velPub = nh.advertise<geometry_msgs::Twist>(auto_topic,1);
 }
 

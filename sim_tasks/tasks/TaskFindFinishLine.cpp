@@ -32,7 +32,7 @@ TaskIndicator TaskFindFinishLine::iterate()
         if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {
-	            mindistance=distance_i;
+                mindistance=distance_i;
                 theta_closest=theta_i;
             }
         }
@@ -42,15 +42,20 @@ TaskIndicator TaskFindFinishLine::iterate()
     ROS_INFO("mindistance %.3f - theta_closest %.3f",mindistance, theta_closest);
 #endif
     
-    if (mindistance > cfg.dist_threshold) {
+    if (mindistance == 1000) {
+        ROS_INFO("No laser data");
+        env->publishVelocity(0,0);
+        return TaskStatus::TASK_RUNNING;
+    } else if (mindistance > cfg.dist_threshold) {
         ROS_INFO("No shore detected");
+        env->publishVelocity(0,0);
         return TaskStatus::TASK_FAILED;
     } else {
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         if (fabs(angle_error)<cfg.angle_error) {
             env->setFinishLine2D(tpose);
             ROS_INFO("finishLine: x %.3f - y %.3f - theta %.3f",tpose.x,tpose.y,tpose.theta);
-		    return TaskStatus::TASK_COMPLETED;
+            return TaskStatus::TASK_COMPLETED;
         }
         rot = ((angle_error>M_PI)?+1:-1) * cfg.ang_velocity;
     }
@@ -59,13 +64,13 @@ TaskIndicator TaskFindFinishLine::iterate()
 #endif
 
     env->publishVelocity(vel, rot);
-	return TaskStatus::TASK_RUNNING;
+    return TaskStatus::TASK_RUNNING;
 }
 
 TaskIndicator TaskFindFinishLine::terminate()
 {
     env->publishVelocity(0,0);
-	return TaskStatus::TASK_TERMINATED;
+    return TaskStatus::TASK_TERMINATED;
 }
 
 DYNAMIC_TASK(TaskFindFinishLine);

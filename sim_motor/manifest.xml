@@ -1,0 +1,20 @@
+<package>
+  <description brief="sim_motors">
+
+     sim_motors
+
+  </description>
+  <author>violette</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/sim_motors</url>
+  <depend package="std_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="visualization_msgs"/>
+  <depend package="tf"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+
+</package>
+
+

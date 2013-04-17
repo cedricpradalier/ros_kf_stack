@@ -8,6 +8,8 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "laser_geometry/laser_geometry.h"
+#include "sensor_msgs/Imu.h"
 #include "nav_msgs/Odometry.h"
 #include "pcl_ros/point_cloud.h"
 #include "pcl/point_types.h"
@@ -24,7 +26,9 @@ namespace sim_tasks {
             ros::Subscriber buttonsSub;
             ros::Subscriber muxSub;
             ros::Subscriber pointCloudSub;
-			ros::Subscriber utmPositionSub;
+            ros::Subscriber utmPositionSub;
+            ros::Subscriber compassSub;
+            ros::Subscriber scanSub;
             ros::Publisher velPub;
             ros::ServiceClient muxClient;
             tf::TransformListener listener;
@@ -58,13 +62,26 @@ namespace sim_tasks {
                 utmPosition = *msg;
             }
 
+            void compassCallback(const sensor_msgs::Imu::ConstPtr& msg) {
+                compass = *msg;
+            }
+
+            void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
+            {
+                sensor_msgs::PointCloud2 cloud;
+                projector.projectLaser(*scan_in, cloud);
+                pcl::fromROSMsg(cloud, pointCloud);
+            }
+
             bool manualControl;
             std::string joystick_topic;
             std::string auto_topic;
             std::string position_source;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
+            sensor_msgs::Imu compass;
             geometry_msgs::Pose2D finishLine2D;
+            laser_geometry::LaserProjection projector;
 
         public:
             SimTasksEnv(ros::NodeHandle & nh);
@@ -91,7 +108,7 @@ namespace sim_tasks {
                     const geometry_msgs::Pose & utmPose = utmPosition.pose.pose;
                     pose.x = utmPose.position.x;
                     pose.y = utmPose.position.y;
-                    pose.theta = tf::getYaw(utmPose.orientation);
+                    pose.theta = tf::getYaw(compass.orientation);
                 } else {
                     ROS_ERROR("Parameter position_source undefined");
                 }
