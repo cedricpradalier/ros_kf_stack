@@ -10,9 +10,9 @@ server_node = rospy.get_param("~server","/sim_tasks")
 default_period = rospy.get_param("~period",0.2)
 tc = TaskClient(server_node,default_period)
 
-tc.WaitForAuto()
+#tc.WaitForAuto()
 try:
-    tc.FindFinishLine(angle=1.57)
+    #tc.FindFinishLine(angle=1.57)
     tc.FollowShore(angle=1.57)
     tc.JoinOtherShore()
     tc.FindFinishLine(angle=1.57)
