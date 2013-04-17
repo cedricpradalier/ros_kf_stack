@@ -67,6 +67,8 @@ void MotorSimul::twistCallback(const geometry_msgs::Twist::ConstPtr& msg) {
     markers.markers[1].scale.z = 0.01;
   }
 
+  ROS_INFO("left %.3f - right %.3f",markers.markers[0].scale.z,markers.markers[1].scale.z);
+
   pubMotorMarkers.publish(markers);
 
 }
