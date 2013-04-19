@@ -5,7 +5,7 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
-// #define DEBUG_GOTO
+#define DEBUG_GOTO
 
 TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv) 
     : TaskDefinitionWithConfig<TaskFollowShoreConfig,TaskFollowShore>("FollowShore","Follow the shore of the lake",true,-1.)
@@ -20,7 +20,7 @@ TaskIndicator TaskFollowShore::iterate()
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
 
-    double scalarProduct = cos(finishLine.theta)*(finishLine.x-tpose.x)+sin(finishLine.theta)*(finishLine.y-tpose.y);
+/*    double scalarProduct = cos(finishLine.theta)*(finishLine.x-tpose.x)+sin(finishLine.theta)*(finishLine.y-tpose.y);
     double r = hypot(finishLine.y-tpose.y,finishLine.x-tpose.x);
 
 #ifdef DEBUG_GOTO
@@ -49,23 +49,24 @@ TaskIndicator TaskFollowShore::iterate()
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
         theta_i=atan2(pointCloud[i].y,pointCloud[i].x);
-        if ((fabs(remainder(cfg.angle-theta_i,2*M_PI))<M_PI/2)&&(fabs(theta_i)<cfg.angle_range)) {
+//        if ((fabs(remainder(cfg.angle-theta_i,2*M_PI))<M_PI/2)&&(fabs(theta_i)<cfg.angle_range)) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {
-	            mindistance=distance_i;
+	        mindistance=distance_i;
                 theta_closest=theta_i;
             }
-        }
+//        }
     }
 
 #ifdef DEBUG_GOTO
-    ROS_INFO("mindistance %.3f - theta_closest %.3f",mindistance, theta_closest);
+    ROS_INFO("pointCloudSize %d - mindistance %.3f - theta_closest %.3f",pointCloud.size(),mindistance, theta_closest);
 #endif
     
     float angle_error=0;
     float distance_error=0;
 
     if (mindistance > cfg.dist_threshold) {
+        //TODO test the oldness of the pointcloud
         ROS_INFO("No shore detected");
         return TaskStatus::TASK_FAILED;
     } else {

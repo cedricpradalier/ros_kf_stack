@@ -14,10 +14,10 @@ tc = TaskClient(server_node,default_period)
 try:
     #tc.FindFinishLine(angle=1.57)
     tc.FollowShore(angle=1.57)
-    tc.JoinOtherShore()
-    tc.FindFinishLine(angle=1.57)
-    tc.FollowShore(angle=1.57)
-    tc.JoinOtherShore()
+    #tc.JoinOtherShore()
+    #tc.FindFinishLine(angle=1.57)
+    #tc.FollowShore(angle=1.57)
+    #tc.JoinOtherShore()
 
 except TaskException, e:
     rospy.logerr("Exception caught: " + str(e))

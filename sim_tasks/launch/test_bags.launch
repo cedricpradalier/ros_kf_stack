@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <launch>
+    <param name="/use_sim_time" value="false"/>
     <include file="$(find sim_tasks)/launch/button_server.launch"/>
     <include file="$(find vrep_ros_teleop)/launch/teleop_mux.launch"/>
     
     <node name="task_server" pkg="sim_tasks" type="task_server"  >
         <param name="lib_path" value="$(find sim_tasks)/lib"/>
-        <param name="position_source" value="utm"/>
+<!--        <param name="position_source" value="utm"/> -->
         <remap from="/gps/utm" to="/gps/odom"/>
-<!--        <remap from="/lidar/scan" to="/gps/odom"/> -->
+        <remap from="/lidar/scan" to="/lidar/scannow"/>
 <!--        <remap from="/imu/data" to="/gps/odom"/> -->
     </node>
     <node name="test_shore" pkg="sim_tasks" type="test_shore.py"  >
         <param name="server" value="/task_server"/>
     </node>
     <node name="motornode" pkg="sim_motor" type="motornode"  >
-        <remap from="/motor/twist" to="/vrep/twistCommand"/>
+        <remap from="/motor/twist" to="/mux/autoCommand"/> -->
     </node>
+    <node name="lidar_repub" pkg="kf_static_tfs" type="lidar_repub.py"  >
+    </node>
+    <include file="$(find kf_static_tfs)/static_tfs.launch"/>
 
 </launch>

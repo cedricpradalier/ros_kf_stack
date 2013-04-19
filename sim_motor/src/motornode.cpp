@@ -58,8 +58,8 @@ void MotorSimul::twistCallback(const geometry_msgs::Twist::ConstPtr& msg) {
   float angular_z = msg->angular.z;
   float radius = 0.5;
 
-  markers.markers[0].scale.z = 1.5 * (linear_x - radius*angular_z);
-  markers.markers[1].scale.z = 1.5 * (linear_x + radius*angular_z);
+  markers.markers[0].scale.z = 5 * (linear_x - radius*angular_z);
+  markers.markers[1].scale.z = 5 * (linear_x + radius*angular_z);
   if (fabs(markers.markers[0].scale.z)<0.01) {
     markers.markers[0].scale.z = 0.01;
   }
