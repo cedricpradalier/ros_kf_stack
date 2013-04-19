@@ -1,7 +1,0 @@
-<launch>
-
-  <!-- gps node -->
-  <node pkg="sim_motor" type="motornode" name="motornode">
-  </node>
-
-</launch>

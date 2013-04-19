@@ -1,0 +1,14 @@
+<launch>
+
+    <node pkg="kf_yaw_kf" type="kf_yaw_kf" name="compass">
+        <param name="frame_id" value="/kingfisher/base"/>
+        <param name="stddev_yaw_mag" value="0.1"/>
+        <param name="stddev_yaw_gps" value="0.5"/>
+        <param name="stddev_yaw_gyro" value="0.1"/>
+        <param name="stddev_omega" value="0.2"/>
+        <param name="min_gps_speed" value="0.3"/>
+        <param name="debug_publishers" value="False"/>
+        <param name="replay" value="False"/>
+    </node>
+
+</launch>
