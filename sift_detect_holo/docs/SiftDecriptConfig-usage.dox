@@ -1,0 +1,7 @@
+\subsubsection usage Usage
+\verbatim
+<node name="sift_detect_holo" pkg="sift_detect_holo" type="sift_detect_holo">
+  <param name="siftThreshold" type="double" value="5.0" />
+</node>
+\endverbatim
+

@@ -1,0 +1,131 @@
+<launch>
+
+<param name="/use_sim_time" value="true" type="bool"/>
+
+<node pkg="rxtools" type="rxplot" name="rxplot" args="/axis/twist/angular/z" />
+
+
+<!-- joy node -->
+<node respawn="true" pkg="joy" type="joy_node" name="joy" >
+	<!-- <param name="dev" type="string" value="/dev/input/js0" /> -->
+	<!-- <param name="deadzone" value="0.12" /> -->
+	<param name="autorepeat_rate" value="10.0" />
+</node>
+
+
+<!--<node pkg="sift_detect_holo" type="teleop_servo.py" name="teleop_servo">
+	<param name="axis_linear_x" value="1" type="int"/>
+	<param name="axis_linear_y" value="0" type="int"/>
+	<param name="axis_angular" value="3" type="int"/>
+	<param name="scale_linear" value="0.4" type="double"/>
+	<param name="scale_angular" value="1.0" type="double"/>
+	<remap from="/teleop_servo/joy" to="/joy"/>
+	<remap from="/teleop_servo/twistCommand" to="/servo/twist"/>
+</node>-->
+
+<node pkg="sift_detect_holo" type="teleop.py" name="teleop">
+	<param name="axis_linear" value="1" type="int"/>
+	<param name="axis_angular" value="0" type="int"/>
+	<param name="axis_angular_pan" value="3" type="int"/>
+	<param name="scale_linear" value="0.5" type="double"/>
+	<param name="scale_angular" value="1.0" type="double"/>
+	<param name="scale_angular_pan" value="1.0" type="double"/>
+	<remap from="/teleop/joy" to="/joy"/>
+	<remap from="/teleop/twistCommand" to="/teleop/twistCommand"/>
+	<!--<remap from="/teleop/panCommand_float" to="/teleop/panCommand"/>-->
+	<remap from="/teleop/panCommand_twist" to="/teleop/panCommand"/>
+</node>
+
+
+<node pkg="sift_detect_holo" type="img_detect_node.py" name="sift_descript" output="screen">
+	<!--<remap from="/sift_descript/visionSensor" to="/vrep/visionSensor"/>-->
+	<remap from="/sift_descript/visionSensor" to="/axis/image"/>
+	<remap from="/sift_descript/command_cam" to="/axis/Command"/>
+	<param name="threshold" value="5" type="double"/> 
+</node>
+
+
+<node pkg="sift_detect_holo" type="servo.py" name="servo" output="screen">
+	<remap from="/servo/kp" to="/sift_descript/kp"/>
+	<remap from="/servo/twist_pub" to="/servo/twist"/>
+	<!--<remap from="/servo/info" to="/vrep/visionSensorInfo"/>-->
+	<remap from="/servo/info" to="/axis/camera_info"/>
+	<param name="scale_servo" value="1" type="double"/>
+	<param name="camFrame" value="/kingfisher/tilt" type="string"/>
+	<param name="robFrame" value="/kingfisher/base" type="string"/>
+</node>
+
+
+<node pkg="sift_detect_holo" type="vel_convert.py" name="velConvert" output="screen">
+	<remap from="/velConvert/rob_twist_pub" to="/mux/servoCommand"/>
+	<!--<remap from="/velConvert/pan_pub_float" to="/camera_mux/servoCommand"/>-->
+	<remap from="/velConvert/pan_pub_twist" to="/camera_mux/servoCommand"/>
+	<remap from="/velConvert/servo" to="/servo/twist"/>
+	<remap from="/velConvert/joy" to="/joy"/>
+	<param name="scaleRot" value="0.5" type="double"/>
+	<param name="maxRotRob" value="1.8" type="double"/>
+	<param name="maxVel" value="0.4" type="double"/>
+	<param name="maxRotCam" value="2" type="double"/>
+	<param name="sigmaVel" value="0.17" type="double"/>
+	<param name="sigmaRot" value="0.17" type="double"/>
+	<param name="minVel" value="0.01" type="double"/>
+	<param name="minVelForRot" value="0.05" type="double"/>
+	<param name="scale_servo" value="0.08" type="double"/>
+</node>
+
+
+
+<node pkg="sift_detect_holo" type="teleop_mux.py" name="teleop_mux">
+ 	<param name="joystick_button" value="0" type="int"/>
+	<param name="joystick_topic" value="/teleop/twistCommand"/>
+	<param name="camera_joystick_topic" value="/teleop/panCommand"/>
+	<param name="servo_button" value="1" type="int"/>
+	<param name="servo_topic" value="/mux/servoCommand"/>
+	<param name="camera_servo_topic" value="/camera_mux/servoCommand"/>
+	<remap from="/teleop_mux/joy" to="/joy"/>
+  
+</node>
+
+<node pkg="image_transport" type="republish" name="ImageDecomp" args="compressed">
+	<remap from="/in" to="/axis/image_raw"/>
+	<remap from="/out" to="/axis/image"/>
+  
+</node>
+  
+<node pkg="topic_tools" type="mux" name="cmd_mux" 
+	args="/vrep/twistCommand /teleop/twistCommand /mux/servoCommand">
+</node>
+
+<node pkg="topic_tools" type="mux" name="camera_mux" 
+	args="/axis/twist /teleop/panCommand /camera_mux/servoCommand">
+<!--args="/vrep/panCommand /teleop/panCommand /camera_mux/servoCommand">-->
+	<remap from="/mux" to="/camera_mux"/>
+</node>
+
+<group ns="axis">
+    <param name="hostname" value="192.168.1.13" />
+    <param name="width" value="704" />
+    <param name="height" value="480" />
+    <node pkg="axis_camera" type="publish_axis_tf.py" name="axis_tf" >
+        <param name="base_frame" value="/kingfisher/axis"/>
+        <param name="base_name" value="/kingfisher"/>
+    </node>
+ </group>
+
+    <node pkg="tf" type="static_transform_publisher" name="gps_broadcaster" args="0.08 -0.1183 0.01 0 0 0 /kingfisher/base /kingfisher/gps 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="hazcam_broadcaster" args="0.155 0 -0.043 0 0 0 /kingfisher/base /kingfisher/hazcam 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="lidar_broadcaster" args="-0.235 0 0.076 0 0 3.14159 /kingfisher/base /kingfisher/laser 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="ptz_broadcaster" args="-0.43 0 0.255 0 0 0 /kingfisher/base /kingfisher/axis 100" />
+
+    <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="-0.494 0 -0.089 0 0 3.14159 /kingfisher/base /kingfisher/imu 100" />
+
+    <node pkg="kf_static_tfs" type="publish_kf_tf.py" name="odom_broadcaster"/>
+
+  
+
+
+</launch>
+

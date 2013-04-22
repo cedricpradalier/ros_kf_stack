@@ -1,0 +1,9 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~scaleRot" : \b [double] Rotation scale min: 0.0, default: 0.5, max: 2.0
+- \b "~sigmaVel" : \b [double] Sigma for linear speed min: 0.0, default: 0.5, max: 2.0
+- \b "~minVel" : \b [double] min velocity before stopping min: 0.0, default: 0.025, max: 0.1
+- \b "~minVelForRot" : \b [double] min velocity to have a non zero rotation speed min: 0.0, default: 0.08, max: 0.15
+

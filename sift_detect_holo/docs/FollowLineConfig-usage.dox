@@ -1,0 +1,10 @@
+\subsubsection usage Usage
+\verbatim
+<node name="robot_control_base" pkg="sift_detect_holo" type="robot_control_base">
+  <param name="scaleRot" type="double" value="0.5" />
+  <param name="sigmaVel" type="double" value="0.5" />
+  <param name="minVel" type="double" value="0.025" />
+  <param name="minVelForRot" type="double" value="0.08" />
+</node>
+\endverbatim
+
