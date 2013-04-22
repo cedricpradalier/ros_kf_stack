@@ -17,15 +17,17 @@ TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv)
 
 TaskIndicator TaskFollowShore::iterate()
 {
+/*
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
 
-/*    double scalarProduct = cos(finishLine.theta)*(finishLine.x-tpose.x)+sin(finishLine.theta)*(finishLine.y-tpose.y);
+    double scalarProduct = cos(finishLine.theta)*(finishLine.x-tpose.x)+sin(finishLine.theta)*(finishLine.y-tpose.y);
     double r = hypot(finishLine.y-tpose.y,finishLine.x-tpose.x);
 
 #ifdef DEBUG_GOTO
     ROS_INFO("scalarProduct %.3f - dist_goal %.3f\n",scalarProduct,r);
 #endif
+*/
 /*
     if ((backToStartBox) && (fabs(scalarProduct) < 0.1)) {
 	    return TaskStatus::TASK_COMPLETED;
@@ -59,7 +61,7 @@ TaskIndicator TaskFollowShore::iterate()
     }
 
 #ifdef DEBUG_GOTO
-    ROS_INFO("pointCloudSize %d - mindistance %.3f - theta_closest %.3f",pointCloud.size(),mindistance, theta_closest);
+    ROS_INFO("pointCloudSize %d - mindistance %.3f - theta_closest %.3f",(int)pointCloud.size(),mindistance, theta_closest);
 #endif
     
     float angle_error=0;

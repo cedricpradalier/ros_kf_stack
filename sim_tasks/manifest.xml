@@ -18,6 +18,8 @@
   <depend package="tf"/>
   <depend package="pcl"/>
   <depend package="pcl_ros"/>
+  <!-- For the compass message -->
+  <depend package="kf_yaw_kf"/>
 
 </package>
 

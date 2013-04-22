@@ -36,6 +36,9 @@ gencfg()
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+ROSBUILD_ADD_LIBRARY( TaskSetHeading SHARED tasks/TaskSetHeading.cpp)
+TARGET_LINK_LIBRARIES(TaskSetHeading dl)
+
 ROSBUILD_ADD_LIBRARY( TaskGoTo SHARED tasks/TaskGoTo.cpp)
 TARGET_LINK_LIBRARIES(TaskGoTo dl)
 
