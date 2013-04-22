@@ -51,8 +51,8 @@ TARGET_LINK_LIBRARIES(TaskFollowShore dl)
 ROSBUILD_ADD_LIBRARY( TaskFindFinishLine SHARED tasks/TaskFindFinishLine.cpp)
 TARGET_LINK_LIBRARIES(TaskFindFinishLine dl)
 
-ROSBUILD_ADD_LIBRARY( TaskJoinOtherShore SHARED tasks/TaskJoinOtherShore.cpp)
-TARGET_LINK_LIBRARIES(TaskJoinOtherShore dl)
+ROSBUILD_ADD_LIBRARY( TaskReachOtherShore SHARED tasks/TaskReachOtherShore.cpp)
+TARGET_LINK_LIBRARIES(TaskReachOtherShore dl)
 
 ROSBUILD_ADD_LIBRARY( TaskWaitForAuto SHARED tasks/TaskWaitForAuto.cpp)
 TARGET_LINK_LIBRARIES(TaskWaitForAuto dl)

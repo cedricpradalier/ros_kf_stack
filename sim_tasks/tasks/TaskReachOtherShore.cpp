@@ -1,19 +1,19 @@
 #include <math.h>
-#include "TaskJoinOtherShore.h"
-#include "sim_tasks/TaskJoinOtherShoreConfig.h"
+#include "TaskReachOtherShore.h"
+#include "sim_tasks/TaskReachOtherShoreConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
 #define DEBUG_GOTO
 
-TaskJoinOtherShore::TaskJoinOtherShore(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskJoinOtherShoreConfig,TaskJoinOtherShore>("JoinOtherShore","Rotate and join the other shore",true,-1.)
+TaskReachOtherShore::TaskReachOtherShore(boost::shared_ptr<TaskEnvironment> tenv) 
+    : TaskDefinitionWithConfig<TaskReachOtherShoreConfig,TaskReachOtherShore>("ReachOtherShore","Rotate and reach the other shore",true,-1.)
 {
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
 }
 
-TaskIndicator TaskJoinOtherShore::iterate()
+TaskIndicator TaskReachOtherShore::iterate()
 {
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
@@ -67,10 +67,10 @@ TaskIndicator TaskJoinOtherShore::iterate()
 	return TaskStatus::TASK_RUNNING;
 }
 
-TaskIndicator TaskJoinOtherShore::terminate()
+TaskIndicator TaskReachOtherShore::terminate()
 {
     env->publishVelocity(0,0);
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskJoinOtherShore);
+DYNAMIC_TASK(TaskReachOtherShore);

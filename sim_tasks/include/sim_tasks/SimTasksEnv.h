@@ -77,6 +77,8 @@ namespace sim_tasks {
 
             void setFinishLine2D(geometry_msgs::Pose2D pose) {finishLine2D = pose;}
             geometry_msgs::Pose2D getFinishLine2D() const {return finishLine2D;}
+        public: // To make point cloud work on 32bit system
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     };
 
 };
