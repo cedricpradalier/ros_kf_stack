@@ -11,9 +11,21 @@ TaskWaitForAuto::TaskWaitForAuto(boost::shared_ptr<TaskEnvironment> tenv)
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
 }
 
+TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+{
+    TaskIndicator ti = Parent::initialise(parameters);
+    if (ti != TaskStatus::TASK_INITIALISED) {
+        return ti;
+    }
+    ROS_INFO("Waiting for automatic control. Switch RC controller off and press the red button.");
+    return ti;
+}
+
+
 TaskIndicator TaskWaitForAuto::iterate()
 {
     if (!env->getManualControl()) {
+        ROS_INFO("Automatic control detected. We are free!");
 		return TaskStatus::TASK_COMPLETED;
     }
 	return TaskStatus::TASK_RUNNING;

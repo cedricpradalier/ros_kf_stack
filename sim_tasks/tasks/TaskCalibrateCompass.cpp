@@ -33,6 +33,7 @@ TaskIndicator TaskCalibrateCompass::initialise(const TaskParameters & parameters
     readings.clear();
     magOffsetClient = env->getNodeHandle().serviceClient<kf_yaw_kf::SetMagOffset>("/compass/mag_offset");
     magSub = env->getNodeHandle().subscribe("/imu/mag",1,&TaskCalibrateCompass::magCallback,this);
+    ROS_INFO("Starting magnetometer calibration rotation");
     return TaskStatus::TASK_INITIALISED;
 }
 
@@ -50,6 +51,7 @@ TaskIndicator TaskCalibrateCompass::iterate()
         case FIRST_HALF:
             if (fabs(alpha)>M_PI/2) {
                 state = SECOND_HALF;
+                ROS_INFO("Magnetometer calibration: waiting for rotation completion");
             }
             break;
         case SECOND_HALF:
@@ -70,6 +72,7 @@ TaskIndicator TaskCalibrateCompass::terminate()
 {
     env->publishVelocity(0,0);
     if (readings.size() > 20) {
+        ROS_INFO("Completed calibration rotation. Computing offset");
         // Now compute the circle center and udpate the estimator
         //  http://www.dtcenter.org/met/users/docs/write_ups/circle_fit.pdf
         double m_x=0, m_y=0, m_z=0;
@@ -102,6 +105,7 @@ TaskIndicator TaskCalibrateCompass::terminate()
         A << Suu, Suv,  
           Suv, Svv;
         Eigen::Vector2f U = 0.5 * A.inverse() * B; // U contains the circle center (minus the mean)
+        ROS_INFO("Magnetometer calibration offset is %.2f %.2f",U(0)+m_x,U(1)+m_y);
 
         // No need to compute the radius in this application, otherwise
         // double R = sqrt(U(0)*U(0) + U(1)*U(1) + (Suu + Svv)/reading.size());

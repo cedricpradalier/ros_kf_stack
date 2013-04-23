@@ -17,6 +17,8 @@ namespace sim_tasks {
             TaskSetHeading(boost::shared_ptr<TaskEnvironment> env); 
             virtual ~TaskSetHeading() {};
 
+            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();

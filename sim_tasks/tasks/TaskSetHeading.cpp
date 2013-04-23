@@ -13,10 +13,20 @@ TaskSetHeading::TaskSetHeading(boost::shared_ptr<TaskEnvironment> tenv)
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
 }
 
+TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+{
+    TaskIndicator ti = Parent::initialise(parameters);
+    if (ti != TaskStatus::TASK_INITIALISED) {
+        return ti;
+    }
+    ROS_INFO("Setting heading to %.2f deg", cfg.target*180./M_PI);
+    return ti;
+}
+
 TaskIndicator TaskSetHeading::iterate()
 {
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
-    double alpha = remainder(cfg.goal_theta-tpose.theta,2*M_PI);
+    double alpha = remainder(cfg.target-tpose.theta,2*M_PI);
     if (fabs(alpha) < cfg.angle_threshold) {
 		return TaskStatus::TASK_COMPLETED;
     }
