@@ -8,8 +8,8 @@
 #include "geometry_msgs/Pose.h"
 #include "geometry_msgs/Pose2D.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "laser_geometry/laser_geometry.h"
 #include "sensor_msgs/Imu.h"
+#include "sensor_msgs/LaserScan.h"
 #include "kf_yaw_kf/Compass.h"
 #include "nav_msgs/Odometry.h"
 #include "pcl_ros/point_cloud.h"
@@ -52,14 +52,27 @@ namespace sim_tasks {
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
             kf_yaw_kf::Compass compass;
+            
+            // Specific variable for lake circumnavigation
             geometry_msgs::Pose2D finishLine2D;
-            laser_geometry::LaserProjection projector;
 
         public:
             SimTasksEnv(ros::NodeHandle & nh);
             ~SimTasksEnv() {};
 
             ros::NodeHandle & getNodeHandle() {return nh;}
+
+            // Returns the current heading in ENU frame, with 0 to the east,
+            // pi/2 to the north
+            double getHeading() const {
+                return compass.heading;
+            }
+
+            // Returns the compass angle, defined in NED frame, with 0 to the
+            // north, pi/2 to the east
+            double getCompass() const {
+                return compass.compass;
+            }
 
             geometry_msgs::Pose2D getPose2D() const ; 
 
@@ -75,6 +88,7 @@ namespace sim_tasks {
             void setComputerControl();
             bool getManualControl() const {return manualControl;}
 
+            // Specific variable for lake circumnavigation
             void setFinishLine2D(geometry_msgs::Pose2D pose) {finishLine2D = pose;}
             geometry_msgs::Pose2D getFinishLine2D() const {return finishLine2D;}
         public: // To make point cloud work on 32bit system

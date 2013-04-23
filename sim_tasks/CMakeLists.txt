@@ -36,8 +36,16 @@ gencfg()
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+ROSBUILD_ADD_EXECUTABLE( task_server src/task_server.cpp src/SimTasksEnv.cpp) 
+TARGET_LINK_LIBRARIES(task_server dl boost_system)
+
+# Now compile the tasks independently
+
 ROSBUILD_ADD_LIBRARY( TaskSetHeading SHARED tasks/TaskSetHeading.cpp)
 TARGET_LINK_LIBRARIES(TaskSetHeading dl)
+
+ROSBUILD_ADD_LIBRARY( TaskCalibrateCompass SHARED tasks/TaskCalibrateCompass.cpp)
+TARGET_LINK_LIBRARIES(TaskCalibrateCompass dl)
 
 ROSBUILD_ADD_LIBRARY( TaskGoTo SHARED tasks/TaskGoTo.cpp)
 TARGET_LINK_LIBRARIES(TaskGoTo dl)
@@ -59,7 +67,3 @@ TARGET_LINK_LIBRARIES(TaskWaitForAuto dl)
 
 ROSBUILD_ADD_LIBRARY( TaskSetManual SHARED tasks/TaskSetManual.cpp)
 TARGET_LINK_LIBRARIES(TaskSetManual dl)
-
-ROSBUILD_ADD_EXECUTABLE( task_server src/task_server.cpp src/SimTasksEnv.cpp) 
-TARGET_LINK_LIBRARIES(task_server dl boost_system)
-

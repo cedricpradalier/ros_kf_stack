@@ -1,7 +1,8 @@
 
 #include "sim_tasks/SimTasksEnv.h"
 #include <topic_tools/MuxSelect.h>
-#include "boost/algorithm/string.hpp"
+#include <boost/algorithm/string.hpp>
+#include <laser_geometry/laser_geometry.h>
 
 using namespace sim_tasks;
 
@@ -61,7 +62,7 @@ geometry_msgs::Pose2D SimTasksEnv::getPose2D() const {
         const geometry_msgs::Pose & utmPose = utmPosition.pose.pose;
         pose.x = utmPose.position.x;
         pose.y = utmPose.position.y;
-        pose.theta = compass.angle;
+        pose.theta = compass.heading;
     } else {
         ROS_ERROR("Parameter position_source undefined");
     }
@@ -160,6 +161,7 @@ void SimTasksEnv::compassCallback(const kf_yaw_kf::Compass::ConstPtr& msg) {
 
 void SimTasksEnv::scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
+    laser_geometry::LaserProjection projector;
     sensor_msgs::PointCloud2 cloud;
     projector.projectLaser(*scan_in, cloud);
     pcl::fromROSMsg(cloud, pointCloud);
