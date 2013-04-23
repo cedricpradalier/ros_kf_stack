@@ -32,10 +32,17 @@ class KFYawKF:
         self.mutex = Lock()
 
     def set_mag_offset(self,req):
-        self.mag_x_offset = req.mag_x_offset
-        self.mag_y_offset = req.mag_y_offset
-        self.mag_z_offset = req.mag_z_offset
-        rospy.loginfo("Updated Magnetometer offset to %.2f %.2f %.2f" % (self.mag_x_offset,self.mag_y_offset,self.mag_z_offset))
+        with self.mutex:
+            self.mag_x_offset = req.mag_x_offset
+            self.mag_y_offset = req.mag_y_offset
+            self.mag_z_offset = req.mag_z_offset
+            self.X = zeros((3,1))
+            self.P = eye(3)
+            self.first_rpy = True
+            self.first_gps = True
+            self.first_mag = True
+            self.first_imu = True
+            rospy.loginfo("Updated Magnetometer offset to %.2f %.2f %.2f" % (self.mag_x_offset,self.mag_y_offset,self.mag_z_offset))
         return SetMagOffsetResponse()
         
     def ready(self):
