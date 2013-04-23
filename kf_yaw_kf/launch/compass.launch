@@ -5,8 +5,8 @@
         <param name="use_gps" value="False"/>
         <param name="stddev_yaw_mag" value="0.1"/>
         <param name="stddev_yaw_gps" value="0.5"/>
-        <param name="stddev_yaw_gyro" value="0.1"/>
-        <param name="stddev_omega" value="0.2"/>
+        <param name="stddev_yaw_gyro" value="0.01"/>
+        <param name="stddev_omega" value="0.01"/>
         <param name="min_gps_speed" value="0.3"/>
         <param name="debug_publishers" value="False"/>
         <param name="replay" value="False"/>

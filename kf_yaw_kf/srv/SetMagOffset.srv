@@ -1,0 +1,4 @@
+float32 mag_x_offset
+float32 mag_y_offset
+float32 mag_z_offset
+---
