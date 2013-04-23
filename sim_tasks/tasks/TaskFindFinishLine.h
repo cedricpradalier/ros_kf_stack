@@ -20,6 +20,7 @@ namespace sim_tasks {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+
     };
 };
 

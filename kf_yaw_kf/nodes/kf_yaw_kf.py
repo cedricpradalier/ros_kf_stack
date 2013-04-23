@@ -18,8 +18,8 @@ def norm_angle(x):
 
 class KFYawKF:
     def __init__(self):
-        self.X = zeros((4,1))
-        self.P = eye(4)
+        self.X = zeros((3,1))
+        self.P = eye(3)
         self.first_rpy = True
         self.first_gps = True
         self.first_mag = True
@@ -44,7 +44,7 @@ class KFYawKF:
             # print I
             self.X = self.X + K * I
             self.X[0,0] = norm_angle(self.X[0,0])
-            self.P = (eye(4) - K * H) * self.P
+            self.P = (eye(3) - K * H) * self.P
             self.compass.angle = self.X[0,0]
             self.compass.stddev = math.sqrt(self.P[0,0])
             if self.replay:
@@ -53,11 +53,11 @@ class KFYawKF:
                 self.compass.header.stamp = stamp
             self.compass_pub.publish(self.compass)
             if self.debug_pub:
-                self.q_pub.publish(Quaternion(self.X[0,0], self.X[1,0], self.X[2,0], self.X[3,0]))
+                self.q_pub.publish(Quaternion(self.X[0,0], self.X[1,0], self.X[2,0]))
 
     def kf_predict(self, dt, Q, stamp):
         with self.mutex:
-            A = eye(4)
+            A = eye(3)
             A[0,1] = dt
             self.X = A * self.X
             self.X[0,0] = norm_angle(self.X[0,0])
@@ -70,7 +70,7 @@ class KFYawKF:
                 self.compass.header.stamp = stamp
             self.compass_pub.publish(self.compass)
             if self.debug_pub:
-                self.q_pub.publish(Quaternion(self.X[0,0], self.X[1,0], self.X[2,0], self.X[3,0]))
+                self.q_pub.publish(Quaternion(self.X[0,0], self.X[1,0], self.X[2,0]))
 
     def gps_cb(self,data):
         if data.speed < self.min_gps_speed:
@@ -79,26 +79,22 @@ class KFYawKF:
         if self.debug_pub:
             self.gps_pub.publish(Float32(yaw_gps))
         if self.first_gps:
-            self.X[0,0] = yaw_gps
-            rospy.loginfo("Initialised main state")
             self.first_gps = False
             return 
         Z = mat([yaw_gps])
-        H = mat([1,0,0,0])
+        H = mat([1,0,0])
         R = max(self.stddev_yaw_gps, 1.0 - (data.speed - self.min_gps_speed)*(1.0 - self.stddev_yaw_gps))
         R = mat([R])
         self.kf_update(Z,H,R,data.header.stamp,True,self.egps_pub)
 
     def mag_cb(self,data):
         # TODO: Integrate roll and pitch...
-        yaw_mag = math.atan2(data.vector.y,data.vector.x)
+        yaw_mag = math.atan2(data.vector.y-self.mag_y_offset,data.vector.x-self.mag_x_offset)
         if self.debug_pub:
             self.mag_pub.publish(Float32(yaw_mag))
-        if self.first_mag and not self.first_gps:
-            if not self.use_gps:
-                self.X[0,0] = yaw_mag
-            self.X[2,0] = self.X[0,0] - yaw_mag
-            rospy.loginfo("Initialised MAG bias")
+        if self.first_mag :
+            self.X[0,0] = yaw_mag
+            rospy.loginfo("Initialised main state from magnetometer")
             self.first_mag = False
             self.last_mag = rospy.Time.now()
             return 
@@ -108,7 +104,7 @@ class KFYawKF:
             return
         self.last_mag = rospy.Time.now()
         Z = mat([yaw_mag])
-        H = mat([1,0,0,-1])
+        H = mat([1,0,0])
         R = mat([self.stddev_yaw_mag*self.stddev_yaw_mag])
         self.kf_update(Z,H,R,data.header.stamp,True,self.emag_pub)
 
@@ -128,7 +124,7 @@ class KFYawKF:
             return
         self.last_rpy = rospy.Time.now()
         Z = mat([yaw_imu])
-        H = mat([1,0,-1,0])
+        H = mat([1,0,-1])
         R = mat([self.stddev_yaw_gyro*self.stddev_yaw_gyro])
         self.kf_update(Z,H,R,data.header.stamp,True,self.erpy_pub)
 
@@ -142,13 +138,15 @@ class KFYawKF:
                 return
             self.last_imu = rospy.Time.now()
             Z = mat([omega])
-            H = mat([0,1,0,0])
+            H = mat([0,1,0])
             R = mat([self.stddev_omega*self.stddev_omega])
             self.kf_update(Z,H,R,data.header.stamp,False)
 
 
     def run(self):
         rospy.init_node("kf")
+        self.mag_x_offset = 0
+        self.mag_y_offset = 0
         self.max_update_rate = rospy.get_param("~max_update_rate",10)
         self.frame_id = rospy.get_param("~frame_id","/kingfisher/base")
         self.stddev_yaw_mag = rospy.get_param("~stddev_yaw_mag",0.1)
@@ -157,10 +155,13 @@ class KFYawKF:
         self.stddev_omega = rospy.get_param("~stddev_omega",0.2)
         self.min_gps_speed = rospy.get_param("~min_gps_speed",0.3)
         self.debug_pub = rospy.get_param("~debug_publishers",False)
-        self.use_gps = rospy.get_param("~use_gps",True)
+        self.use_gps = rospy.get_param("~use_gps",False)
         # necessary to set fake time stamp when replaying
-        self.replay = rospy.get_param("~replay",True)
-        self.gps_sub = rospy.Subscriber("/gps/extfix",GPSFix,self.gps_cb)
+        self.replay = rospy.get_param("~replay",False)
+        if self.use_gps:
+            self.gps_sub = rospy.Subscriber("/gps/extfix",GPSFix,self.gps_cb)
+        else:
+            self.first_gps = False
         self.imu_sub = rospy.Subscriber("/imu/data",Imu,self.imu_cb)
         self.rpy_sub = rospy.Subscriber("/imu/rpy",Vector3Stamped,self.rpy_cb)
         self.mag_sub = rospy.Subscriber("/imu/mag",Vector3Stamped,self.mag_cb)
@@ -178,8 +179,6 @@ class KFYawKF:
             self.emag_pub = None
             self.erpy_pub = None
         self.compass.header.frame_id = self.frame_id
-        if not self.use_gps:
-            self.first_gps = False
         rate = rospy.Rate(self.max_update_rate)
         Q = mat(diag([1e-5,1e-5,1e-3,1e-6]))
         rospy.loginfo("Ready to estimate yaw angle")

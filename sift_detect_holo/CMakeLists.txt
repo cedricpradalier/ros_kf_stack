@@ -16,17 +16,17 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+#uncomment if you have defined messages
+rosbuild_genmsg()
+#uncomment if you have defined services
+#rosbuild_gensrv()
+
+# Fuerte
 #add dynamic reconfigure api
 # Uncomment once we have the first task
 rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
-
-
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
@@ -35,31 +35,4 @@ gencfg()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
-
-ROSBUILD_ADD_LIBRARY( TaskSetHeading SHARED tasks/TaskSetHeading.cpp)
-TARGET_LINK_LIBRARIES(TaskSetHeading dl)
-
-ROSBUILD_ADD_LIBRARY( TaskGoTo SHARED tasks/TaskGoTo.cpp)
-TARGET_LINK_LIBRARIES(TaskGoTo dl)
-
-ROSBUILD_ADD_LIBRARY( TaskGoToAngle SHARED tasks/TaskGoToAngle.cpp)
-TARGET_LINK_LIBRARIES(TaskGoToAngle dl)
-
-ROSBUILD_ADD_LIBRARY( TaskFollowShore SHARED tasks/TaskFollowShore.cpp)
-TARGET_LINK_LIBRARIES(TaskFollowShore dl)
-
-ROSBUILD_ADD_LIBRARY( TaskFindFinishLine SHARED tasks/TaskFindFinishLine.cpp)
-TARGET_LINK_LIBRARIES(TaskFindFinishLine dl)
-
-ROSBUILD_ADD_LIBRARY( TaskReachOtherShore SHARED tasks/TaskReachOtherShore.cpp)
-TARGET_LINK_LIBRARIES(TaskReachOtherShore dl)
-
-ROSBUILD_ADD_LIBRARY( TaskWaitForAuto SHARED tasks/TaskWaitForAuto.cpp)
-TARGET_LINK_LIBRARIES(TaskWaitForAuto dl)
-
-ROSBUILD_ADD_LIBRARY( TaskSetManual SHARED tasks/TaskSetManual.cpp)
-TARGET_LINK_LIBRARIES(TaskSetManual dl)
-
-ROSBUILD_ADD_EXECUTABLE( task_server src/task_server.cpp src/SimTasksEnv.cpp) 
-TARGET_LINK_LIBRARIES(task_server dl boost_system)
 

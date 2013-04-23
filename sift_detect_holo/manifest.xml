@@ -1,0 +1,25 @@
+<package>
+  <description brief="sift_detect_holo">
+
+     sift_detect_holo
+
+  </description>
+  <author>group9</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/sift_detect_holo</url>
+  <depend package="std_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="geometry_msgs"/>
+  <depend package="pcl_ros"/>
+  <depend package="pcl"/>
+  <depend package="sift_detect"/>
+  <depend package="dynamic_reconfigure"/>
+  <depend package="axis_camera"/>
+
+</package>
+
+

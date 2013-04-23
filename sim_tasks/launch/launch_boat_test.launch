@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <launch>
+    
     <node name="task_server" pkg="sim_tasks" type="task_server"  >
         <param name="lib_path" value="$(find sim_tasks)/lib"/>
         <param name="position_source" value="utm"/>
-    </node>
+    </node> 
+
 
 </launch>
