@@ -21,6 +21,9 @@
   <!-- For the compass message -->
   <depend package="kf_yaw_kf"/>
 
+  <!-- For the kingfisher message -->
+  <depend package="kingfisher_msgs"/>
+
 </package>
 
 

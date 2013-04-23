@@ -12,6 +12,7 @@
 #include "sensor_msgs/LaserScan.h"
 #include "kf_yaw_kf/Compass.h"
 #include "nav_msgs/Odometry.h"
+#include "kingfisher_msgs/Sense.h"
 #include "pcl_ros/point_cloud.h"
 #include "pcl/point_types.h"
 #include <tf/transform_listener.h>
@@ -29,11 +30,14 @@ namespace sim_tasks {
             ros::Subscriber utmPositionSub;
             ros::Subscriber compassSub;
             ros::Subscriber scanSub;
+            ros::Subscriber senseSub;
             ros::Publisher velPub;
             ros::ServiceClient muxClient;
             tf::TransformListener listener;
 
             void buttonCallback(const std_msgs::String::ConstPtr& msg) ;
+
+            void senseCallback(const kingfisher_msgs::Sense::ConstPtr& msg) ;
 
             void muxCallback(const std_msgs::String::ConstPtr& msg) ;
 
@@ -49,6 +53,7 @@ namespace sim_tasks {
             std::string joystick_topic;
             std::string auto_topic;
             std::string position_source;
+            kingfisher_msgs::Sense sense;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
             kf_yaw_kf::Compass compass;
@@ -74,6 +79,10 @@ namespace sim_tasks {
                 return compass.compass;
             }
 
+            double getBattery() const {
+                return sense.battery;
+            }
+
             geometry_msgs::Pose2D getPose2D() const ; 
 
             geometry_msgs::Pose getPose() const ;
@@ -86,7 +95,7 @@ namespace sim_tasks {
 
             void setManualControl();
             void setComputerControl();
-            bool getManualControl() const {return manualControl;}
+            bool getManualControl() const {return manualControl || sense.rc;}
 
             // Specific variable for lake circumnavigation
             void setFinishLine2D(geometry_msgs::Pose2D pose) {finishLine2D = pose;}

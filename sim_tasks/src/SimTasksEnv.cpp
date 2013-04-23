@@ -9,6 +9,10 @@ using namespace sim_tasks;
 SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
     nh(n), paused(false), manualControl(true), joystick_topic("/teleop/twistCommand"), auto_topic("/mux/autoCommand"), position_source("utm")
 {
+    // Default value, in case we're running in simulation
+    sense.battery = 20.0;
+    sense.rc = 0;
+
     nh.getParam("joystick_topic",joystick_topic);
     nh.getParam("auto_topic",auto_topic);
     nh.getParam("position_source",position_source);
@@ -20,6 +24,7 @@ SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
     pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",1,&SimTasksEnv::pointCloudCallback,this);
     utmPositionSub = nh.subscribe("/gps/utm",1,&SimTasksEnv::utmPositionCallback,this);
     scanSub = nh.subscribe("/lidar/scan",1,&SimTasksEnv::scanCallback,this);
+    senseSub = nh.subscribe("/sense",1,&SimTasksEnv::senseCallback,this);
     compassSub = nh.subscribe("/compass/compass",1,&SimTasksEnv::compassCallback,this);
     velPub = nh.advertise<geometry_msgs::Twist>(auto_topic,1);
 }
@@ -153,6 +158,10 @@ void SimTasksEnv::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg)
 
 void SimTasksEnv::utmPositionCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     utmPosition = *msg;
+}
+
+void SimTasksEnv::senseCallback(const kingfisher_msgs::Sense::ConstPtr& msg) {
+    sense = *msg;
 }
 
 void SimTasksEnv::compassCallback(const kf_yaw_kf::Compass::ConstPtr& msg) {
