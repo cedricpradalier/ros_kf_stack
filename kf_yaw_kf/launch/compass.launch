@@ -1,7 +1,8 @@
 <launch>
 
-    <node pkg="kf_yaw_kf" type="kf_yaw_kf" name="compass">
+    <node pkg="kf_yaw_kf" type="kf_yaw_kf.py" name="compass" output="screen">
         <param name="frame_id" value="/kingfisher/base"/>
+        <param name="use_gps" value="False"/>
         <param name="stddev_yaw_mag" value="0.1"/>
         <param name="stddev_yaw_gps" value="0.5"/>
         <param name="stddev_yaw_gyro" value="0.1"/>

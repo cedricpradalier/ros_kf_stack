@@ -79,7 +79,7 @@ class KFYawKF:
         if self.debug_pub:
             self.gps_pub.publish(Float32(yaw_gps))
         if self.first_gps:
-            self.X[2,0] = yaw_gps
+            self.X[0,0] = yaw_gps
             rospy.loginfo("Initialised main state")
             self.first_gps = False
             return 
@@ -95,12 +95,18 @@ class KFYawKF:
         if self.debug_pub:
             self.mag_pub.publish(Float32(yaw_mag))
         if self.first_mag and not self.first_gps:
+            if not self.use_gps:
+                self.X[0,0] = yaw_mag
             self.X[2,0] = self.X[0,0] - yaw_mag
             rospy.loginfo("Initialised MAG bias")
             self.first_mag = False
+            self.last_mag = rospy.Time.now()
             return 
         if self.first_mag:
             return
+        if (rospy.Time.now() - self.last_mag).to_sec() * self.max_update_rate < 1:
+            return
+        self.last_mag = rospy.Time.now()
         Z = mat([yaw_mag])
         H = mat([1,0,0,-1])
         R = mat([self.stddev_yaw_mag*self.stddev_yaw_mag])
@@ -114,9 +120,13 @@ class KFYawKF:
             self.X[2,0] = self.X[0,0] - yaw_imu
             rospy.loginfo("Initialised IMU bias")
             self.first_rpy = False
+            self.last_rpy = rospy.Time.now()
             return 
         if self.first_rpy:
             return
+        if (rospy.Time.now() - self.last_rpy).to_sec() * self.max_update_rate < 1:
+            return
+        self.last_rpy = rospy.Time.now()
         Z = mat([yaw_imu])
         H = mat([1,0,-1,0])
         R = mat([self.stddev_yaw_gyro*self.stddev_yaw_gyro])
@@ -126,7 +136,11 @@ class KFYawKF:
     def imu_cb(self,data):
         omega = -data.angular_velocity.z
         self.first_imu = False
+        self.last_imu = rospy.Time.now()
         if self.ready():
+            if (rospy.Time.now() - self.last_imu).to_sec() * self.max_update_rate < 1:
+                return
+            self.last_imu = rospy.Time.now()
             Z = mat([omega])
             H = mat([0,1,0,0])
             R = mat([self.stddev_omega*self.stddev_omega])
@@ -135,6 +149,7 @@ class KFYawKF:
 
     def run(self):
         rospy.init_node("kf")
+        self.max_update_rate = rospy.get_param("~max_update_rate",10)
         self.frame_id = rospy.get_param("~frame_id","/kingfisher/base")
         self.stddev_yaw_mag = rospy.get_param("~stddev_yaw_mag",0.1)
         self.stddev_yaw_gps = rospy.get_param("~stddev_yaw_gps",0.5)
@@ -142,6 +157,7 @@ class KFYawKF:
         self.stddev_omega = rospy.get_param("~stddev_omega",0.2)
         self.min_gps_speed = rospy.get_param("~min_gps_speed",0.3)
         self.debug_pub = rospy.get_param("~debug_publishers",False)
+        self.use_gps = rospy.get_param("~use_gps",True)
         # necessary to set fake time stamp when replaying
         self.replay = rospy.get_param("~replay",True)
         self.gps_sub = rospy.Subscriber("/gps/extfix",GPSFix,self.gps_cb)
@@ -162,7 +178,9 @@ class KFYawKF:
             self.emag_pub = None
             self.erpy_pub = None
         self.compass.header.frame_id = self.frame_id
-        rate = rospy.Rate(20)
+        if not self.use_gps:
+            self.first_gps = False
+        rate = rospy.Rate(self.max_update_rate)
         Q = mat(diag([1e-5,1e-5,1e-3,1e-6]))
         rospy.loginfo("Ready to estimate yaw angle")
         while not rospy.is_shutdown():

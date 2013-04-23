@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <launch>
-    <include file="$(find sim_tasks)/launch/button_server.launch"/>
-    <include file="$(find vrep_ros_teleop)/launch/teleop_mux.launch"/>
-    
     <node name="task_server" pkg="sim_tasks" type="task_server"  >
         <param name="lib_path" value="$(find sim_tasks)/lib"/>
         <param name="position_source" value="utm"/>
-    </node>
-
-    <node name="test_shore" pkg="sim_tasks" type="test_shore.py"  >
-        <param name="server" value="/task_server"/>
-    </node>
-
-    <node pkg="sim_motor" type="motornode" name="motornode">
     </node>
 
 </launch>
