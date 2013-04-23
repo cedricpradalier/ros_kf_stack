@@ -61,15 +61,16 @@ class VelConvert:
 	
         rospy.init_node('vel_def')
 		
-        self.scaleRot = rospy.get_param("~scaleRot",0.5)
+        self.scale_rotRob = rospy.get_param("~scaleRotRob",0.5)
         self.sigmaVel = rospy.get_param("~sigmaVel",0.5)
         self.minVel = rospy.get_param("~minVel",0.025)
-        self.maxVel = rospy.get_param("~maxVel",0.8)
+        self.maxVel = rospy.get_param("~maxVel",0.3)
         self.minVelForRot = rospy.get_param("~minVelForRot",0.08)
-        self.maxRotRob = rospy.get_param("~maxRotRob",0.08)
-        self.maxRotCam = rospy.get_param("~maxRotCam",0.08)
-	self.scale_servo = rospy.get_param("~scale_servo",0.5)
+        self.maxRotRob = rospy.get_param("~maxRotRob",0.5)
+        self.maxRotCam = rospy.get_param("~maxRotCam",0.5)
+	self.scale_lin = rospy.get_param("~scale_lin",0.5)
         self.sigmaRot = rospy.get_param("~sigmaRot",0.08)
+	self.scale_rotCam = rospy.get_param("~scaleRotCam",0.5)
         rospy.Subscriber("~servo", Twist, self.convert_vel)
         sub = rospy.Subscriber('~joy', Joy, self.joy_cb)
         
@@ -95,14 +96,15 @@ class VelConvert:
             print "Service call failed: %s"%e
                            
     def reconfig_cb(self,config, level):
-        self.scaleRot = config["scaleRot"]
+        self.scale_rotRob = config["scaleRotRob"]
+	self.scale_rotCam = config["scaleRotCam"]
         self.sigmaVel = config["sigmaVel"]
         self.sigmaRot = config["sigmaRot"]
         self.minVel = config["minVel"]
         self.minVelForRot = config["minRot"]
-        self.maxRotRob = config["maxRotRob"]
-        self.maxRotCam = config["maxRotCam"]
-	self.scale_servo = config["scale_servo"]
+        self.max_rotRob = config["maxRotRob"]
+        self.max_rotCam = config["maxRotCam"]
+	self.scale_lin = config["scale_lin"]
         #print "Reconfigured"
         return config
         
@@ -120,23 +122,23 @@ class VelConvert:
 		if hypot(vx,vy)<self.minVelForRot:
 			wr = 0
 		else:
-			wr = sat(atan2(vy,vx)*self.scaleRot, self.maxRotRob)
+			wr = sat(atan2(vy,vx)*self.scale_rotRob, self.max_rotRob)
 			
-		self.previous_vel_rob.pop()
-		self.previous_vel_rob.insert(0,wr)
+		#self.previous_vel_rob.pop()
+		#self.previous_vel_rob.insert(0,wr)
 		
-		wr = sum(self.previous_vel_rob)/10
+		#wr = sum(self.previous_vel_rob)/10
 		
-		t.linear.x = self.scale_servo*sat(hypot(vx,vy)*exp(-wr*wr/(self.sigmaVel*self.sigmaVel)),self.maxVel)
+		t.linear.x = sat(self.scale_lin*hypot(vx,vy)*exp(-wr*wr/(self.sigmaVel*self.sigmaVel)),self.maxVel)
 		t.linear.y = 0
 		t.linear.z = 0
 		t.angular.x = 0
 		t.angular.y = 0
-		t.angular.z = self.scale_servo*wr
+		t.angular.z = wr
 		
-		if (abs(t.linear.x)<self.minVel) and (abs(t.angular.z)<self.minVel) and (self.reached_goal == 0):
-		    self.reached_goal = 1
-		    print "GOAL REACHED"
+		#if (abs(t.linear.x)<self.minVel) and (abs(t.angular.z)<self.minVel) and (self.reached_goal == 0):
+		#    self.reached_goal = 1
+		#    print "GOAL REACHED"
 		    
 		if self.reached_goal==1:
 			t.linear.x=0
@@ -148,8 +150,8 @@ class VelConvert:
 		
 		#print(wz)
 		
-		pan_vel_f.data = self.scale_servo*sat(wz-wr, self.maxRotCam)
-		pan_vel_t.angular.z = self.scale_servo*sat(wz-wr, self.maxRotCam)
+		pan_vel_f.data = sat(self.scale_rotCam*(wz-wr), self.max_rotCam)
+		pan_vel_t.angular.z = sat(self.scale_rotCam*(wz-wr), self.max_rotCam)
 		
 		#print("wz, wr, wpan", wz, wr, pan_vel.data)
 
@@ -160,29 +162,6 @@ class VelConvert:
 		self.pan_pub_tw.publish(pan_vel_t)
 		self.rob_twist_pub.publish(t)
 		
-		#marker = Marker()
-		#marker.header.stamp = rospy.Time().now()
-		#marker.header.frame_id = "/rosControlledBubbleRob"
-		#marker.ns = "goal_marker"
-		#marker.id = 10
-		#marker.type = Marker.ARROW
-		#marker.action = Marker.ADD
-		#marker.pose.position.x = 0
-		#marker.pose.position.y = 0
-		#marker.pose.position.z = 0
-		#q = tf.transformations.quaternion_from_euler(0, 0, sat(atan2(vy,vx)*self.scaleRot, self.maxRotRob))
-		#marker.pose.orientation = Quaternion(*q)
-		## q = tf::createQuaternionFromRPY(0,0,sat(atan2(vy,vx)*self.scaleRot, self.maxRotRob));
-		## marker.pose.orientation = tf::createQuaternionFromYaw(sat(atan2(vy,vx)*self.scaleRot, self.maxRotRob));
-		#marker.scale.x = 0.5;
-		#marker.scale.y = 0.5;
-		#marker.scale.z = 3*hypot(vx,vy);
-		#marker.color.a = 1.0;
-		#marker.color.r = 1.0;
-		#marker.color.g = 1.0;
-		#marker.color.b = 0.0;
-		#marker.lifetime.secs=-1.0
-		#self.marker_pub.publish(marker)
 		
 	
 	

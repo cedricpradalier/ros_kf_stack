@@ -2,7 +2,7 @@
 
 <param name="/use_sim_time" value="true" type="bool"/>
 
-<node pkg="rxtools" type="rxplot" name="rxplot" args="/axis/twist/angular/z" />
+<node pkg="rxtools" type="rxplot" name="rxplot" args="/mux/servoCommand/linear/x /mux/servoCommand/angular/z /camera_mux/servoCommand/angular/z" />
 
 
 <!-- joy node -->
@@ -40,15 +40,23 @@
 <node pkg="sift_detect_holo" type="img_detect_node.py" name="sift_descript" output="screen">
 	<!--<remap from="/sift_descript/visionSensor" to="/vrep/visionSensor"/>-->
 	<remap from="/sift_descript/visionSensor" to="/axis/image"/>
-	<remap from="/sift_descript/command_cam" to="/axis/Command"/>
+	<remap from="/sift_descript/command_cam" to="/axis/cmd"/>
 	<param name="threshold" value="5" type="double"/> 
 </node>
 
 
-<node pkg="sift_detect_holo" type="servo.py" name="servo" output="screen">
+<!--<node pkg="sift_detect_holo" type="servo.py" name="servo" output="screen">
 	<remap from="/servo/kp" to="/sift_descript/kp"/>
-	<remap from="/servo/twist_pub" to="/servo/twist"/>
-	<!--<remap from="/servo/info" to="/vrep/visionSensorInfo"/>-->
+	<remap from="/servo/twist" to="/servo/twist"/>
+	<remap from="/servo/info" to="/axis/camera_info"/>
+	<param name="scale_servo" value="1" type="double"/>
+	<param name="camFrame" value="/kingfisher/tilt" type="string"/>
+	<param name="robFrame" value="/kingfisher/base" type="string"/>
+</node> -->
+
+<node pkg="sift_detect_holo" type="servo_outliers.py" name="servo" output="screen">
+	<remap from="/servo/kp" to="/sift_descript/kp"/>
+	<remap from="/servo/twist" to="/servo/twist"/>
 	<remap from="/servo/info" to="/axis/camera_info"/>
 	<param name="scale_servo" value="1" type="double"/>
 	<param name="camFrame" value="/kingfisher/tilt" type="string"/>
@@ -62,15 +70,16 @@
 	<remap from="/velConvert/pan_pub_twist" to="/camera_mux/servoCommand"/>
 	<remap from="/velConvert/servo" to="/servo/twist"/>
 	<remap from="/velConvert/joy" to="/joy"/>
-	<param name="scaleRot" value="0.5" type="double"/>
-	<param name="maxRotRob" value="1.8" type="double"/>
-	<param name="maxVel" value="0.4" type="double"/>
-	<param name="maxRotCam" value="2" type="double"/>
-	<param name="sigmaVel" value="0.17" type="double"/>
-	<param name="sigmaRot" value="0.17" type="double"/>
+	<param name="maxRotRob" value="0.5" type="double"/>
+	<param name="maxVel" value="0.3" type="double"/>
+	<param name="maxRotCam" value="0.5" type="double"/>
 	<param name="minVel" value="0.01" type="double"/>
 	<param name="minVelForRot" value="0.05" type="double"/>
-	<param name="scale_servo" value="0.08" type="double"/>
+	<param name="sigmaVel" value="0.17" type="double"/>
+	<param name="sigmaRot" value="0.17" type="double"/>
+	<param name="scale_lin" value="1.5" type="double"/>
+	<param name="scaleRotCam" value="0.3" type="double"/>
+	<param name="scaleRotRob" value="0.15" type="double"/>
 </node>
 
 
@@ -93,7 +102,9 @@
 </node>
   
 <node pkg="topic_tools" type="mux" name="cmd_mux" 
-	args="/vrep/twistCommand /teleop/twistCommand /mux/servoCommand">
+	args="/vrep/twist /teleop/twistCommand /mux/servoCommand">
+	<!--args="/cmd_vel /teleop/twistCommand /mux/servoCommand">-->
+	
 </node>
 
 <node pkg="topic_tools" type="mux" name="camera_mux" 

@@ -12,6 +12,7 @@ from sensor_msgs.msg import Image
 from sift_detect.msg import sift_keypoints_array
 from sift_detect.msg import sift_keypoint
 from axis_camera.msg import Axis
+from std_msgs.msg import Time
 
 from dynamic_reconfigure.server import Server
 from sift_detect_holo.cfg import SiftDescriptConfig
@@ -32,14 +33,21 @@ class SIFT:
 	
 		rospy.init_node('sift_detect')
 		
+		rospy.loginfo("init node")
 		self.threshold = rospy.get_param("~threshold",1)
 		self.kp_pub = rospy.Publisher("~kp", sift_keypoints_array)
 		self.command_cam_pub = rospy.Publisher("~command_cam", Axis)
+		self.Time_pub = rospy.Publisher("~compTime", Time)
+		rospy.loginfo("init node")
 		
 		self.reconfig_srv = Server(SiftDescriptConfig, self.reconfig_cb)
 		rospy.sleep(1.0)
-	
+		rospy.loginfo("init node")
+		
+		
+		self.computationalTime = 0
 		rospy.Subscriber("~visionSensor", sensor_msgs.msg.Image, self.detect_and_draw)
+		rospy.loginfo("subscribed to visionSensor")
 		
 		self.init = 1 
 		
@@ -55,7 +63,7 @@ class SIFT:
 	def detect_and_draw(self, imgmsg):
 		
 		
-		
+		self.computationalTime = rospy.Time.now()
 		#print 'number of KeyPoint objects skp', len(self.skp)
 		
 		
@@ -117,7 +125,7 @@ class SIFT:
 			
 		tkp_final = []
 		for i, dis in itertools.izip(range(len(idx)), dist):
-			if dis < self.threshold and self.skp[idx[i]].pt[1]*1.0 < 5*h1/6.0:
+			if dis < self.threshold and self.skp[idx[i]].pt[1]*1.0 < 4*h1/6.0:
 				tkp_final.append(tkp[indices[i]])
 			else:
 				break
@@ -136,7 +144,7 @@ class SIFT:
 		print 'number of KeyPoint objects in skp_final', len(skp_final)
 		print 'number of KeyPoint objects in tkp_final', len(tkp_final)
 
-		for i in range(min(len(tkp), len(skp_final))):
+		for i in range(min(len(tkp_final), len(skp_final))):
 			
 			pt_a = (int(tkp_final[i].pt[0]), int(tkp_final[i].pt[1]+hdif))
 			pt_b = (int(skp_final[i].pt[0]+w2), int(skp_final[i].pt[1]))
@@ -157,6 +165,8 @@ class SIFT:
 			
 		
 		self.kp_pub.publish(kp_array)
+		self.computationalTime = rospy.Time.now() - self.computationalTime
+		self.Time_pub.publish(self.computationalTime)
 		
 		key=cv.WaitKey(10) & 0xFF
 		

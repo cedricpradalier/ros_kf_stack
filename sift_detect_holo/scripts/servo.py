@@ -15,6 +15,7 @@ from geometry_msgs.msg import PoseStamped, PointStamped
 from sensor_msgs.msg import CameraInfo
 from sift_detect.msg import sift_keypoints_array
 from sift_detect.msg import sift_keypoint
+from std_msgs.msg import Time
 
 import tf
 
@@ -39,13 +40,17 @@ class VisualServo:
 
 		rospy.init_node('img_detect')
 		self.scale = rospy.get_param("~scale_servo",1)
-		self.twist_pub = rospy.Publisher("~twist_pub",Twist)
+		self.twist_pub = rospy.Publisher("~twist",Twist)
 		rospy.Subscriber("~info",CameraInfo,self.store_info)
 		rospy.Subscriber("~kp", sift_keypoints_array, self.visual_servo)
+		
+		self.Time_pub = rospy.Publisher("~compTime", Time)
+		self.computationalTime = 0
+		
 		self.listener = tf.TransformListener()
-		self.f = 700 
-		self.xc = 352 
-		self.yc = 240 
+		self.f = 759.3 
+		self.xc = 370.91 
+		self.yc = 250.9 
 		
 		self.cameraFrame = rospy.get_param("~camFrame","/frontCamera")
 		self.robotFrame = rospy.get_param("~robFrame","/rosControlledBubbleRob")
@@ -53,13 +58,13 @@ class VisualServo:
 	
 	def visual_servo(self,kPoints):
 		
-		
+		self.computationalTime = rospy.Time.now()
 		#kPoints.skp=[sift_keypoint(0,0), sift_keypoint(0,10), sift_keypoint(10,0)]
 		#kPoints.tkp=[sift_keypoint(0,0), sift_keypoint(0,10), sift_keypoint(5,0)]
 		
 		nKP = len(kPoints.tkp)
 		
-		if (nKP > 0):
+		if (nKP > 3):
 		
 		
 			error = np.asmatrix(np.zeros((2*nKP,1)))
@@ -139,12 +144,14 @@ class VisualServo:
 			t.angular.z = -vel[2,0]
 		
 			self.twist_pub.publish(t)
+			self.computationalTime = rospy.Time.now() - self.computationalTime
+			self.Time_pub.publish(self.computationalTime)
 
 		
 	def store_info(self,info):
-		self.f = 700 #info.K[0]
-		self.xc = 352 #info.K[2]
-		self.yc = 240 #info.K[5]
+		self.f = 759.3 #info.K[0]
+		self.xc = 370.91 #info.K[2]
+		self.yc = 250.9 #info.K[5]
 		
 		#print("Got camera info: f %.2f C %.2f %.2f" % (self.f,self.xc,self.yc))
 		
