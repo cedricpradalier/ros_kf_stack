@@ -13,6 +13,17 @@ TaskGoTo::TaskGoTo(boost::shared_ptr<TaskEnvironment> tenv)
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
 }
 
+TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+{
+    TaskIndicator ti = Parent::initialise(parameters);
+    if (ti != TaskStatus::TASK_INITIALISED) {
+        return ti;
+    }
+    ROS_INFO("Going to %.2f %.2f",cfg.goal_x,cfg.goal_y);
+    return ti;
+}
+
+
 TaskIndicator TaskGoTo::iterate()
 {
     const geometry_msgs::Pose2D & tpose = env->getPose2D();

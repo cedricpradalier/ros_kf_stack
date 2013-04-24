@@ -17,6 +17,8 @@ namespace sim_tasks {
             TaskGoTo(boost::shared_ptr<TaskEnvironment> env); 
             virtual ~TaskGoTo() {};
 
+            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();

@@ -24,6 +24,9 @@
   <!-- For the kingfisher message -->
   <depend package="kingfisher_msgs"/>
 
+  <!-- For the kingfisher message -->
+  <depend package="axis_camera"/>
+
 </package>
 
 

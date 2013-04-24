@@ -57,14 +57,14 @@ TaskIndicator TaskReachOtherShore::iterate()
         rot = cfg.k_scal_prod * scalarProduct - cfg.k_alpha * angle_error;
         // Saturation of angular velocity
         if (fabs(rot) > cfg.max_ang_vel) {
-            rot = ((rot>0)?+1:-1) * max_ang_vel;
+            rot = ((rot>0)?+1:-1) * cfg.max_ang_vel;
         }
         // Saturation of angular error
         if (fabs(angle_error) > cfg.angle_error_max) {angle_error = ((angle_error>0)?+1:-1)*cfg.angle_error_max;}
         vel = exp(-pow(angle_error,2)/2);
         // Saturation of linear velocity
         if (vel > cfg.max_lin_vel) {
-            vel = max_lin_vel;
+            vel = cfg.max_lin_vel;
         }
     }
 

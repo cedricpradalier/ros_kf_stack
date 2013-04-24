@@ -31,11 +31,11 @@ TaskIndicator TaskFollowShore::iterate()
 
     if ((backToStartBox) && (fabs(scalarProduct) < 0.1)) {
 	    return TaskStatus::TASK_COMPLETED;
-    }
-    else if ((outOfStartBox) && (r < cfg.dist_goal)) {
+    } else if ((outOfStartBox) && (r < cfg.dist_goal)) {
+        ROS_INFO("Back to starbucks");
         backToStartBox = true;
-    }
-    else if ((!outOfStartBox) && (r > cfg.dist_goal)) {
+    } else if ((!outOfStartBox) && (r > cfg.dist_goal)) {
+        ROS_INFO("Out of starbucks");
         outOfStartBox = true;
     }
 
@@ -77,7 +77,7 @@ TaskIndicator TaskFollowShore::iterate()
         rot = - cfg.k_alpha*angle_error + ((cfg.angle<0)?+1:-1)*cfg.k_d*distance_error;
         // Saturation
         if (fabs(rot) > cfg.max_ang_vel) {
-            rot = ((rot>0)?+1:-1) * max_ang_vel;
+            rot = ((rot>0)?+1:-1) * cfg.max_ang_vel;
         }
     }
 #ifdef DEBUG_GOTO
