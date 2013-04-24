@@ -17,7 +17,7 @@ TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv)
 
 TaskIndicator TaskFollowShore::iterate()
 {
-/*
+
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
 
@@ -27,8 +27,8 @@ TaskIndicator TaskFollowShore::iterate()
 #ifdef DEBUG_GOTO
     ROS_INFO("scalarProduct %.3f - dist_goal %.3f\n",scalarProduct,r);
 #endif
-*/
-/*
+
+
     if ((backToStartBox) && (fabs(scalarProduct) < 0.1)) {
 	    return TaskStatus::TASK_COMPLETED;
     }
@@ -38,7 +38,7 @@ TaskIndicator TaskFollowShore::iterate()
     else if ((!outOfStartBox) && (r > cfg.dist_goal)) {
         outOfStartBox = true;
     }
-*/
+
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
 
     double vel = cfg.velocity;
@@ -75,6 +75,10 @@ TaskIndicator TaskFollowShore::iterate()
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         distance_error = cfg.distance-mindistance;
         rot = - cfg.k_alpha*angle_error + ((cfg.angle<0)?+1:-1)*cfg.k_d*distance_error;
+        // Saturation
+        if (fabs(rot) > cfg.max_ang_vel) {
+            rot = ((rot>0)?+1:-1) * max_ang_vel;
+        }
     }
 #ifdef DEBUG_GOTO
     ROS_INFO("Command vel %.2f angle_error %.2f distance_error %.2f rot %.2f\n",vel,angle_error,distance_error,rot);

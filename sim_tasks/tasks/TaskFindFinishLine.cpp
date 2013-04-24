@@ -29,13 +29,13 @@ TaskIndicator TaskFindFinishLine::iterate()
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
         theta_i=atan2(pointCloud[i].y,pointCloud[i].x);
-        if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {
+//        if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {
                 mindistance=distance_i;
                 theta_closest=theta_i;
             }
-        }
+//        }
     }
 
 #ifdef DEBUG_GOTO
