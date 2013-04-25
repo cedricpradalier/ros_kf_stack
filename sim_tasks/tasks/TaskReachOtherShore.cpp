@@ -5,7 +5,7 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
-#define DEBUG_GOTO
+// #define DEBUG_GOTO
 
 TaskReachOtherShore::TaskReachOtherShore(boost::shared_ptr<TaskEnvironment> tenv) 
     : TaskDefinitionWithConfig<TaskReachOtherShoreConfig,TaskReachOtherShore>("ReachOtherShore","Rotate and reach the other shore",true,-1.)
@@ -21,7 +21,7 @@ TaskIndicator TaskReachOtherShore::iterate()
     double scalarProduct = cos(finishLine.theta)*(finishLine.x-tpose.x)+sin(finishLine.theta)*(finishLine.y-tpose.y);
     double r = hypot(finishLine.y-tpose.y,finishLine.x-tpose.x);
 
-    float angle_error = remainder(1.57 + finishLine.theta - tpose.theta,2*M_PI);
+    float angle_error = remainder(cfg.angle + finishLine.theta - tpose.theta,2*M_PI);
 
 #ifdef DEBUG_GOTO
     ROS_INFO("scalarProduct %.3f - dist_goal %.3f - angle_error %.3f\n",scalarProduct,r,angle_error);
@@ -37,7 +37,7 @@ TaskIndicator TaskReachOtherShore::iterate()
     float theta_i=0;
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
-        theta_i=atan2(pointCloud[i].y,pointCloud[i].x);
+        theta_i=-atan2(pointCloud[i].y,pointCloud[i].x);
         if (fabs(theta_i) < cfg.angle_range) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {

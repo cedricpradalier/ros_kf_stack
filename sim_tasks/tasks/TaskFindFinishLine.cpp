@@ -5,7 +5,7 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
-#define DEBUG_GOTO
+// #define DEBUG_GOTO
 
 TaskFindFinishLine::TaskFindFinishLine(boost::shared_ptr<TaskEnvironment> tenv) 
     : TaskDefinitionWithConfig<TaskFindFinishLineConfig,TaskFindFinishLine>("FindFinishLine","Rotate till desired angle and memory the pose as finish line",true,-1.)
@@ -28,7 +28,7 @@ TaskIndicator TaskFindFinishLine::iterate()
     float angle_error=0;
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
-        theta_i=atan2(pointCloud[i].y,pointCloud[i].x);
+        theta_i=-atan2(pointCloud[i].y,pointCloud[i].x);
 //        if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {
@@ -57,7 +57,11 @@ TaskIndicator TaskFindFinishLine::iterate()
             ROS_INFO("finishLine: x %.3f - y %.3f - theta %.3f",tpose.x,tpose.y,tpose.theta);
             return TaskStatus::TASK_COMPLETED;
         }
-        rot = ((angle_error>M_PI)?+1:-1) * cfg.ang_velocity;
+        if (fabs(angle_error)<cfg.angle_range) {
+            rot = - ((angle_error>0)?+1:-1) * cfg.ang_velocity;
+        } else {
+            rot = - ((cfg.angle>0)?+1:-1) * cfg.ang_velocity;
+        }
     }
 #ifdef DEBUG_GOTO
     ROS_INFO("Command vel %.2f angle_error %.2f rot %.2f\n",vel,angle_error,rot);

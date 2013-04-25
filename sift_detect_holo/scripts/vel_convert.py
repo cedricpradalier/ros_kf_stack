@@ -71,8 +71,10 @@ class VelConvert:
 	self.scale_lin = rospy.get_param("~scale_lin",0.5)
         self.sigmaRot = rospy.get_param("~sigmaRot",0.08)
 	self.scale_rotCam = rospy.get_param("~scaleRotCam",0.5)
+	self.scale_rotInit = rospy.get_param("~scaleRotInit",1)
         rospy.Subscriber("~servo", Twist, self.convert_vel)
         sub = rospy.Subscriber('~joy', Joy, self.joy_cb)
+
         
         self.rob_twist_pub = rospy.Publisher("~rob_twist_pub", Twist)
         self.pan_pub_fl = rospy.Publisher("~pan_pub_float",Float64)
@@ -105,6 +107,7 @@ class VelConvert:
         self.max_rotRob = config["maxRotRob"]
         self.max_rotCam = config["maxRotCam"]
 	self.scale_lin = config["scale_lin"]
+	self.scale_rotInit = config["scaleRotInit"]
         #print "Reconfigured"
         return config
         
@@ -115,15 +118,17 @@ class VelConvert:
 		
 		vx = servoTwist.linear.x
 		vy = servoTwist.linear.y
-		wz = servoTwist.angular.z
+		wz = servoTwist.angular.z*self.scale_rotInit
+		
 		
 		# computing the velocity of the camera and robot
 		
-		if hypot(vx,vy)<self.minVelForRot:
-			wr = 0
-		else:
-			wr = sat(atan2(vy,vx)*self.scale_rotRob, self.max_rotRob)
-			
+		#if hypot(vx,vy)<self.minVelForRot:
+		#	wr = 0
+		#else:
+		wr = sat(atan2(vy,vx)*self.scale_rotRob, self.max_rotRob)
+		
+		
 		#self.previous_vel_rob.pop()
 		#self.previous_vel_rob.insert(0,wr)
 		
@@ -134,7 +139,7 @@ class VelConvert:
 		t.linear.z = 0
 		t.angular.x = 0
 		t.angular.y = 0
-		t.angular.z = wr
+		t.angular.z = -wr
 		
 		#if (abs(t.linear.x)<self.minVel) and (abs(t.angular.z)<self.minVel) and (self.reached_goal == 0):
 		#    self.reached_goal = 1
@@ -152,6 +157,7 @@ class VelConvert:
 		
 		pan_vel_f.data = sat(self.scale_rotCam*(wz-wr), self.max_rotCam)
 		pan_vel_t.angular.z = sat(self.scale_rotCam*(wz-wr), self.max_rotCam)
+		print("wz = %f, wr = %f, wcam = %f" %(wz, wr, sat(self.scale_rotCam*(wz-wr), self.max_rotCam)))
 		
 		#print("wz, wr, wpan", wz, wr, pan_vel.data)
 

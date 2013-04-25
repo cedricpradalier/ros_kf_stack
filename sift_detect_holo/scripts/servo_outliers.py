@@ -173,27 +173,29 @@ class VisualServoOutliers:
 		            #print("vel init = (%f,%f,%f)" %(vel_init[0,0], vel_init[1,0], vel_init[2,0]))
 		            #print("vel to compare = (%f,%f,%f)" %(vel_to_compare[0,0], vel_to_compare[1,0], vel_to_compare[2,0]))
 		            #print("angle init = %f, angle to compare = %f" %(atan2(vel_init[1,0],vel_init[0,0]), atan2(vel_to_compare[1,0],vel_to_compare[0,0])) )
+		            #print("rot init = %f, rot to compare = %f" %(vel_init[2,0], vel_to_compare[2,0]))
 		            if(abs(atan2(vel_to_compare[1,0],vel_to_compare[0,0]) - atan2(vel_init[1,0],vel_init[0,0])) < 0.7 and vel_to_compare[2,0]*vel_init[2,0] > 0):
 		            
 		                #print("!!!ensemble coherent!!!")
 		                nInliers += Np
 		        
 		          
-		        if nInliers*1.0/len(kPoints.tkp) > 0.7:
-		            print("!!!model ok!!! pourcent of points = %f after %d times for %d points" %(nInliers*1.0/len(kPoints.tkp), nTimes+1, nKP))
+		        if nInliers*1.0/len(kPoints.tkp) > 0.5:
+		            #print("!!!!!model OK!!!!! pourcent of points = %f after %d times for %d points" %(nInliers*1.0/len(kPoints.tkp), nTimes+1, nKP))
 		            self.ok_model = 1
 		            self.vel = vel_init
-		            
+		        
+		        #else: 
+		        #    print("!!!model ko!!! pourcent of points = %f after %d times for %d points" %(nInliers*1.0/len(kPoints.tkp), nTimes+1, nKP))
 		        nTimes += 1
 		        
 		        
 		        ################END_REESTIM##########################
 		        
 		        
-		    if(self.ok_model == 0):
-		    	print("!!!! no model found !!!!")
+		    #if(self.ok_model == 0):
+		    #	print("!!!! no model found !!!!")
 		    vel = self.vel
-		    print("vel = ",vel)
 		    
 		    t = Twist()
 		    

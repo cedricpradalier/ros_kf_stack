@@ -70,9 +70,9 @@
 	<remap from="/velConvert/pan_pub_twist" to="/camera_mux/servoCommand"/>
 	<remap from="/velConvert/servo" to="/servo/twist"/>
 	<remap from="/velConvert/joy" to="/joy"/>
-	<param name="maxRotRob" value="0.5" type="double"/>
-	<param name="maxVel" value="0.3" type="double"/>
-	<param name="maxRotCam" value="0.5" type="double"/>
+	<param name="maxRotRob" value="1.5" type="double"/>
+	<param name="maxVel" value="0.5" type="double"/>
+	<param name="maxRotCam" value="1.5" type="double"/>
 	<param name="minVel" value="0.01" type="double"/>
 	<param name="minVelForRot" value="0.05" type="double"/>
 	<param name="sigmaVel" value="0.17" type="double"/>
@@ -80,6 +80,7 @@
 	<param name="scale_lin" value="1.5" type="double"/>
 	<param name="scaleRotCam" value="0.3" type="double"/>
 	<param name="scaleRotRob" value="0.15" type="double"/>
+	<param name="scaleRotInit" value="1" type="double"/>
 </node>
 
 
@@ -102,8 +103,8 @@
 </node>
   
 <node pkg="topic_tools" type="mux" name="cmd_mux" 
-	args="/vrep/twist /teleop/twistCommand /mux/servoCommand">
-	<!--args="/cmd_vel /teleop/twistCommand /mux/servoCommand">-->
+	args="/cmd_vel /teleop/twistCommand /mux/servoCommand">
+	<!--args="/vrep/twist /teleop/twistCommand /mux/servoCommand">-->
 	
 </node>
 

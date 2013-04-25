@@ -4,10 +4,10 @@
     <include file="$(find sim_tasks)/launch/button_server.launch"/>
     <include file="$(find vrep_ros_teleop)/launch/teleop_mux.launch"/>
     
-    <node name="task_server" pkg="sim_tasks" type="task_server"  >
+    <node name="task_server" pkg="sim_tasks" type="task_server" output="screen" >
         <param name="lib_path" value="$(find sim_tasks)/lib"/>
     </node>
-    <node name="test_shore" pkg="sim_tasks" type="test_shore.py"  >
+    <node name="test_shore" pkg="sim_tasks" type="test_shore.py"  output="screen"  >
         <param name="server" value="/task_server"/>
     </node>
 </launch>

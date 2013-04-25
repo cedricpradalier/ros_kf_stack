@@ -141,8 +141,8 @@ class SIFT:
 		tkp_final
 		skp_final
 
-		print 'number of KeyPoint objects in skp_final', len(skp_final)
-		print 'number of KeyPoint objects in tkp_final', len(tkp_final)
+		#print 'number of KeyPoint objects in skp_final', len(skp_final)
+		#print 'number of KeyPoint objects in tkp_final', len(tkp_final)
 
 		for i in range(min(len(tkp_final), len(skp_final))):
 			

@@ -5,7 +5,7 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
-#define DEBUG_GOTO
+// #define DEBUG_GOTO
 
 TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv) 
     : TaskDefinitionWithConfig<TaskFollowShoreConfig,TaskFollowShore>("FollowShore","Follow the shore of the lake",true,-1.)
@@ -30,7 +30,7 @@ TaskIndicator TaskFollowShore::iterate()
 
 
     if ((backToStartBox) && (fabs(scalarProduct) < 0.1)) {
-	    return TaskStatus::TASK_COMPLETED;
+        return TaskStatus::TASK_COMPLETED;
     } else if ((outOfStartBox) && (r < cfg.dist_goal)) {
         ROS_INFO("Back to starbucks");
         backToStartBox = true;
@@ -50,7 +50,7 @@ TaskIndicator TaskFollowShore::iterate()
     float theta_i=0;
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
-        theta_i=atan2(pointCloud[i].y,pointCloud[i].x);
+        theta_i=-atan2(pointCloud[i].y,pointCloud[i].x);
 //        if ((fabs(remainder(cfg.angle-theta_i,2*M_PI))<M_PI/2)&&(fabs(theta_i)<cfg.angle_range)) {
             distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
             if ((distance_i < mindistance)&&(distance_i > 0.01)) {
@@ -70,11 +70,11 @@ TaskIndicator TaskFollowShore::iterate()
     if (mindistance > cfg.dist_threshold) {
         //TODO test the oldness of the pointcloud
         ROS_INFO("No shore detected");
-        return TaskStatus::TASK_FAILED;
+        return TaskStatus::TASK_RUNNING;
     } else {
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         distance_error = cfg.distance-mindistance;
-        rot = - cfg.k_alpha*angle_error + ((cfg.angle<0)?+1:-1)*cfg.k_d*distance_error;
+        rot = - cfg.k_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.k_d * distance_error;
         // Saturation
         if (fabs(rot) > cfg.max_ang_vel) {
             rot = ((rot>0)?+1:-1) * cfg.max_ang_vel;
