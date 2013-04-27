@@ -13,12 +13,11 @@ rospy.loginfo("Mission connected to server: " + server_node)
 
 tc.WaitForAuto()
 try:
-    tc.FindFinishLine(angle=1.57, ang_velocity=1.5)
-    tc.FollowShore(angle=1.57, velocity=0.4, k_d=0.2, k_alpha=0.3, distance=8.0)
-    tc.ReachOtherShore(angle=1.57)
-    tc.FindFinishLine(angle=1.57, ang_velocity=1.5)
-    tc.FollowShore(angle=1.57, velocity=0.4, k_d=0.2, k_alpha=0.3, distance=8.0)
-    tc.ReachOtherShore(angle=1.57)
+    for contour in range(0,2):
+        tc.AlignWithShore(angle=1.57, ang_velocity=1.5)
+        tc.RecordFinishLine()
+        tc.FollowShore(angle=1.57, velocity=0.4, k_d=0.2, k_alpha=0.3, distance=8.0)
+        tc.ReachOtherShore(angle=1.57)
 
 except TaskException, e:
     rospy.logerr("Exception caught: " + str(e))

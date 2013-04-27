@@ -1,21 +1,20 @@
 #include <math.h>
-#include "TaskFindFinishLine.h"
-#include "sim_tasks/TaskFindFinishLineConfig.h"
+#include "TaskAlignWithShore.h"
+#include "sim_tasks/TaskAlignWithShoreConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskFindFinishLine::TaskFindFinishLine(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskFindFinishLineConfig,TaskFindFinishLine>("FindFinishLine","Rotate till desired angle and memory the pose as finish line",true,-1.)
+TaskAlignWithShore::TaskAlignWithShore(boost::shared_ptr<TaskEnvironment> tenv) 
+    : TaskDefinitionWithConfig<TaskAlignWithShoreConfig,TaskAlignWithShore>("AlignWithShore","Rotate on the spot until the closest point (the shore) is at the target bearing",true,-1.)
 {
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
 }
 
-TaskIndicator TaskFindFinishLine::iterate()
+TaskIndicator TaskAlignWithShore::iterate()
 {
-    const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
 
     double vel = 0;
@@ -53,8 +52,6 @@ TaskIndicator TaskFindFinishLine::iterate()
     } else {
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         if (fabs(angle_error)<cfg.angle_error) {
-            env->setFinishLine2D(tpose);
-            ROS_INFO("finishLine: x %.3f - y %.3f - theta %.3f",tpose.x,tpose.y,tpose.theta);
             return TaskStatus::TASK_COMPLETED;
         }
         if (fabs(angle_error)<cfg.angle_range) {
@@ -71,10 +68,10 @@ TaskIndicator TaskFindFinishLine::iterate()
     return TaskStatus::TASK_RUNNING;
 }
 
-TaskIndicator TaskFindFinishLine::terminate()
+TaskIndicator TaskAlignWithShore::terminate()
 {
     env->publishVelocity(0,0);
     return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskFindFinishLine);
+DYNAMIC_TASK(TaskAlignWithShore);
