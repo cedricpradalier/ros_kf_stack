@@ -1,0 +1,16 @@
+<package>
+  <description brief="joystick_keyboard_emulator">
+
+     keyboard_teleop
+
+  </description>
+  <author>JJM</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/keyboard_teleop</url>
+  <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
