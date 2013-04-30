@@ -13,7 +13,7 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist, TwistStamped, Quaternion
 from geometry_msgs.msg import PoseStamped, PointStamped
-from sensor_msgs.msg import CameraInfo
+from sensor_msgs.msg import CameraInfo, Imu
 from sift_detect.msg import sift_keypoints_array
 from sift_detect.msg import sift_keypoint
 
@@ -68,21 +68,23 @@ class VelConvert:
         self.minVelForRot = rospy.get_param("~minVelForRot",0.08)
         self.maxRotRob = rospy.get_param("~maxRotRob",0.5)
         self.maxRotCam = rospy.get_param("~maxRotCam",0.5)
-	self.scale_lin = rospy.get_param("~scale_lin",0.5)
+        self.scale_lin = rospy.get_param("~scale_lin",0.5)
         self.sigmaRot = rospy.get_param("~sigmaRot",0.08)
-	self.scale_rotCam = rospy.get_param("~scaleRotCam",0.5)
-	self.scale_rotInit = rospy.get_param("~scaleRotInit",1)
+        self.scale_rotCam = rospy.get_param("~scaleRotCam",0.5)
+        self.scale_rotInit = rospy.get_param("~scaleRotInit",1)
+	
         rospy.Subscriber("~servo", Twist, self.convert_vel)
         sub = rospy.Subscriber('~joy', Joy, self.joy_cb)
+	sub = rospy.Subscriber('/imu/data', Imu, self.imu_cb)
 
         
         self.rob_twist_pub = rospy.Publisher("~rob_twist_pub", Twist)
         self.pan_pub_fl = rospy.Publisher("~pan_pub_float",Float64)
         self.pan_pub_tw = rospy.Publisher("~pan_pub_twist",Twist)
-        self.marker_pub = rospy.Publisher("~/vel_marker",Marker)
+        
         
         self.ang_rob = 0
-        self.previous_vel_rob = [0,0,0,0,0,0,0,0,0,0]
+	self.omega_z = 0
         self.reached_goal = 0
         
         self.reconfig_srv = Server(VelConvertConfig, self.reconfig_cb)
@@ -96,6 +98,10 @@ class VelConvert:
                 print "servoing reset"
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
+
+    def imu_cb(self,value):
+        self.omega_z = value.angular_velocity.z
+	
                            
     def reconfig_cb(self,config, level):
         self.scale_rotRob = config["scaleRotRob"]
@@ -116,19 +122,33 @@ class VelConvert:
 		pan_vel_f = Float64()
 		pan_vel_t = Twist()
 		
+		#--------------------DEBUG------------------------
 		vx = servoTwist.linear.x
 		vy = servoTwist.linear.y
-		wz = servoTwist.angular.z*self.scale_rotInit
+		wz = servoTwist.angular.z #positive for command to right
+		
+		print("vx = %f, vy = %f, wz = %f, length = %f," %(vx, vy, wz, hypot(vx,vy)))
 		
 		
 		# computing the velocity of the camera and robot
 		
-		#if hypot(vx,vy)<self.minVelForRot:
-		#	wr = 0
-		#else:
-		wr = sat(atan2(vy,vx)*self.scale_rotRob, self.max_rotRob)
+		if hypot(vx,vy)<self.minVelForRot:
+			wr = 0
+			#print("----------------------------------------vel too small")
+		else:
+			
+		    	wr = sat((atan2(vy,vx))*self.scale_rotRob, self.max_rotRob) #positive for command to right
+			
 		
+		#remapping de la vitesse de rotation (varie entre 0 et +/-0.25) dans l'intervalle +/-[0.5 1.5]
 		
+		if wr > 0.2 and wr < 0.5 :
+			wr = 0.5
+		elif wr < -0.2 and wr > -0.5 :
+			wr = -0.5
+		elif -0.2 < wr < 0.2 :
+			wr = 0
+			
 		#self.previous_vel_rob.pop()
 		#self.previous_vel_rob.insert(0,wr)
 		
@@ -139,7 +159,7 @@ class VelConvert:
 		t.linear.z = 0
 		t.angular.x = 0
 		t.angular.y = 0
-		t.angular.z = -wr
+		t.angular.z = wr
 		
 		#if (abs(t.linear.x)<self.minVel) and (abs(t.angular.z)<self.minVel) and (self.reached_goal == 0):
 		#    self.reached_goal = 1
@@ -155,9 +175,9 @@ class VelConvert:
 		
 		#print(wz)
 		
-		pan_vel_f.data = sat(self.scale_rotCam*(wz-wr), self.max_rotCam)
-		pan_vel_t.angular.z = sat(self.scale_rotCam*(wz-wr), self.max_rotCam)
-		print("wz = %f, wr = %f, wcam = %f" %(wz, wr, sat(self.scale_rotCam*(wz-wr), self.max_rotCam)))
+		pan_vel_f.data = sat(self.scale_rotCam*(wz-self.omega_z), self.max_rotCam)
+		pan_vel_t.angular.z = sat(self.scale_rotCam*(wz-self.omega_z), self.max_rotCam)
+		#print("wz = %f, wr = %f, wcam = %f" %(wz, wr, sat(self.scale_rotCam*(wz-wr), self.max_rotCam)))
 		
 		#print("wz, wr, wpan", wz, wr, pan_vel.data)
 

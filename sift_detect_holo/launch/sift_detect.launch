@@ -1,8 +1,12 @@
 <launch>
 
-<param name="/use_sim_time" value="true" type="bool"/>
+<param name="/use_sim_time" value="false" type="bool"/>
 
-<node pkg="rxtools" type="rxplot" name="rxplot" args="/mux/servoCommand/linear/x /mux/servoCommand/angular/z /camera_mux/servoCommand/angular/z" />
+<node pkg="rxtools" type="rxplot" name="rxplot1" args="/mux/servoCommand/linear/x /mux/servoCommand/angular/z /camera_mux/servoCommand/angular/z" />
+
+<node pkg="rxtools" type="rxplot" name="rxplot2" args="/servo/vel_points/data /servo/vel_pourcent/data" />
+
+<node pkg="rxtools" type="rxplot" name="rxplot3" args="/servo/vx/data /servo/vy/data /servo/wz/data" />
 
 
 <!-- joy node -->
@@ -63,6 +67,10 @@
 	<param name="robFrame" value="/kingfisher/base" type="string"/>
 </node>
 
+<node pkg="sim_motor" type="motornode" name="motornode">
+
+</node>
+
 
 <node pkg="sift_detect_holo" type="vel_convert.py" name="velConvert" output="screen">
 	<remap from="/velConvert/rob_twist_pub" to="/mux/servoCommand"/>
@@ -71,16 +79,16 @@
 	<remap from="/velConvert/servo" to="/servo/twist"/>
 	<remap from="/velConvert/joy" to="/joy"/>
 	<param name="maxRotRob" value="1.5" type="double"/>
-	<param name="maxVel" value="0.5" type="double"/>
-	<param name="maxRotCam" value="1.5" type="double"/>
-	<param name="minVel" value="0.01" type="double"/>
+	<param name="maxVel" value="0.3" type="double"/>
+	<param name="maxRotCam" value="0.1" type="double"/>
+	<param name="minVel" value="0.005" type="double"/>
 	<param name="minVelForRot" value="0.05" type="double"/>
 	<param name="sigmaVel" value="0.17" type="double"/>
 	<param name="sigmaRot" value="0.17" type="double"/>
 	<param name="scale_lin" value="1.5" type="double"/>
-	<param name="scaleRotCam" value="0.3" type="double"/>
-	<param name="scaleRotRob" value="0.15" type="double"/>
-	<param name="scaleRotInit" value="1" type="double"/>
+	<param name="scaleRotCam" value="1" type="double"/>
+	<param name="scaleRotRob" value="1" type="double"/>
+	<param name="scaleRotInit" value="13" type="double"/>
 </node>
 
 

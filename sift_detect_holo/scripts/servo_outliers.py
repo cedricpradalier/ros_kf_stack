@@ -37,6 +37,12 @@ from pylab import imread, imshow, gray, mean
 from pylab import *
 
 
+def norm_angle(x):
+    if x > pi:
+    	x -= 2*pi
+    if x < -pi:
+    	x += 2*pi
+    return x
 
 class VisualServoOutliers:
 	def __init__(self):
@@ -48,6 +54,11 @@ class VisualServoOutliers:
 		rospy.Subscriber("~kp", sift_keypoints_array, self.visual_servo)
 		
 		self.Time_pub = rospy.Publisher("~compTime", Time)
+		self.vel_pk = rospy.Publisher("~vel_points",Float64)
+		self.vel_pourcent = rospy.Publisher("~vel_pourcent",Float64)
+		self.vx_pub = rospy.Publisher("~vx",Float64)
+		self.vy_pub = rospy.Publisher("~vy",Float64)
+		self.wz_pub = rospy.Publisher("~wz",Float64)
 		self.computationalTime = 0
 		
 		self.listener = tf.TransformListener()
@@ -142,60 +153,68 @@ class VisualServoOutliers:
 		        
 		        #print("number of points for init = ", Np)
 		        
-		        kp_array_init = sift_keypoints_array()
-		        kp_array_init.header = kPoints.header
+		        kp_array = sift_keypoints_array()
+		        kp_array.header = kPoints.header
 
 		        for p in range(Np):
 		            ind = choice(data_ind)
-		            kp_array_init.skp.append(kPoints.skp[ind])
-		            kp_array_init.tkp.append(kPoints.tkp[ind]) 
+		            kp_array.skp.append(kPoints.skp[ind])
+		            kp_array.tkp.append(kPoints.tkp[ind]) 
 		            data_ind.remove(ind)
 		            #print("data_ind",data_ind)
 		            
 		        
 		        
-		        vel_init = self.cumputeCommand(kp_array_init)
+		        vel_init = self.cumputeCommand(kp_array)
 		        
 		        ################END_INIT##########################
 		        
 
 		        while len(data_ind) >= Np:
-		            kp_array = sift_keypoints_array()
-		            kp_array.header = kPoints.header
+		            kp_array_loc = sift_keypoints_array()
+		            kp_array_loc.header = kPoints.header
 		            for p in range(Np):
 		                ind = choice(data_ind)
-		                kp_array.skp.append(kPoints.skp[ind])
-		                kp_array.tkp.append(kPoints.tkp[ind]) 
+		                kp_array_loc.skp.append(kPoints.skp[ind])
+		                kp_array_loc.tkp.append(kPoints.tkp[ind]) 
 		                data_ind.remove(ind)
 		                #print("data_ind",data_ind)
-		            vel_to_compare = self.cumputeCommand(kp_array)
+		            vel_to_compare = self.cumputeCommand(kp_array_loc)
 		            
-		            #print("vel init = (%f,%f,%f)" %(vel_init[0,0], vel_init[1,0], vel_init[2,0]))
-		            #print("vel to compare = (%f,%f,%f)" %(vel_to_compare[0,0], vel_to_compare[1,0], vel_to_compare[2,0]))
-		            #print("angle init = %f, angle to compare = %f" %(atan2(vel_init[1,0],vel_init[0,0]), atan2(vel_to_compare[1,0],vel_to_compare[0,0])) )
-		            #print("rot init = %f, rot to compare = %f" %(vel_init[2,0], vel_to_compare[2,0]))
-		            if(abs(atan2(vel_to_compare[1,0],vel_to_compare[0,0]) - atan2(vel_init[1,0],vel_init[0,0])) < 0.7 and vel_to_compare[2,0]*vel_init[2,0] > 0):
+		            ransac = Float64()
+		            ransac.data = abs(norm_angle(atan2(vel_to_compare[1,0],vel_to_compare[0,0]) - atan2(vel_init[1,0],vel_init[0,0])))
+		            self.vel_pk.publish(ransac)
 		            
-		                #print("!!!ensemble coherent!!!")
+		            if(abs(norm_angle(atan2(vel_to_compare[1,0],vel_to_compare[0,0]) - atan2(vel_init[1,0],vel_init[0,0]))) < 1):
+		            	for p in range(Np):
+		            		kp_array.skp.append(kp_array_loc.skp[p])
+		            		kp_array.tkp.append(kp_array_loc.tkp[p]) 
 		                nInliers += Np
 		        
 		          
-		        if nInliers*1.0/len(kPoints.tkp) > 0.5:
-		            #print("!!!!!model OK!!!!! pourcent of points = %f after %d times for %d points" %(nInliers*1.0/len(kPoints.tkp), nTimes+1, nKP))
+		        if nInliers*1.0/len(kPoints.tkp) > 0.7:
+		            
 		            self.ok_model = 1
-		            self.vel = vel_init
+		            #print("--model ok--")
+		            self.vel = self.cumputeCommand(kp_array)
+		            
 		        
-		        #else: 
-		        #    print("!!!model ko!!! pourcent of points = %f after %d times for %d points" %(nInliers*1.0/len(kPoints.tkp), nTimes+1, nKP))
+		        
+		        pourcent = Float64()
+		        pourcent.data = nInliers*1.0/len(kPoints.tkp)
+		        self.vel_pourcent.publish(pourcent)
+		        
 		        nTimes += 1
 		        
 		        
 		        ################END_REESTIM##########################
 		        
 		        
-		    #if(self.ok_model == 0):
-		    #	print("!!!! no model found !!!!")
+		    if(self.ok_model == 0):
+		    	print("!!!! no model found !!!!")
 		    vel = self.vel
+		    
+		    
 		    
 		    t = Twist()
 		    
@@ -205,11 +224,15 @@ class VisualServoOutliers:
 		    
 		    v = PointStamped()
 		    v.header = kPoints.header
-		    v.point.x = vel[0,0]
-		    v.point.y = 0
-		    v.point.z = vel[1,0]
+		    v.point.x = vel[1,0]
+		    v.point.y = vel[0,0]
+		    v.point.z = 0
+		    #v.point.x = vel[0,0]
+		    #v.point.y = 0
+		    #v.point.z = vel[1,0]
 		    
 		    ((x,y,_),rot) = self.listener.lookupTransform(self.robotFrame,self.cameraFrame, rospy.Time(0))
+		    
 		    
 		    self.listener.waitForTransform(self.cameraFrame, self.robotFrame, kPoints.header.stamp, rospy.Duration(1.0))
 		    v = self.listener.transformPoint(self.robotFrame,v)
@@ -217,23 +240,35 @@ class VisualServoOutliers:
 		    v.point.x = v.point.x-x
 		    v.point.y = v.point.y-y
 		    
-		    #the rotation is also brought back to the z axis  (for the command to be correct for the robot, we add a - sign to the z axis)
+		    #the rotation is also brought back to the z axis 
 		    
 		    t.linear.x = v.point.x
 		    t.linear.y = v.point.y
 		    t.linear.z = 0
 		    t.angular.x = 0
 		    t.angular.y = 0
-		    t.angular.z = -vel[2,0]
+		    t.angular.z = vel[2,0]
+		    
+		    vx = Float64()
+		    vx.data = v.point.x
+		    vy = Float64()
+		    vy.data = v.point.y
+		    wz = Float64()
+		    wz.data = vel[2,0]
+		    
+		    
+		    self.vx_pub.publish(vx)
+		    self.vy_pub.publish(vy)
+		    self.wz_pub.publish(wz)
 		    
 		    self.twist_pub.publish(t)
 		    self.computationalTime = rospy.Time.now() - self.computationalTime
 		    self.Time_pub.publish(self.computationalTime)
 	        
 	def store_info(self,info):
-		self.f = 759.3 #info.K[0]
-		self.xc = 370.91 #info.K[2]
-		self.yc = 250.9 #info.K[5]
+		self.f = info.K[0]
+		self.xc = info.K[2]
+		self.yc = info.K[5]
 		
 		#print("Got camera info: f %.2f C %.2f %.2f" % (self.f,self.xc,self.yc))
 		
