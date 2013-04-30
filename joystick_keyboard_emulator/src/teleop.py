@@ -95,8 +95,9 @@ if __name__=="__main__":
                     if (key == '\x03') or (key=='\x1B'):
                         quit = True
                         break
-    except :
-        print e
+    except : 
+        import traceback
+        rospy.logerr(traceback.format_exc())
 
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
