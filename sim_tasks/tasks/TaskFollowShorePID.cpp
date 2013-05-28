@@ -1,21 +1,21 @@
 #include <math.h>
-#include "TaskFollowShore.h"
-#include "sim_tasks/TaskFollowShoreConfig.h"
+#include "TaskFollowShorePID.h"
+#include "sim_tasks/TaskFollowShorePIDConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskFollowShoreConfig,TaskFollowShore>("FollowShore","Follow the shore of the lake",true,-1.)
+TaskFollowShorePID::TaskFollowShorePID(boost::shared_ptr<TaskEnvironment> tenv) 
+    : TaskDefinitionWithConfig<TaskFollowShorePIDConfig,TaskFollowShorePID>("FollowShorePID","Follow the shore of the lake with PID controller",true,-1.)
 {
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
     outOfStartBox = false;
     backToStartBox = false;
 }
 
-TaskIndicator TaskFollowShore::iterate()
+TaskIndicator TaskFollowShorePID::iterate()
 {
 
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
@@ -72,10 +72,23 @@ TaskIndicator TaskFollowShore::iterate()
         ROS_INFO("No shore detected");
         return TaskStatus::TASK_RUNNING;
     } else {
+	// Error Calculations - 6 calculations, position error, deriv of position error and int of position error
+	// then the same for the angular error, deriv of angle error and int of angle error.
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         distance_error = cfg.distance-mindistance;
-        rot = - cfg.k_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.k_d * distance_error;
-        // Saturation
+
+        d_angle_error = (remainder(cfg.angle-theta_closest,2*M_PI)-angle_error_prev)/(1/20);
+        d_distance_error = (cfg.distance-mindistance-distance_error_prev)/(1/20);
+
+        i_angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
+        i_distance_error = cfg.distance-mindistance;
+
+	// Rotation calculation
+        rot = - cfg.p_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.p_d * distance_error;
+	// Record errors as previous values for d calculation
+	angle_error_prev = angle_error;
+	distance_error_prev = distance_error;
+	// Saturation
         if (fabs(rot) > cfg.max_ang_vel) {
             rot = ((rot>0)?+1:-1) * cfg.max_ang_vel;
         }
@@ -88,10 +101,10 @@ TaskIndicator TaskFollowShore::iterate()
 	return TaskStatus::TASK_RUNNING;
 }
 
-TaskIndicator TaskFollowShore::terminate()
+TaskIndicator TaskFollowShorePID::terminate()
 {
     env->publishVelocity(0,0);
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskFollowShore);
+DYNAMIC_TASK(TaskFollowShorePID);
