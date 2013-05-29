@@ -48,6 +48,14 @@ TaskIndicator TaskFollowShorePID::iterate()
     float theta_closest=0;
     float distance_i=0;
     float theta_i=0;
+    float angle_error_prev;
+    float d_angle_error;
+    float distance_error_prev;
+    float d_distance_error;
+    float i_angle_error;
+    float i_distance_error;
+    float i_max = 10.0;
+    float d_max = 5.0;
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
         theta_i=-atan2(pointCloud[i].y,pointCloud[i].x);
@@ -67,6 +75,7 @@ TaskIndicator TaskFollowShorePID::iterate()
     float angle_error=0;
     float distance_error=0;
 
+
     if (mindistance > cfg.dist_threshold) {
         //TODO test the oldness of the pointcloud
         ROS_INFO("No shore detected");
@@ -77,14 +86,27 @@ TaskIndicator TaskFollowShorePID::iterate()
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
         distance_error = cfg.distance-mindistance;
 
-        d_angle_error = (remainder(cfg.angle-theta_closest,2*M_PI)-angle_error_prev)/(1/20);
-        d_distance_error = (cfg.distance-mindistance-distance_error_prev)/(1/20);
+        d_angle_error = (angle_error-angle_error_prev)/cfg.task_period;
+        d_distance_error = (distance_error-distance_error_prev)/cfg.task_period;
+	// saturate D's
+	if (fabs(d_angle_error) > d_max) {
+            d_angle_error = ((d_angle_error>0)?+1:-1) * d_max;
+        }
+	if (fabs(d_distance_error) > d_max) {
+            d_distance_error = ((d_distance_error>0)?+1:-1) * d_max;
+        }
 
-        i_angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
-        i_distance_error = cfg.distance-mindistance;
-
+        i_angle_error += cfg.task_period * angle_error;
+        i_distance_error += cfg.task_period * distance_error;
+	// saturate I's
+	if (fabs(i_angle_error) > i_max) {
+            i_angle_error = ((i_angle_error>0)?+1:-1) * i_max;
+        }
+	if (fabs(i_distance_error) > i_max) {
+            i_distance_error = ((i_distance_error>0)?+1:-1) * i_max;
+        }
 	// Rotation calculation
-        rot = - cfg.p_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.p_d * distance_error;
+        rot = - cfg.p_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.p_d * distance_error - cfg.d_alpha * d_angle_error - cfg.d_d * d_distance_error - cfg.i_alpha * i_angle_error - cfg.i_d * i_distance_error;
 	// Record errors as previous values for d calculation
 	angle_error_prev = angle_error;
 	distance_error_prev = distance_error;
