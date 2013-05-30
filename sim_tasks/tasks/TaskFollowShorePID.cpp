@@ -15,9 +15,25 @@ TaskFollowShorePID::TaskFollowShorePID(boost::shared_ptr<TaskEnvironment> tenv)
     backToStartBox = false;
 }
 
+TaskIndicator TaskFollowShorePID::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+{
+    TaskIndicator ti = Parent::initialise(parameters);
+    if (ti != TaskStatus::TASK_INITIALISED) {
+        return ti;
+    }
+    angle_error_prev=0.0;
+    distance_error_prev=0.0;
+    i_angle_error=0.0;
+    i_distance_error=0.0;
+    status_dist_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("dist_status",1);
+    status_angle_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("angle_status",1);
+    return TaskStatus::TASK_INITIALISED;
+}
+
 TaskIndicator TaskFollowShorePID::iterate()
 {
-
+    geometry_msgs::Vector3 dist;
+    geometry_msgs::Vector3 angle;
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
 
@@ -48,12 +64,6 @@ TaskIndicator TaskFollowShorePID::iterate()
     float theta_closest=0;
     float distance_i=0;
     float theta_i=0;
-    float angle_error_prev;
-    float d_angle_error;
-    float distance_error_prev;
-    float d_distance_error;
-    float i_angle_error;
-    float i_distance_error;
     float i_max = 10.0;
     float d_max = 5.0;
 
@@ -67,6 +77,7 @@ TaskIndicator TaskFollowShorePID::iterate()
             }
 //        }
     }
+
 
 #ifdef DEBUG_GOTO
     ROS_INFO("pointCloudSize %d - mindistance %.3f - theta_closest %.3f",(int)pointCloud.size(),mindistance, theta_closest);
@@ -105,6 +116,13 @@ TaskIndicator TaskFollowShorePID::iterate()
 	if (fabs(i_distance_error) > i_max) {
             i_distance_error = ((i_distance_error>0)?+1:-1) * i_max;
         }
+	// Publish PID errors
+	dist.x=distance_error;
+	dist.y=d_distance_error;
+	dist.z=i_distance_error;
+	angle.x=angle_error;
+	angle.y=d_angle_error;
+	angle.z=i_angle_error;
 	// Rotation calculation
         rot = - cfg.p_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.p_d * distance_error - cfg.d_alpha * d_angle_error - cfg.d_d * d_distance_error - cfg.i_alpha * i_angle_error - cfg.i_d * i_distance_error;
 	// Record errors as previous values for d calculation
@@ -119,6 +137,8 @@ TaskIndicator TaskFollowShorePID::iterate()
     ROS_INFO("Command vel %.2f angle_error %.2f distance_error %.2f rot %.2f\n",vel,angle_error,distance_error,rot);
 #endif
 
+    status_dist_pub.publish(dist);
+    status_angle_pub.publish(angle);
     env->publishVelocity(vel, rot);
 	return TaskStatus::TASK_RUNNING;
 }
