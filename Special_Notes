@@ -1,0 +1,26 @@
+To run V-rep
+1) roscore
+navigate to V-REP folder
+2) ./vrep
+
+Scenes of use
+exampleLake.ttt - simple robbie in lake
+exampleLakeARStationary - non-moving AR tags with Rover
+
+To Run V's Work
+1) Run VREP
+2) use scene lakeExample.ttt
+3) run teleop_mux
+	~/ros_workspace/ros_kf_stack/teleop_mux/launch$ roslaunch teleop_mux_vrep.launch 
+4) run joystick node
+	rosrun joy joy_node
+5) run launch file
+	~/ros_workspace/ros_kf_stack/sim_tasks/launch$ roslaunch launch_v.launch 
+6) run param reconfig tool
+	rosrun dynamic_reconfigure reconfigure_gui
+7) ?????
+8) Profit
+
+gains
+
+k  a   d
