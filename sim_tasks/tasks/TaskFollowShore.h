@@ -15,9 +15,12 @@ namespace sim_tasks {
             boost::shared_ptr<SimTasksEnv> env;
             bool outOfStartBox;
             bool backToStartBox;
+            ros::Publisher status_pub;
         public:
             TaskFollowShore(boost::shared_ptr<TaskEnvironment> env); 
             virtual ~TaskFollowShore() {};
+
+            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
 
             virtual TaskIndicator iterate();
 

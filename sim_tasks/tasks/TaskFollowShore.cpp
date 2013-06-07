@@ -15,9 +15,20 @@ TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv)
     backToStartBox = false;
 }
 
+TaskIndicator TaskFollowShore::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+{
+    TaskIndicator ti = Parent::initialise(parameters);
+    if (ti != TaskStatus::TASK_INITIALISED) {
+        return ti;
+    }
+    status_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("shore_status",1);
+    return TaskStatus::TASK_INITIALISED;
+}
+
 TaskIndicator TaskFollowShore::iterate()
 {
 
+    geometry_msgs::Vector3 status;
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
 
@@ -60,6 +71,9 @@ TaskIndicator TaskFollowShore::iterate()
 //        }
     }
 
+    status.x = mindistance;
+    status.y = theta_closest;
+
 #ifdef DEBUG_GOTO
     ROS_INFO("pointCloudSize %d - mindistance %.3f - theta_closest %.3f",(int)pointCloud.size(),mindistance, theta_closest);
 #endif
@@ -73,6 +87,7 @@ TaskIndicator TaskFollowShore::iterate()
         return TaskStatus::TASK_RUNNING;
     } else {
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
+        status.z = angle_error;
         distance_error = cfg.distance-mindistance;
         rot = - cfg.k_alpha * angle_error - ((cfg.angle>0)?+1:-1) * cfg.k_d * distance_error;
         // Saturation
@@ -84,6 +99,7 @@ TaskIndicator TaskFollowShore::iterate()
     ROS_INFO("Command vel %.2f angle_error %.2f distance_error %.2f rot %.2f\n",vel,angle_error,distance_error,rot);
 #endif
 
+    status_pub.publish(status);
     env->publishVelocity(vel, rot);
 	return TaskStatus::TASK_RUNNING;
 }

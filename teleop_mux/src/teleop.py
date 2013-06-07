@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('vrep_ros_teleop')
+import roslib; roslib.load_manifest('teleop_mux')
 import rospy
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
