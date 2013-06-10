@@ -9,17 +9,14 @@ rospy.init_node('task_client')
 server_node = rospy.get_param("~server","/sim_tasks")
 default_period = rospy.get_param("~period",0.05)
 tc = TaskClient(server_node,default_period)
+rospy.loginfo("Mission connected to server: " + server_node)
 
 tc.WaitForAuto()
 try:
     tc.GoTo(goal_x=-3.0,goal_y=-3.0)
-
     tc.Wait(duration=1.0)
-
     tc.GoTo(goal_x=-6.0,goal_y=0.0)
-
     tc.Wait(duration=1.0)
-
     tc.GoTo(goal_x=-3.0,goal_y=3.0)
 
 except TaskException, e:
@@ -30,5 +27,5 @@ if not rospy.core.is_shutdown():
 
 
 rospy.loginfo("Mission completed")
-
-
+while not rospy.core.is_shutdown():
+	rospy.sleep(1)
