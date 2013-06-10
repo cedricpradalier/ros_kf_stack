@@ -8,7 +8,7 @@ using namespace sim_tasks;
 // #define DEBUG_GOTO
 
 TaskSetPTZ::TaskSetPTZ(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskSetPTZConfig,TaskSetPTZ>("GoTo","Reach a desired destination",true,-1.)
+    : TaskDefinitionWithConfig<TaskSetPTZConfig,TaskSetPTZ>("SetPTZ","Set the camera configuration",true,-1.)
 {
     env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
 }
