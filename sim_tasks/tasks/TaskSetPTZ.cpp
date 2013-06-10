@@ -5,7 +5,7 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
-// #define DEBUG_GOTO
+// #define DEBUG_SETPTZ
 
 TaskSetPTZ::TaskSetPTZ(boost::shared_ptr<TaskEnvironment> tenv) 
     : TaskDefinitionWithConfig<TaskSetPTZConfig,TaskSetPTZ>("SetPTZ","Set the camera configuration",true,-1.)
