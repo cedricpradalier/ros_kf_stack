@@ -6,7 +6,7 @@ from math import *
 from task_manager_lib.TaskClient import *
 
 rospy.init_node('task_client')
-server_node = rospy.get_param("~server","/sim_tasks")
+server_node = rospy.get_param("~server","/task_server")
 default_period = rospy.get_param("~period",0.05)
 tc = TaskClient(server_node,default_period)
 rospy.loginfo("Mission connected to server: " + server_node)
@@ -17,11 +17,11 @@ try:
 	tc.RecordFinishLine()
 	while True:
 		try:		
-			tc.FollowShorePID(angle=1.57, velocity=0.2, p_d=0.25, p_alpha=0.3, distance=8.0,task_timeout=-1.0)
+			tc.FollowShorePID(angle=1.57, velocity=0.3, p_d=0.1, p_alpha=0.2,  d_alpha=-0.15, d_d=-0.15, i_d=0.05, i_alpha=0.05, distance=4.0, task_timeout=-1.0)
 		except TaskException, e:
 			pass
 		try:
-			tc.FollowShorePID(angle=-1.57, velocity=0.2, p_d=0.25, p_alpha=0.3, distance=8.0,task_timeout=-1.0)
+			tc.FollowShorePID(angle=-1.57, velocity=0.3, p_d=0.1, p_alpha=0.2,  d_alpha=-0.15, d_d=-0.15, i_d=0.05, i_alpha=0.05, distance=4.0, task_timeout=-1.0)
 		except TaskException, e:
 			pass
 

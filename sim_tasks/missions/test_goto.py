@@ -15,9 +15,11 @@ tc.WaitForAuto()
 try:
     tc.GoTo(goal_x=-3.0,goal_y=-3.0)
     tc.Wait(duration=1.0)
-    tc.GoTo(goal_x=-6.0,goal_y=0.0)
+    tc.GoTo(goal_x=-10.0,goal_y=3.0)
     tc.Wait(duration=1.0)
-    tc.GoTo(goal_x=-3.0,goal_y=3.0)
+    tc.GoTo(goal_x=6.0,goal_y=12.0)
+    tc.Wait(duration=1.0)
+    tc.GoTo(goal_x=15.0,goal_y=3.0)
 
 except TaskException, e:
     rospy.logerr("Exception caught: " + str(e))
