@@ -2,6 +2,7 @@
 
 <launch>
     <include file="$(find sim_tasks)/launch/button_server.launch"/>
+    <include file="$(find teleop_mux)/launch/teleop_mux.launch"/>
     <node name="task_server" pkg="sim_tasks" type="task_server" output="screen" >
         <param name="lib_path" value="$(find sim_tasks)/lib"/>
     </node>
