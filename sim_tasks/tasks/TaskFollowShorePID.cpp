@@ -128,7 +128,8 @@ TaskIndicator TaskFollowShorePID::iterate()
 	// Record errors as previous values for d calculation
 	angle_error_prev = angle_error;
 	distance_error_prev = distance_error;
-	// Saturation
+	// Saturation and Curvature Limitation
+	vel = exp(-cfg.K_E*((std::max)(0.0,rot*rot-cfg.rot_tol))) * cfg.max_lin_vel;
         if (fabs(rot) > cfg.max_ang_vel) {
             rot = ((rot>0)?+1:-1) * cfg.max_ang_vel;
         }
