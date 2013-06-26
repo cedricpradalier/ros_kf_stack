@@ -1,0 +1,17 @@
+<package>
+  <description brief="kf_button_server">
+
+     kf_button_server
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/kf_button_server</url>
+  <depend package="rospy"/>
+  <depend package="button_server"/>
+  <depend package="kingfisher_msgs"/>
+
+</package>
+
+

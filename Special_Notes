@@ -1,3 +1,19 @@
+Cedric - +33 6 52 83 78 93
+ToDo List
+1) Fix patrol mission (timeouts) - Success (Patrol now changes direction in place using align with shore task)
+2) Obtain point cloud values (average, curvature, cloud identification, eigenvalues)
+3) Detect AR tags (don't use alvar) (get transform)
+4) Figure out why the GoTo distances are so large.(might be utm?) - Fixed, it was looking at UTM
+5) Look into basic path planning for 2 wheel robot
+6) Get PID class working - 
+7) Add velocity control from curvature - Implemented but untested
+     Cedric Suggestions:
+	Simple gain - V = exp(-K*omega^2) * Vmax would do it
+	With tolerance - V = exp(-K*(max(0,omega^2-omage_tol))) * Vmax - current implementation
+8) it would be good to do a git pull on the virtual machine next time you use it
+	ros_kf_stack and imu_um6
+9) Make the camera look at whatever is the active object (shore point, AR Tag, GoTo Target etc.)
+
 To run V-rep
 1) roscore
 navigate to V-REP folder
@@ -7,10 +23,17 @@ Scenes of use
 exampleLake.ttt - simple robbie in lake
 exampleLakeARStationary - non-moving AR tags with Rover
 
+Running Missions without defined launch files
+1) Run VREP
+2) Load scene
+3) roslaunch teleop_mux_vrep.launch
+4) run launch_all_VREP.launch
+5) run missions as executables ./*.py
+
 To Run V's Work
 1) Run VREP
 2) use scene lakeExample.ttt
-3) run teleop_mux
+3) run teleop_mux_vrep
 	~/ros_workspace/ros_kf_stack/teleop_mux/launch$ roslaunch teleop_mux_vrep.launch 
 4) run joystick node
 	rosrun joy joy_node
@@ -18,9 +41,25 @@ To Run V's Work
 	~/ros_workspace/ros_kf_stack/sim_tasks/launch$ roslaunch launch_v.launch 
 6) run param reconfig tool
 	rosrun dynamic_reconfigure reconfigure_gui
-7) ?????
-8) Profit
 
-gains
-
-k  a   d
+Running AR Tag Work
+ the one in the ar_pose package http://www.ros.org/wiki/ar_pose
+seems to work on 32 bit systems
+the scene you should use as a starting point is lakeExampleVS
+this one has a single billboard with a heron on it
+if you click on the billboard and open the properties (double-click on the object in the object-tree)
+then you can use the button to quicky select a texture
+the texture can be one of the ar_pose tag, but it has to be saved as a raw TGA file (gimp can do that) - CURRENTLY DOESN"T ACCEPT TGA FILES I HAVE MADE
+gimp will ask you to chose between a compressed (RLE) or uncompressed version. Chose the later
+then you can attach the texture to the billboard, eventually adapting the billboard rotation
+to run it on the boat would require installing the package on the boat
+not particularly difficult, but I'll explain that when you reach the point where it works on V-Rep
+now, for the programming you have two choices: either you create a task which does all the work from receiving the position of the tags (through TF) to the control
+or you create a small program that can do that and is triggered from a task
+the first might be easier
+does that answer all your questions?
+good
+for info, if the alvar tags are easier to start with, then the final interface is similar
+they both output TF transforms that must be recovered
+you can see how the transform and the relative positions are extracted (in python but not only) in the ar_slam/mapping/localisation package from the class
+there is some C++ equivalent code around, but I'm not sure which package is the easiest to use
