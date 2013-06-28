@@ -63,3 +63,110 @@ for info, if the alvar tags are easier to start with, then the final interface i
 they both output TF transforms that must be recovered
 you can see how the transform and the relative positions are extracted (in python but not only) in the ar_slam/mapping/localisation package from the class
 there is some C++ equivalent code around, but I'm not sure which package is the easiest to use
+
+ Good afternoon Cedric, I fixed the TGA problem and hit a new one, but I am sure this one is quick
+once again at your convenience which launch file do I use to find the TF from the robbiesphere bot to the tag?
+ Sent at 3:00 PM on Friday
+ me:  When I run most ar_test.launch files I get TF Exception
+ Sent at 3:01 PM on Friday
+ Cedric:  hi
+ Sent at 6:36 PM on Friday
+ Cedric:  did you solve that?
+ me:  hello Cedric!
+I might have
+not positive
+I got it to continue running
+ Cedric:  the ar_test.launch is made for the lakeExampleAR scene
+that might be why you get the exception, but it depends what the exception is exactly
+ me:  it just says Exception. TF Exception ","
+or something very close to that
+ Sent at 6:39 PM on Friday
+ me:  I have been building the architecture for the new functionality as well
+a task for scanning the surroundings for AR tags by modifying the SetPTZ, then (haven't started this part yet) get TF from ar tag, then TaskGoTo the position obtained from the TF.
+ Sent at 6:41 PM on Friday
+ Cedric:  that sounds good
+I think the program than throw this exception is one of mine for the students
+so that would not have any influence on your tests
+I mean, one of the node is extracting the tag and publishing it, and this one should work
+the one that fails is probably the one trying to do localisation or mapping, but these makes super strong assumptions on the structure of the scene
+without expliciting them so much :)
+so once the extraction node is running, just use rviz to see what is detected
+does that make sense?
+ me:  yes it does
+where does the tf get published?
+as in what can I echo to see the TF?
+ Cedric:  the /tf topic is a single topic on which everybody is publishing
+I'd suggest reading the TF tutorial to get the detail
+3 useful tools:
+1) rviz, and ask it to visualize the TF tree
+ me:  ah, i thought it was just the robot world TF, yes I will have to look into that in depth
+ Cedric:  2) rosrun tf tf_monitor
+3) rosrun tf tf_echo
+the tf framework is complex at first but very powerful
+however, very hard to enter into this framework without reading the tutorial in detail
+reading should be sufficient,even if you don't run it
+I need to go, I can check my email later tonight
+ anyway, I would really appreciate if you could get some performance plots for the existing tasks
+you can easily make them from rosbags
+rostopic -p -b <bagfile> topic
+or more useful: rostopic -p -b <bagfile> topic > topic.txt
+which you can read with octave or matlab
+you can probably check in simulation the tools to prepare the plots, to make sure you record the right things while on the lake
+(about the manual boat, sorry to take politics before practicality)
+for this one, I would log GPS coordinate, UTM coordinates and error metrics
+ me:  I had it working last week. Are those all taken in the bag?
+ Cedric:  then plot convergence, add disturbances, maybe highlight wind effect
+they're only in the bags if you launch the log.launch file
+and this one does not have (for now) the error metrics
+you c(sh)ould add them
+anytime you run an experiment on the lake, you should make sure that you've planned what data you want to record, otherwise we're back to hacking
+rosbag record -a
+is not an option here
+in general it records everything, but here this would lead to all the topics from the image pipeline being computed, eating 400% cpu
+these things are only computed when someone subscribe to the topic, and rosbag record would be seen as a subscriber
+this is why I have my special launch file
+which is just rosbag record with a list of hand-picked topics
+ Sent at 4:00 PM on Monday
+ me:  I just launch it in the background from the laptop?
+(i mean on the laptop)
+ Cedric:  not in background, and not from the laptop... if you run it on the laptop; all the topics have to be sent through wifi, eats a lot of bandwidth and reduces joystick reactivity
+so ssh to the boat; run screen and run the rosbag record in one of the terminal of the screen
+there is 10 GB available on-board
+2 hours of tests with images is 3-4 GB I think
+ me:  the boat has only 10 GB of hard drive space?
+ Cedric:  then when you're back in the office you need to scp them (use cable, not wifi) to the laptop
+
+
+me:  I publish the error from the task file using this line of code
+"    status_dist_pub.publish(dist);"
+so how would I put that into the log.launch file?
+/env/dist
+?
+ Cedric:  this is published to a topic (the one that you echo or see with rxplot)
+I think it is /task_server/dist_error ...
+or similar
+ me:  oh that is right, I remember
+ Cedric:  just add this name at the end of the long list in the launch file
+ me:  yes indeed
+ Cedric:  one thing to be careful: don't use the same topic for the goto and followshore task
+otherwise it will be hard to know which one is active
+ me:  I will give it a try. I think I can set all the velocities to zero in the launch file and turn the boat on in the room to test some things on the actual boat before I go out (I had already done them in simulation but some things are diffefrent)
+ Cedric:  I might have forgotten also the task status topic (don't have the name on top of my head now, but this should be logged as well)
+this would help to know which task is currently active
+ me:  Oh and I changed the batteries in the R/C and it started working again, so the range drops off sharply at an unknown battery level
+ Cedric:  I thought so
+ me:  it also gives no indication that the batteries are dying
+I checked the manual, not until they are critical
+ Cedric:  the voltage is written on the display
+so we should find out what we consider safe, and add this check in our test protocol
+ me:  it was still within operating voltages, but as I said it drops off sharply (it was near 10v when it started acting up)
+ Cedric:  ouch, I never saw it so lo
+ me:  The test protocols are getting lengthy but I am almost done
+ Cedric:  I think we should put the limit at 11, min 10.5 V
+ Sent at 1:37 PM on Friday
+ Cedric:  also, if you want to be safe, there is a mechanism to pause the execution, meaning that the velocity sent by the task environment is always zero
+for now it is only activated from the web interface (button server)
+but we could map it to one of the joystick button
+ Sent at 1:39 PM on Friday
+ Cedric:  if you press pause before switching to auto, then whatever the mission does, the velocity sent will always be zero
+until you press pause again, that is
