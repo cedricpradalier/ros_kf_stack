@@ -16,7 +16,7 @@ try:
 	tc.RecordFinishLine()
 	while True:
 		try:	
-			tc.AlignWithShore(angle=1.57, ang_velocity=0.5)
+			tc.AlignWithShore(angle=1.57, ang_velocity=0.50)
 			tc.FollowShorePID(angle=1.57, velocity=0.3, p_d=0.15, p_alpha=0.3,  d_alpha=-0.1, d_d=-0.1, i_d=0.01, i_alpha=0.01, distance=4.0, task_timeout=600.0)
 		except TaskException, e:
 			pass
