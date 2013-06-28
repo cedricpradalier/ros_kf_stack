@@ -13,15 +13,16 @@ rospy.loginfo("Mission connected to server: " + server_node)
 
 tc.WaitForAuto()
 try:
-	tc.AlignWithShore(angle=1.57, ang_velocity=1.5)
 	tc.RecordFinishLine()
 	while True:
-		try:		
-			tc.FollowShorePID(angle=1.57, velocity=0.2, p_d=0.25, p_alpha=0.3, distance=8.0,task_timeout=-1.0)
+		try:	
+			tc.AlignWithShore(angle=1.57, ang_velocity=0.50)
+			tc.FollowShorePID(angle=1.57, velocity=0.3, p_d=0.15, p_alpha=0.3,  d_alpha=-0.1, d_d=-0.1, i_d=0.01, i_alpha=0.01, distance=4.0, task_timeout=600.0)
 		except TaskException, e:
 			pass
 		try:
-			tc.FollowShorePID(angle=-1.57, velocity=0.2, p_d=0.25, p_alpha=0.3, distance=8.0,task_timeout=-1.0)
+			tc.AlignWithShore(angle=-1.57, ang_velocity=0.5)
+			tc.FollowShorePID(angle=-1.57, velocity=0.3, p_d=0.15, p_alpha=0.3,  d_alpha=-0.1, d_d=-0.1, i_d=0.01, i_alpha=0.01, distance=4.0, task_timeout=600.0)
 		except TaskException, e:
 			pass
 

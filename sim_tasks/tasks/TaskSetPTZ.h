@@ -1,5 +1,5 @@
-#ifndef TASK_GOTO_H
-#define TASK_GOTO_H
+#ifndef TASK_SETPTZ_H
+#define TASK_SETPTZ_H
 
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
@@ -34,4 +34,4 @@ namespace sim_tasks {
     };
 };
 
-#endif // TASK_GOTO_H
+#endif // TASK_SETPTZ_H

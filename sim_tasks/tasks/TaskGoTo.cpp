@@ -6,6 +6,10 @@ using namespace task_manager_lib;
 using namespace sim_tasks;
 
 // #define DEBUG_GOTO
+#ifdef DEBUG_GOTO
+#warning Debugging task GOTO
+#endif
+
 
 TaskGoTo::TaskGoTo(boost::shared_ptr<TaskEnvironment> tenv) 
     : TaskDefinitionWithConfig<TaskGoToConfig,TaskGoTo>("GoTo","Reach a desired destination",true,-1.)
