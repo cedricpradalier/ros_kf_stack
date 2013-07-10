@@ -55,7 +55,8 @@ class KFButtonServer(ButtonServer):
         if (self.gpsHistory.length()>0) and (tmsg - self.gpsHistory.front()[0]>120.):
             # Erase the history if we did not receive any point for 2 min
             self.gpsHistory.clear()
-        self.gpsHistory.push([tmsg,msg.longitude,msg.latitude])
+        if msg.status.status >= msg.status.STATUS_FIX:
+            self.gpsHistory.push([tmsg,msg.longitude,msg.latitude])
     
     def sense_cb(self,data):
         self.voltage = data.battery
