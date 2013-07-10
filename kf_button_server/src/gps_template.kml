@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+    <Document>
+        <name>limnobotics.kml</name>
+        <open>1</open>
+        <Style id="dream_style">
+            <IconStyle>
+                <scale>1.2</scale>
+            </IconStyle>
+            <LineStyle>
+                <color>ff7f0000</color>
+                <width>4</width>
+            </LineStyle>
+        </Style>
+        <Style id="sn_sailing">
+            <IconStyle>
+                <scale>1.2</scale>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/sailing.png</href>
+                </Icon>
+                <hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+            </IconStyle>
+            <ListStyle>
+            </ListStyle>
+        </Style>
+        <Style id="sh_sailing">
+            <IconStyle>
+                <scale>1.4</scale>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/sailing.png</href>
+                </Icon>
+                <hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+            </IconStyle>
+            <ListStyle>
+            </ListStyle>
+        </Style>
+        <Style id="sn_marina">
+            <IconStyle>
+                <scale>1.2</scale>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/marina.png</href>
+                </Icon>
+                <hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+            </IconStyle>
+            <ListStyle>
+            </ListStyle>
+        </Style>
+        <Style id="sh_marina">
+            <IconStyle>
+                <scale>1.4</scale>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/marina.png</href>
+                </Icon>
+                <hotSpot x="0.5" y="0" xunits="fraction" yunits="fraction"/>
+            </IconStyle>
+            <ListStyle>
+            </ListStyle>
+        </Style>
+        <Style id="sn_path1">
+            <LineStyle>
+                <color>ff00ffff</color>
+                <width>3</width>
+            </LineStyle>
+        </Style>
+        <Style id="sh_path2">
+            <IconStyle>
+                <scale>1.2</scale>
+            </IconStyle>
+            <LineStyle>
+                <color>ff00ffff</color>
+                <width>5</width>
+            </LineStyle>
+        </Style>
+        <StyleMap id="msn_path">
+            <Pair>
+                <key>normal</key>
+                <styleUrl>#sn_path1</styleUrl>
+            </Pair>
+            <Pair>
+                <key>highlight</key>
+                <styleUrl>#sh_path2</styleUrl>
+            </Pair>
+        </StyleMap>
+        <StyleMap id="msn_marina">
+            <Pair>
+                <key>normal</key>
+                <styleUrl>#sn_marina</styleUrl>
+            </Pair>
+            <Pair>
+                <key>highlight</key>
+                <styleUrl>#sh_marina</styleUrl>
+            </Pair>
+        </StyleMap>
+        <StyleMap id="msn_sailing">
+            <Pair>
+                <key>normal</key>
+                <styleUrl>#sn_sailing</styleUrl>
+            </Pair>
+            <Pair>
+                <key>highlight</key>
+                <styleUrl>#sh_sailing</styleUrl>
+            </Pair>
+        </StyleMap>
+        <Folder>
+            <name>Kingfisher</name>
+            <open>1</open>
+            <Placemark>
+                <name>Log Start</name>
+                <styleUrl>#msn_marina</styleUrl>
+                <Point>
+                    <coordinates>%s</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <name>Current Position</name>
+                <styleUrl>#msn_sailing</styleUrl>
+                <Point>
+                    <coordinates>%s</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <name>%s</name>
+                <styleUrl>#msn_path</styleUrl>
+                <LineString>
+                    <tessellate>1</tessellate>
+                    <coordinates>
+                        %s
+                    </coordinates>
+                </LineString>
+            </Placemark>
+        </Folder>
+    </Document>
+</kml>

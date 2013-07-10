@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <launch>
-   <node name="button_server" pkg="kf_button_server" type="button_server.py">
+   <node name="button_server" pkg="kf_button_server" type="button_server.py" output="screen">
     <param name="button0" value="Go"/>
     <param name="button0_color" value="lightgreen"/>
     <param name="button1" value="Abort"/>
