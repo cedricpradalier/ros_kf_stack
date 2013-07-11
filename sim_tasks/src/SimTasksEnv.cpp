@@ -153,6 +153,7 @@ void SimTasksEnv::muxCallback(const std_msgs::String::ConstPtr& msg) {
 }
 
 void SimTasksEnv::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg) {
+    pointCloud_header = msg->header;
     pcl::fromROSMsg(*msg, pointCloud);
 }
 
