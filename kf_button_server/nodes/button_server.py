@@ -2,6 +2,7 @@
 # ROS specific imports
 import roslib; roslib.load_manifest('kf_button_server')
 import rospy
+import math
 
 from kingfisher_msgs.msg import Sense
 from button_server.ButtonServer import ButtonServer
@@ -52,10 +53,15 @@ class KFButtonServer(ButtonServer):
 
     def gpsCallback(self,msg):
         tmsg = msg.header.stamp.to_sec()
-        if (self.gpsHistory.length()>0) and (tmsg - self.gpsHistory.front()[0]>120.):
-            # Erase the history if we did not receive any point for 2 min
-            self.gpsHistory.clear()
-        if msg.status.status >= msg.status.STATUS_FIX:
+        d = 1.0
+        if self.gpsHistory.length()>0:
+            F = self.gpsHistory.front()
+            if  tmsg - F[0]>120.:
+                # Erase the history if we did not receive any point for 2 min
+                self.gpsHistory.clear()
+            # Note this distance would not make much sense close to the pole...
+            d = math.hypot(msg.longitude-F[1],msg.latitude-F[2])
+        if (msg.status.status >= msg.status.STATUS_FIX) and (d>=1e-5):
             self.gpsHistory.push([tmsg,msg.longitude,msg.latitude])
     
     def sense_cb(self,data):
