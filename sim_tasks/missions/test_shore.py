@@ -16,7 +16,7 @@ try:
     for contour in range(0,2):
         tc.AlignWithShore(angle=1.57, ang_velocity=0.5)
         tc.RecordFinishLine()
-	tc.FollowShorePID(angle=1.57, velocity=0.3, p_d=0.15, p_alpha=0.25,  d_alpha=-0.15, d_d=-0.15, i_d=0.01, i_alpha=0.01, distance=3.0)
+        tc.FollowShorePID(angle=1.57, velocity=0.3, p_d=0.15, p_alpha=0.25,  d_alpha=-0.15, d_d=-0.15, i_d=0.01, i_alpha=0.01, distance=3.0)
         tc.ReachOtherShore(angle=1.57)
 
 except TaskException, e:
