@@ -54,6 +54,7 @@ namespace sim_tasks {
             std::string auto_topic;
             std::string position_source;
             kingfisher_msgs::Sense sense;
+            std_msgs::Header pointCloud_header;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
             kf_yaw_kf::Compass compass;
@@ -89,7 +90,8 @@ namespace sim_tasks {
 
             geometry_msgs::PoseStamped getPoseStamped() const  ;
 
-            pcl::PointCloud<pcl::PointXYZ> getPointCloud() const {return pointCloud;}
+            const pcl::PointCloud<pcl::PointXYZ> & getPointCloud() const {return pointCloud;}
+            const std_msgs::Header & getPointCloudHeader() const {return pointCloud_header;}
 
             void publishVelocity(double linear, double angular) ;
 

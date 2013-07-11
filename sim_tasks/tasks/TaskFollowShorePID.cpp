@@ -1,4 +1,5 @@
 #include <math.h>
+#include <tf/transform_broadcaster.h>
 #include "TaskFollowShorePID.h"
 #include "sim_tasks/TaskFollowShorePIDConfig.h"
 using namespace task_manager_msgs;
@@ -25,8 +26,8 @@ TaskIndicator TaskFollowShorePID::initialise(const TaskParameters & parameters) 
     distance_error_prev=0.0;
     i_angle_error=0.0;
     i_distance_error=0.0;
-    status_dist_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("dist_status",1);
-    status_angle_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("angle_status",1);
+    status_dist_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("follow_shore/dist_status",1);
+    status_angle_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("follow_shore/angle_status",1);
     return TaskStatus::TASK_INITIALISED;
 }
 
@@ -77,6 +78,11 @@ TaskIndicator TaskFollowShorePID::iterate()
             }
 //        }
     }
+    tf::Transform transform;
+    std_msgs::Header hdr = env->getPointCloudHeader();
+    transform.setOrigin( tf::Vector3(mindistance*cos(theta_closest), mindistance*sin(theta_closest), 0.0) );
+    transform.setRotation( tf::createQuaternionFromRPY(0, 0, theta_closest) );
+    br.sendTransform(tf::StampedTransform(transform, hdr.stamp, hdr.frame_id, "closest_point"));
 
 
 #ifdef DEBUG_GOTO
