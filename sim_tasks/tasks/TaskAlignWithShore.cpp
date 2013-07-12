@@ -7,12 +7,6 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskAlignWithShore::TaskAlignWithShore(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskAlignWithShoreConfig,TaskAlignWithShore>("AlignWithShore","Rotate on the spot until the closest point (the shore) is at the target bearing",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
-
 TaskIndicator TaskAlignWithShore::iterate()
 {
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
@@ -74,4 +68,4 @@ TaskIndicator TaskAlignWithShore::terminate()
     return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskAlignWithShore);
+DYNAMIC_TASK(TaskFactoryAlignWithShore);

@@ -13,12 +13,6 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskCalibrateCompass::TaskCalibrateCompass(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskCalibrateCompassConfig,TaskCalibrateCompass>("CalibrateCompass","Perform a rotation on the spot and update the compass calibration",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
-
 TaskIndicator TaskCalibrateCompass::initialise(const TaskParameters & parameters) throw (InvalidParameter)
 {
     TaskIndicator ti = Parent::initialise(parameters);
@@ -121,4 +115,4 @@ TaskIndicator TaskCalibrateCompass::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskCalibrateCompass);
+DYNAMIC_TASK(TaskFactoryCalibrateCompass);

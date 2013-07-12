@@ -6,11 +6,6 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskRecordFinishLine::TaskRecordFinishLine(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<MinimalTaskConfig,TaskRecordFinishLine>("RecordFinishLine","Record the pose as finish line",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
 
 TaskIndicator TaskRecordFinishLine::iterate()
 {
@@ -20,4 +15,4 @@ TaskIndicator TaskRecordFinishLine::iterate()
     return TaskStatus::TASK_COMPLETED;
 }
 
-DYNAMIC_TASK(TaskRecordFinishLine);
+DYNAMIC_TASK(TaskFactoryRecordFinishLine);

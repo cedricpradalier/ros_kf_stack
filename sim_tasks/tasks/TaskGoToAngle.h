@@ -8,18 +8,23 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskGoToAngle : public TaskDefinitionWithConfig<TaskGoToAngleConfig, TaskGoToAngle>
+    class TaskGoToAngle : public TaskInstance<TaskGoToAngleConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskGoToAngle(boost::shared_ptr<TaskEnvironment> env); 
+            TaskGoToAngle(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskGoToAngle() {};
 
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryGoToAngle : public TaskDefinition<TaskGoToAngleConfig, SimTasksEnv, TaskGoToAngle>
+    {
+
+        public:
+            TaskFactoryGoToAngle(TaskEnvironmentPtr env) : 
+                Parent("GoToAngle","Reach a desired destination and angle",true,env) {}
+            virtual ~TaskFactoryGoToAngle() {};
     };
 };
 

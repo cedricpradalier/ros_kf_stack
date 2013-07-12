@@ -8,13 +8,6 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskFollowShorePID::TaskFollowShorePID(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskFollowShorePIDConfig,TaskFollowShorePID>("FollowShorePID","Follow the shore of the lake with PID controller",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-    outOfStartBox = false;
-    backToStartBox = false;
-}
 
 TaskIndicator TaskFollowShorePID::initialise(const TaskParameters & parameters) throw (InvalidParameter)
 {
@@ -22,6 +15,8 @@ TaskIndicator TaskFollowShorePID::initialise(const TaskParameters & parameters) 
     if (ti != TaskStatus::TASK_INITIALISED) {
         return ti;
     }
+    outOfStartBox = false;
+    backToStartBox = false;
     angle_error_prev=0.0;
     distance_error_prev=0.0;
     i_angle_error=0.0;
@@ -163,4 +158,4 @@ TaskIndicator TaskFollowShorePID::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskFollowShorePID);
+DYNAMIC_TASK(TaskFactoryFollowShorePID);

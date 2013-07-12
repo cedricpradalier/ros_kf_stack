@@ -8,11 +8,10 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskFollowShorePID : public TaskDefinitionWithConfig<TaskFollowShorePIDConfig, TaskFollowShorePID>
+    class TaskFollowShorePID : public TaskInstance<TaskFollowShorePIDConfig,SimTasksEnv>
     {
 
         protected:
-            boost::shared_ptr<SimTasksEnv> env;
             bool outOfStartBox;
             bool backToStartBox;
             ros::Publisher status_dist_pub;
@@ -38,7 +37,7 @@ namespace sim_tasks {
             }
 
         public:
-            TaskFollowShorePID(boost::shared_ptr<TaskEnvironment> env); 
+            TaskFollowShorePID(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskFollowShorePID() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -46,6 +45,14 @@ namespace sim_tasks {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryFollowShorePID : public TaskDefinition<TaskFollowShorePIDConfig, SimTasksEnv, TaskFollowShorePID>
+    {
+
+        public:
+            TaskFactoryFollowShorePID(TaskEnvironmentPtr env) : 
+                Parent("FollowShorePID","Follow the shore of the lake with PID controller",true,env) {}
+            virtual ~TaskFactoryFollowShorePID() {};
     };
 };
 

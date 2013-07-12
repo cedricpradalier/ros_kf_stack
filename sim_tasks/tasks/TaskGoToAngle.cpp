@@ -7,12 +7,6 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskGoToAngle::TaskGoToAngle(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskGoToAngleConfig,TaskGoToAngle>("GoToAngle","Reach a desired destination and angle",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
-
 TaskIndicator TaskGoToAngle::iterate()
 {
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
@@ -51,4 +45,4 @@ TaskIndicator TaskGoToAngle::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskGoToAngle);
+DYNAMIC_TASK(TaskFactoryGoToAngle);

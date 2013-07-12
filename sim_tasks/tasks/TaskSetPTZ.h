@@ -9,11 +9,10 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskSetPTZ : public TaskDefinitionWithConfig<TaskSetPTZConfig, TaskSetPTZ>
+    class TaskSetPTZ : public TaskInstance<TaskSetPTZConfig,SimTasksEnv>
     {
 
         protected:
-            boost::shared_ptr<SimTasksEnv> env;
             ros::Publisher axis_cmd;
             ros::Subscriber axis_state;
             axis_camera::Axis state;
@@ -23,7 +22,7 @@ namespace sim_tasks {
                 state = *msg;
             }
         public:
-            TaskSetPTZ(boost::shared_ptr<TaskEnvironment> env); 
+            TaskSetPTZ(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskSetPTZ() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -31,6 +30,14 @@ namespace sim_tasks {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactorySetPTZ : public TaskDefinition<TaskSetPTZConfig, SimTasksEnv, TaskSetPTZ>
+    {
+
+        public:
+            TaskFactorySetPTZ(TaskEnvironmentPtr env) : 
+                Parent("SetPTZ","Reach a PTZ configuration",true,env) {}
+            virtual ~TaskFactorySetPTZ() {};
     };
 };
 
