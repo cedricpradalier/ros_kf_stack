@@ -42,7 +42,7 @@ TaskIndicator TaskSetPTZ::iterate()
     if (cfg.wait_timeout<=0) {
         return TaskStatus::TASK_COMPLETED;
     }
-    if ((fabs(cmd.pan - state.pan)<1) && (fabs(cmd.tilt - state.tilt)<1) 
+    if ((fabs(remainder(cmd.pan - state.pan,360.0))<1) && (fabs(remainder(cmd.tilt - state.tilt,360.0))<1) 
             && (fabs(cmd.zoom - state.zoom)<1)) {
         return TaskStatus::TASK_COMPLETED;
     }

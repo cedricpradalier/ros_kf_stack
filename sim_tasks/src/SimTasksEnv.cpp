@@ -171,6 +171,7 @@ void SimTasksEnv::compassCallback(const kf_yaw_kf::Compass::ConstPtr& msg) {
 
 void SimTasksEnv::scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
+    pointCloud_header = scan_in->header;
     laser_geometry::LaserProjection projector;
     sensor_msgs::PointCloud2 cloud;
     projector.projectLaser(*scan_in, cloud);

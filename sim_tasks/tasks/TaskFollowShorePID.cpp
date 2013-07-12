@@ -57,16 +57,10 @@ TaskIndicator TaskFollowShorePID::iterate()
 
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
 
-    double vel = cfg.velocity;
     float mindistance=1000;
     float theta_closest=0;
     float distance_i=0;
     float theta_i=0;
-    float E_lin_max = cfg.E_lin_max;
-    float E_ang_max = cfg.E_ang_max;
-    float rot_ang = 0.0;
-    float rot_lin = 0.0;
-    float rot = 0.0;
 
 
     for (unsigned int i=0;i<pointCloud.size();i++) {
@@ -81,71 +75,77 @@ TaskIndicator TaskFollowShorePID::iterate()
     }
     tf::Transform transform;
     std_msgs::Header hdr = env->getPointCloudHeader();
-    transform.setOrigin( tf::Vector3(mindistance*cos(theta_closest), mindistance*sin(theta_closest), 0.0) );
-    transform.setRotation( tf::createQuaternionFromRPY(0, 0, theta_closest) );
-    br.sendTransform(tf::StampedTransform(transform, hdr.stamp, hdr.frame_id, "closest_point"));
+    if (hdr.frame_id != "") {
+        transform.setOrigin( tf::Vector3(mindistance*cos(-theta_closest), mindistance*sin(-theta_closest), 0.0) );
+        transform.setRotation( tf::createQuaternionFromRPY(0, 0, -theta_closest) );
+        br.sendTransform(tf::StampedTransform(transform, hdr.stamp, hdr.frame_id, "/kingfisher/closest_point"));
+    } else {
+        transform.setOrigin( tf::Vector3(mindistance*cos(-theta_closest), mindistance*sin(-theta_closest), 0.0) );
+        transform.setRotation( tf::createQuaternionFromRPY(0, 0, -theta_closest) );
+        br.sendTransform(tf::StampedTransform(transform, hdr.stamp, "/kingfisher/laser", "/kingfisher/closest_point"));
+    }
 
 
 #ifdef DEBUG_GOTO
     ROS_INFO("pointCloudSize %d - mindistance %.3f - theta_closest %.3f",(int)pointCloud.size(),mindistance, theta_closest);
 #endif
+    float vel=0.0, rot=0.0, angle_error, distance_error, rot_ang, rot_lin;
     
-    float angle_error=0;
-    float distance_error=0;
-
-
     if (mindistance > cfg.dist_threshold) {
-        //TODO test the oldness of the pointcloud
-        ROS_INFO("No shore detected");
+        i_angle_error=0;
+        i_distance_error=0;
+        angle_error_prev=0;
+        distance_error_prev=0;
+
         return TaskStatus::TASK_RUNNING;
     } else {
-	// Error Calculations - 6 calculations, position error, deriv of position error and int of position error
-	// then the same for the angular error, deriv of angle error and int of angle error.
-	// P error
+        // Error Calculations - 6 calculations, position error, deriv of position error and int of position error
+        // then the same for the angular error, deriv of angle error and int of angle error.
+        // P error
         angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
-        distance_error = cfg.distance-mindistance;
+        distance_error = saturate(cfg.distance-mindistance,cfg.max_dist_error);
 
-	// D Error
+        // D Error
         d_angle_error = (angle_error-angle_error_prev)/cfg.task_period;
         d_distance_error = (distance_error-distance_error_prev)/cfg.task_period;
 
-	// I error
+        // I error
         i_angle_error += cfg.task_period * angle_error;
+        i_angle_error = saturate(i_angle_error,cfg.i_alpha_max);
         i_distance_error += cfg.task_period * distance_error;
+        i_distance_error = saturate(i_distance_error,cfg.i_d_max);
 
-	// Publish PID errors
-	dist.x=distance_error;
-	dist.y=d_distance_error;
-	dist.z=i_distance_error;
-	angle.x=angle_error;
-	angle.y=d_angle_error;
-	angle.z=i_angle_error;
+        // Publish PID errors
+        dist.x=distance_error;
+        dist.y=d_distance_error;
+        dist.z=i_distance_error;
+        angle.x=angle_error;
+        angle.y=d_angle_error;
+        angle.z=i_angle_error;
 
-	// Calculate angular component
-	rot_ang = - cfg.p_alpha * angle_error - cfg.d_alpha * d_angle_error - cfg.i_alpha * i_angle_error;
-	// Calculate linear component
-	rot_lin = - ((cfg.angle>0)?+1:-1) * cfg.p_d * distance_error - cfg.d_d * d_distance_error - cfg.i_d * i_distance_error;
+        // Calculate angular component
+        rot_ang = - cfg.p_alpha * angle_error - cfg.d_alpha * d_angle_error - cfg.i_alpha * i_angle_error;
+        // Calculate linear component
+        rot_lin = - ((cfg.angle>0)?+1:-1) * cfg.p_d * distance_error - cfg.d_d * d_distance_error - cfg.i_d * i_distance_error;
 
-	// Saturate components
-	if (fabs(rot_ang) > E_ang_max) {
-            rot_ang = ((rot_ang>0)?+1:-1) * E_ang_max;
-        }
-	if (fabs(rot_lin) > E_lin_max) {
-            rot_lin = ((rot_lin>0)?+1:-1) * E_lin_max;
-        }	
-	
-	// Rotation calculation
-        rot = rot_ang + rot_lin;
+        // Saturate components
+        // if (fabs(rot_ang) > E_ang_max) {
+        //     rot_ang = ((rot_ang>0)?+1:-1) * E_ang_max;
+        // }
+        // if (fabs(rot_lin) > E_lin_max) {
+        //     rot_lin = ((rot_lin>0)?+1:-1) * E_lin_max;
+        // }	
 
-	// Record errors as previous values for d calculation
-	angle_error_prev = angle_error;
-	distance_error_prev = distance_error;
-	// Saturation and Curvature Limitation
-	float wnorm =std::max(0.0,fabs(rot)-cfg.rot_tol); 
-	vel = exp(-cfg.K_E*(wnorm*wnorm)) * cfg.max_lin_vel;
-        if (fabs(rot) > cfg.max_ang_vel) {
-            rot = ((rot>0)?+1:-1) * cfg.max_ang_vel;
-        }
+        // Rotation calculation
+        rot = rot_ang + rot_lin*exp(-0.5*angle_error*angle_error);
+
+        // Record errors as previous values for d calculation
+        angle_error_prev = angle_error;
+        distance_error_prev = distance_error;
+        // Saturation and Curvature Limitation
+        float wnorm =std::max(0.0,fabs(rot)-cfg.rot_tol); 
+        vel = exp(-cfg.K_E*(wnorm*wnorm)) * cfg.max_lin_vel;
+        rot = saturate(rot,cfg.max_ang_vel);
     }
 #ifdef DEBUG_GOTO
     ROS_INFO("Command vel %.2f angle_error %.2f distance_error %.2f rot %.2f\n",vel,angle_error,distance_error,rot);

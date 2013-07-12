@@ -24,6 +24,19 @@ namespace sim_tasks {
             float distance_error_prev;
             float d_distance_error;
             float i_distance_error;
+
+            float saturate(float value, float max) {
+                if (value > max) return max;
+                if (value < -max) return -max;
+                return value;
+            }
+
+            float saturate(float value, float min, float max) {
+                if (value > max) return max;
+                if (value < -min) return -min;
+                return value;
+            }
+
         public:
             TaskFollowShorePID(boost::shared_ptr<TaskEnvironment> env); 
             virtual ~TaskFollowShorePID() {};
