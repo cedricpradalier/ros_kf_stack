@@ -7,20 +7,14 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskFollowShore::TaskFollowShore(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskFollowShoreConfig,TaskFollowShore>("FollowShore","Follow the shore of the lake",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-    outOfStartBox = false;
-    backToStartBox = false;
-}
-
 TaskIndicator TaskFollowShore::initialise(const TaskParameters & parameters) throw (InvalidParameter)
 {
     TaskIndicator ti = Parent::initialise(parameters);
     if (ti != TaskStatus::TASK_INITIALISED) {
         return ti;
     }
+    outOfStartBox = false;
+    backToStartBox = false;
     status_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("shore_status",1);
     return TaskStatus::TASK_INITIALISED;
 }
@@ -110,4 +104,4 @@ TaskIndicator TaskFollowShore::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskFollowShore);
+DYNAMIC_TASK(TaskFactoryFollowShore);

@@ -7,12 +7,6 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskReachOtherShore::TaskReachOtherShore(boost::shared_ptr<TaskEnvironment> tenv) 
-    : TaskDefinitionWithConfig<TaskReachOtherShoreConfig,TaskReachOtherShore>("ReachOtherShore","Rotate and reach the other shore",true,-1.)
-{
-    env = boost::dynamic_pointer_cast<SimTasksEnv,TaskEnvironment>(tenv);
-}
-
 TaskIndicator TaskReachOtherShore::iterate()
 {
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
@@ -82,4 +76,4 @@ TaskIndicator TaskReachOtherShore::terminate()
 	return TaskStatus::TASK_TERMINATED;
 }
 
-DYNAMIC_TASK(TaskReachOtherShore);
+DYNAMIC_TASK(TaskFactoryReachOtherShore);

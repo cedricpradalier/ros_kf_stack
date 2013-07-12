@@ -8,20 +8,21 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskRecordFinishLine : public TaskDefinitionWithConfig<MinimalTaskConfig, TaskRecordFinishLine>
+    class TaskRecordFinishLine : public TaskInstance<MinimalTaskConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskRecordFinishLine(boost::shared_ptr<TaskEnvironment> env); 
+            TaskRecordFinishLine(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskRecordFinishLine() {};
 
             virtual TaskIndicator iterate();
+    };
+    class TaskFactoryRecordFinishLine : public TaskDefinition<MinimalTaskConfig, SimTasksEnv, TaskRecordFinishLine>
+    {
 
-            virtual boost::shared_ptr<TaskDefinition> getInstance() {
-                return shared_from_this();
-            }
+        public:
+            TaskFactoryRecordFinishLine(TaskEnvironmentPtr env) : 
+                Parent("RecordFinishLine","Record the pose as finish line",true,env) {}
+            virtual ~TaskFactoryRecordFinishLine() {};
     };
 };
 

@@ -8,19 +8,25 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskAlignWithShore : public TaskDefinitionWithConfig<TaskAlignWithShoreConfig, TaskAlignWithShore>
+    class TaskAlignWithShore : public TaskInstance<TaskAlignWithShoreConfig,SimTasksEnv>
     {
 
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskAlignWithShore(boost::shared_ptr<TaskEnvironment> env); 
+            TaskAlignWithShore(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskAlignWithShore() {};
 
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
 
+    };
+    class TaskFactoryAlignWithShore : public TaskDefinition<TaskAlignWithShoreConfig, SimTasksEnv, TaskAlignWithShore>
+    {
+
+        public:
+            TaskFactoryAlignWithShore(TaskEnvironmentPtr env) : 
+                Parent("AlignWithShore","Rotate on the spot until the closest point (the shore) is at the target bearing",true,env) {}
+            virtual ~TaskFactoryAlignWithShore() {};
     };
 };
 

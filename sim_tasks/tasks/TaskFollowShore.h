@@ -8,16 +8,15 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskFollowShore : public TaskDefinitionWithConfig<TaskFollowShoreConfig, TaskFollowShore>
+    class TaskFollowShore : public TaskInstance<TaskFollowShoreConfig,SimTasksEnv>
     {
 
         protected:
-            boost::shared_ptr<SimTasksEnv> env;
             bool outOfStartBox;
             bool backToStartBox;
             ros::Publisher status_pub;
         public:
-            TaskFollowShore(boost::shared_ptr<TaskEnvironment> env); 
+            TaskFollowShore(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskFollowShore() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -25,6 +24,14 @@ namespace sim_tasks {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryFollowShore : public TaskDefinition<TaskFollowShoreConfig, SimTasksEnv, TaskFollowShore>
+    {
+
+        public:
+            TaskFactoryFollowShore(TaskEnvironmentPtr env) : 
+                Parent("FollowShore","Follow the shore of the lake",true,env) {}
+            virtual ~TaskFactoryFollowShore() {};
     };
 };
 

@@ -8,18 +8,23 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskReachOtherShore : public TaskDefinitionWithConfig<TaskReachOtherShoreConfig, TaskReachOtherShore>
+    class TaskReachOtherShore : public TaskInstance<TaskReachOtherShoreConfig,SimTasksEnv>
     {
-
-        protected:
-            boost::shared_ptr<SimTasksEnv> env;
         public:
-            TaskReachOtherShore(boost::shared_ptr<TaskEnvironment> env); 
+            TaskReachOtherShore(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskReachOtherShore() {};
 
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryReachOtherShore : public TaskDefinition<TaskReachOtherShoreConfig, SimTasksEnv, TaskReachOtherShore>
+    {
+
+        public:
+            TaskFactoryReachOtherShore(TaskEnvironmentPtr env) : 
+                Parent("ReachOtherShore","Rotate and reach the other shore",true,env) {}
+            virtual ~TaskFactoryReachOtherShore() {};
     };
 };
 

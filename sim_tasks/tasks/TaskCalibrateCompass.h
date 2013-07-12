@@ -11,11 +11,10 @@
 using namespace task_manager_lib;
 
 namespace sim_tasks {
-    class TaskCalibrateCompass : public TaskDefinitionWithConfig<TaskCalibrateCompassConfig, TaskCalibrateCompass>
+    class TaskCalibrateCompass : public TaskInstance<TaskCalibrateCompassConfig,SimTasksEnv>
     {
 
         protected:
-            boost::shared_ptr<SimTasksEnv> env;
             ros::ServiceClient magOffsetClient;
             ros::Subscriber magSub;
             std::vector<geometry_msgs::Vector3> readings;
@@ -24,7 +23,7 @@ namespace sim_tasks {
             // Small state machine to control the rotation
             enum {FIRST_HALF, SECOND_HALF} state;
         public:
-            TaskCalibrateCompass(boost::shared_ptr<TaskEnvironment> env); 
+            TaskCalibrateCompass(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskCalibrateCompass() {};
 
             virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
@@ -32,6 +31,14 @@ namespace sim_tasks {
             virtual TaskIndicator iterate();
 
             virtual TaskIndicator terminate();
+    };
+    class TaskFactoryCalibrateCompass : public TaskDefinition<TaskCalibrateCompassConfig, SimTasksEnv, TaskCalibrateCompass>
+    {
+
+        public:
+            TaskFactoryCalibrateCompass(TaskEnvironmentPtr env) : 
+                Parent("CalibrateCompass","Perform a rotation on the spot and update the compass calibration",true,env) {}
+            virtual ~TaskFactoryCalibrateCompass() {};
     };
 };
 
