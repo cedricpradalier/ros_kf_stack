@@ -15,6 +15,7 @@
 #include "kingfisher_msgs/Sense.h"
 #include "pcl_ros/point_cloud.h"
 #include "pcl/point_types.h"
+#include "axis_camera/Axis.h"
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 
@@ -32,6 +33,8 @@ namespace sim_tasks {
             ros::Subscriber scanSub;
             ros::Subscriber senseSub;
             ros::Publisher velPub;
+            ros::Publisher axisPub;
+            ros::Subscriber axisSub;
             ros::ServiceClient muxClient;
             tf::TransformListener listener;
 
@@ -49,11 +52,14 @@ namespace sim_tasks {
 
             void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in) ;
 
+            void axisCallback(const axis_camera::AxisConstPtr & msg); 
+
             bool manualControl;
             std::string joystick_topic;
             std::string auto_topic;
             std::string position_source;
             kingfisher_msgs::Sense sense;
+            axis_camera::Axis axisState;
             std_msgs::Header pointCloud_header;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
@@ -98,6 +104,9 @@ namespace sim_tasks {
             void setManualControl();
             void setComputerControl();
             bool getManualControl() const {return manualControl || sense.rc;}
+
+            const axis_camera::Axis & getAxisState() const {return axisState;}
+            void publishAxisCommand(const axis_camera::Axis & cmd) {axisPub.publish(cmd);}
 
             // Specific variable for lake circumnavigation
             void setFinishLine2D(geometry_msgs::Pose2D pose) {finishLine2D = pose;}

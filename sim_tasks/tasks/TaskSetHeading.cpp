@@ -9,12 +9,8 @@ using namespace sim_tasks;
 
 TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     ROS_INFO("Setting heading to %.2f deg", cfg.target*180./M_PI);
-    return ti;
+    return TaskStatus::TASK_INITIALISED;
 }
 
 TaskIndicator TaskSetHeading::iterate()

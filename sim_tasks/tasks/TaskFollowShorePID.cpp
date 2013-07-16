@@ -11,10 +11,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskFollowShorePID::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     outOfStartBox = false;
     backToStartBox = false;
     angle_error_prev=0.0;

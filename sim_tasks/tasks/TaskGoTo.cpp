@@ -13,12 +13,8 @@ using namespace sim_tasks;
 
 TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     ROS_INFO("Going to %.2f %.2f",cfg.goal_x,cfg.goal_y);
-    return ti;
+    return TaskStatus::TASK_INITIALISED;
 }
 
 

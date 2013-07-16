@@ -9,10 +9,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskFollowShore::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     outOfStartBox = false;
     backToStartBox = false;
     status_pub = env->getNodeHandle().advertise<geometry_msgs::Vector3>("shore_status",1);

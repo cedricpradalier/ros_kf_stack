@@ -15,10 +15,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskCalibrateCompass::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     // Now we can do any required task-specific initialisation, for instance
     // creating the service proxy and subscriber. They will be destroyed when
     // the task terminates

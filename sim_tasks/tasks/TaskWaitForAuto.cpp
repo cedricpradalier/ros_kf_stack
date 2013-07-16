@@ -7,12 +7,8 @@ using namespace sim_tasks;
 
 TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters) 
 {
-    TaskIndicator ti = Parent::initialise(parameters);
-    if (ti != TaskStatus::TASK_INITIALISED) {
-        return ti;
-    }
     ROS_INFO("Waiting for automatic control. Switch RC controller off and press the red button.");
-    return ti;
+    return TaskStatus::TASK_INITIALISED;
 }
 
 

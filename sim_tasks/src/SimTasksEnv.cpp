@@ -27,6 +27,8 @@ SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
     senseSub = nh.subscribe("/sense",1,&SimTasksEnv::senseCallback,this);
     compassSub = nh.subscribe("/compass/compass",1,&SimTasksEnv::compassCallback,this);
     velPub = nh.advertise<geometry_msgs::Twist>(auto_topic,1);
+    axisPub = nh.advertise<axis_camera::Axis>("/axis/cmd",1);
+    axisSub = nh.subscribe("/axis/state",1,&SimTasksEnv::axisCallback,this);
 }
 
 void SimTasksEnv::setManualControl()
@@ -177,4 +179,10 @@ void SimTasksEnv::scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     projector.projectLaser(*scan_in, cloud);
     pcl::fromROSMsg(cloud, pointCloud);
 }
+
+void SimTasksEnv::axisCallback(const axis_camera::AxisConstPtr & msg) {
+    axisState = *msg;
+}
+
+
 

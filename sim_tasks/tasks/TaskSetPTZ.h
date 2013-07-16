@@ -13,14 +13,8 @@ namespace sim_tasks {
     {
 
         protected:
-            ros::Publisher axis_cmd;
-            ros::Subscriber axis_state;
-            axis_camera::Axis state;
             double init_time, last_publish_time;
 
-            void axisCallback(const axis_camera::AxisConstPtr & msg) {
-                state = *msg;
-            }
         public:
             TaskSetPTZ(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskSetPTZ() {};
