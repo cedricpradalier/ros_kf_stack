@@ -24,7 +24,7 @@ class TaskServer : public TaskServerBase {
 
 int main(int argc, char *argv[])
 {
-    ros::init(argc,argv,"sim_tasks");//init ros
+    ros::init(argc,argv,"task_server");//init ros
     ros::NodeHandle nh("~");
     TaskEnvironmentPtr env(new SimTasksEnv(nh));
     TaskServer ts(env);
