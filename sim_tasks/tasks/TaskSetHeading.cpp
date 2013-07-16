@@ -7,7 +7,7 @@ using namespace sim_tasks;
 
 // #define DEBUG_GOTO
 
-TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters) 
 {
     TaskIndicator ti = Parent::initialise(parameters);
     if (ti != TaskStatus::TASK_INITIALISED) {

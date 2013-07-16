@@ -15,7 +15,7 @@ namespace sim_tasks {
             TaskGoTo(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskGoTo() {};
 
-            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+            virtual TaskIndicator initialise(const TaskParameters & parameters) ;
 
             virtual TaskIndicator iterate();
 

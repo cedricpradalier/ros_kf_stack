@@ -26,7 +26,7 @@ namespace sim_tasks {
             TaskCalibrateCompass(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskCalibrateCompass() {};
 
-            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+            virtual TaskIndicator initialise(const TaskParameters & parameters) ;
 
             virtual TaskIndicator iterate();
 

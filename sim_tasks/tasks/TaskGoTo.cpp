@@ -11,7 +11,7 @@ using namespace sim_tasks;
 #endif
 
 
-TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) 
 {
     TaskIndicator ti = Parent::initialise(parameters);
     if (ti != TaskStatus::TASK_INITIALISED) {

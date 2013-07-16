@@ -5,7 +5,7 @@ using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks;
 
-TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters) throw (InvalidParameter)
+TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters) 
 {
     TaskIndicator ti = Parent::initialise(parameters);
     if (ti != TaskStatus::TASK_INITIALISED) {

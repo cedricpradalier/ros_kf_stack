@@ -40,7 +40,7 @@ namespace sim_tasks {
             TaskFollowShorePID(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskFollowShorePID() {};
 
-            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+            virtual TaskIndicator initialise(const TaskParameters & parameters) ;
 
             virtual TaskIndicator iterate();
 

@@ -14,7 +14,7 @@ namespace sim_tasks {
             TaskSetHeading(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskSetHeading() {};
 
-            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+            virtual TaskIndicator initialise(const TaskParameters & parameters) ;
 
             virtual TaskIndicator iterate();
 

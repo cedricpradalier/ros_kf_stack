@@ -14,7 +14,7 @@ namespace sim_tasks {
             TaskWaitForAuto(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskWaitForAuto() {};
 
-            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+            virtual TaskIndicator initialise(const TaskParameters & parameters) ;
 
             virtual TaskIndicator iterate();
 

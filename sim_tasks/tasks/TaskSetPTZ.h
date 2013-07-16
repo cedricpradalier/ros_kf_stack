@@ -16,7 +16,7 @@ namespace sim_tasks {
             ros::Publisher axis_cmd;
             ros::Subscriber axis_state;
             axis_camera::Axis state;
-            double init_time;
+            double init_time, last_publish_time;
 
             void axisCallback(const axis_camera::AxisConstPtr & msg) {
                 state = *msg;
@@ -25,7 +25,7 @@ namespace sim_tasks {
             TaskSetPTZ(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskSetPTZ() {};
 
-            virtual TaskIndicator initialise(const TaskParameters & parameters) throw (InvalidParameter);
+            virtual TaskIndicator initialise(const TaskParameters & parameters) ;
 
             virtual TaskIndicator iterate();
 
