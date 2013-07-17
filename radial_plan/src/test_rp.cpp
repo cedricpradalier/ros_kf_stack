@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     
     t0 = ros::Time::now().toSec();
     std::list<cv::Point2f> path;
-    path = RP.getOptimalPath(1.0, 0.1, 10.0);
+    path = RP.getOptimalPath(0.1, 1.0, 0.1, 10.0);
     t1 = ros::Time::now().toSec();
     ROS_INFO("getOptimalPath: %fms",(t1-t0)*1e3);
 

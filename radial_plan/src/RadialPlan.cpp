@@ -153,7 +153,7 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 
 }
 
-std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_length, float K_turn, float K_dist)
+std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K_length, float K_turn, float K_dist)
 {
     int angle_range = n_j/2;
     int conn_range = n_k/2;
@@ -168,7 +168,7 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_length, float K_turn, 
     cell_value(0,angle_range,conn_range) = 0;
     for (int k = -conn_range;k<=conn_range;k++) {
         float alpha = (k-conn_range) * angle_scale / angle_range;
-        float cost = r_scale + /*K_turn * alpha * alpha +*/ node_cost(1,angle_range+k);
+        float cost = r_scale + K_initial_angle * alpha * alpha + node_cost(1,angle_range+k);
         if (!isnan(cost)) {
             heap.insert(Heap::value_type(cost, cv::Point3i(1,angle_range+k,conn_range)));
             cell_value(1,angle_range+k,conn_range) = cost;
