@@ -68,6 +68,7 @@ RadialPlan::RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int
     dists2.resize(1, nns_query.cols());
 }
 
+// TODO: add a way to specify the cost as a designed signed distance. 
 void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud, float d_desired, float d_safety) {
 #ifdef SAVE_OUTPUT
     FILE *pc = fopen("pc","w");
@@ -167,7 +168,7 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_length, float K_turn, 
     cell_value(0,angle_range,conn_range) = 0;
     for (int k = -conn_range;k<=conn_range;k++) {
         float alpha = (k-conn_range) * angle_scale / angle_range;
-        float cost = r_scale + K_turn * alpha * alpha + node_cost(1,angle_range+k);
+        float cost = r_scale + /*K_turn * alpha * alpha +*/ node_cost(1,angle_range+k);
         if (!isnan(cost)) {
             heap.insert(Heap::value_type(cost, cv::Point3i(1,angle_range+k,conn_range)));
             cell_value(1,angle_range+k,conn_range) = cost;

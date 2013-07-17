@@ -16,7 +16,7 @@ using namespace radial_plan;
 
 ros::Publisher pathPub;
 ros::Subscriber pcSub;
-RadialPlan RP(10, 15, 7, 1.0, M_PI);
+RadialPlan RP(10, 15, 11, 1.0, M_PI);
 
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
