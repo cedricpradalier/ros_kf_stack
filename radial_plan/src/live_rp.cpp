@@ -29,6 +29,12 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     RP.updateNodeCosts(pointCloud, 6.0, 2.0);
     std::list<cv::Point2f> lpath;
     lpath = RP.getOptimalPath(1.0, 1.0, 10.0);
+    // Here we could add some path optimisation, in particular using the 
+    // search datastructure on the point cloud: 
+    // nss = RP.getNearestNeighbourSearch()
+    //
+    // TODO
+    //
     // Finally create a ROS path message
     nav_msgs::Path path;
     path.header = scan_in->header;

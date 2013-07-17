@@ -4,6 +4,8 @@
 #include <opencv2/opencv.hpp>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
+#include <nabo/nabo.h>
+
 #include "Eigen/Core"
 #if EIGEN_VERSION_AT_LEAST(2,92,0)
 	#define EIGEN3_API
@@ -36,6 +38,10 @@ namespace radial_plan {
 
             std::list<cv::Point2f> getOptimalPath(float K_length, float K_turn, float K_dist);
 
+            boost::shared_ptr<Nabo::NNSearchF const> getNearestNeighbourSearch() {
+                return nns;
+            }
+
         protected:
             typedef std::multimap<float, cv::Point3i> Heap;
         protected:
@@ -44,6 +50,7 @@ namespace radial_plan {
             unsigned int n_k;
             float r_scale;
             float angle_scale;
+            boost::shared_ptr<Nabo::NNSearchF> nns;
 
             bool isInGrid(const cv::Point3i & P) {
                 if ((P.x < 0) || (P.x >= (signed)n_r)) return false;
@@ -62,7 +69,7 @@ namespace radial_plan {
             cv::Mat_<float> node_cost;
 
             // Search matrix for nearest neighbours.
-            Eigen::MatrixXf nns_query;
+            Eigen::MatrixXf nns_cloud, nns_query;
             // The output of the query are a matrix of indices to columns of M and 
             // a matrix of squared distances corresponding to these indices.
             // These matrix must have the correct size when passed to the search function.

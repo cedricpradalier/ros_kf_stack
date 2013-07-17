@@ -74,10 +74,11 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 #endif
     int ang_range = n_j/2;
     std::vector<float> r_max(n_j,NAN);
-   	MatrixXf M(2, pointCloud.size());
+    nns.reset();
+   	nns_cloud.resize(2, pointCloud.size());
     for (unsigned int i=0;i<pointCloud.size();i++) {
-        M(0,i) = pointCloud[i].x;
-        M(1,i) = pointCloud[i].y;
+        nns_cloud(0,i) = pointCloud[i].x;
+        nns_cloud(1,i) = pointCloud[i].y;
         float alpha = round(atan2(pointCloud[i].y, pointCloud[i].x) * 2 * ang_range / angle_scale);
         int i_alpha = (int)alpha;
         if (abs(i_alpha) <= ang_range) {
@@ -109,7 +110,7 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 
 
     // Create a kd-tree for M, note that M must stay valid during the lifetime of the kd-tree.
-    NNSearchF* nns = NNSearchF::createKDTreeLinearHeap(M);
+    nns.reset(NNSearchF::createKDTreeLinearHeap(nns_cloud));
 
 
     // Look for the nearest neighbours of each query point, 
@@ -149,7 +150,6 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
     fclose(fp);
 #endif
 
-    delete nns;
 }
 
 std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_length, float K_turn, float K_dist)
