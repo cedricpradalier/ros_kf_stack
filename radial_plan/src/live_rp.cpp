@@ -17,6 +17,8 @@ using namespace radial_plan;
 ros::Publisher pathPub;
 ros::Subscriber pcSub;
 RadialPlan RP(10, 15, 11, 1.0, M_PI);
+double dt_update=0.0, dt_path=0.0;
+unsigned long num_iter = 0;
 
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
@@ -26,9 +28,15 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     sensor_msgs::PointCloud2 cloud;
     projector.projectLaser(*scan_in, cloud);
     pcl::fromROSMsg(cloud, pointCloud);
+    double t0 = ros::Time::now().toSec();
     RP.updateNodeCosts(pointCloud, 6.0, 2.0);
+    double t1 = ros::Time::now().toSec();
     std::list<cv::Point2f> lpath;
     lpath = RP.getOptimalPath(1.0, 1.0, 1.0, 10.0);
+    double t2 = ros::Time::now().toSec();
+    dt_update += t1 - t0;
+    dt_path += t2 - t1;
+    num_iter += 1;
     // Here we could add some path optimisation, in particular using the 
     // search datastructure on the point cloud: 
     // nss = RP.getNearestNeighbourSearch()
@@ -71,6 +79,8 @@ int main(int argc, char *argv[]) {
     pathPub = nh.advertise<nav_msgs::Path>("path",1);
     pcSub = nh.subscribe("/lidar/scan",1,scanCallback);
     ros::spin();
+
+    printf("Average computation time: %ld iter, update %.2f ms, path %.2f\n",num_iter, 1e3*dt_update/num_iter, 1e3*dt_path/num_iter);
     
     return 0;
 }

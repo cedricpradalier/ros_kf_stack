@@ -9,14 +9,17 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/radial_plan</url>
   <depend package="roscpp"/>
+  <depend package="libnabo"/>
   <depend package="opencv2"/>
   <depend package="pcl_ros"/>
-  <depend package="bsplines"/>
   <depend package="geometry_msgs"/>
   <depend package="std_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="tf"/>
   <depend package="laser_geometry"/>
+  <export>
+      <cpp cflags="-I${prefix}/include/radial_plan" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lradial_plan"/>
+  </export>
 
 </package>
 

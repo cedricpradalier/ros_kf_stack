@@ -4,7 +4,6 @@
 #include <ros/ros.h>
 #include <nabo/nabo.h>
 #include "radial_plan/RadialPlan.h"
-#include <bsplines/Function.h>
 
 using namespace radial_plan;
 using namespace Nabo;

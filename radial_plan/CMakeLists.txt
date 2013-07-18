@@ -23,7 +23,6 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 #common commands for building c++ executables and libraries
 rosbuild_add_library(${PROJECT_NAME} src/RadialPlan.cpp)
-target_link_libraries(${PROJECT_NAME} nabo)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 rosbuild_add_executable(test_rp src/test_rp.cpp)
