@@ -24,9 +24,13 @@ int main(int argc, char *argv[]) {
         pointCloud[i+250].y = 12.0 - pointCloud[i+250].x * 0.40;
     }
 #else
-    for (unsigned int i=0;i<500;i++) {
-        pointCloud[i].x = -2.0 + i * 32.0 / 500;
-        pointCloud[i].y = -7 + 2 * sin(pointCloud[i].x*M_PI/4);
+    for (unsigned int i=0;i<250;i++) {
+        pointCloud[i].x = -2.0 + i * 32.0 / 250;
+        pointCloud[i].y = -5 + 2 * sin(pointCloud[i].x*M_PI/4);
+    }
+    for (unsigned int i=0;i<250;i++) {
+        pointCloud[i+250].x = -2.0 + i * 32.0 / 250;
+        pointCloud[i+250].y = +5 - 2 * sin(pointCloud[i+250].x*M_PI/4-2.0);
     }
 #endif
 

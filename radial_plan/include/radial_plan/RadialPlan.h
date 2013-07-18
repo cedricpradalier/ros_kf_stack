@@ -51,6 +51,7 @@ namespace radial_plan {
             unsigned int n_k;
             float r_scale;
             float angle_scale;
+            int conn_range, ang_range;
             boost::shared_ptr<Nabo::NNSearchF> nns;
 
             bool isInGrid(const cv::Point3i & P) {
@@ -66,7 +67,7 @@ namespace radial_plan {
             std::vector<cv::Point3i> neighbours;
 
             // Cost of each node, to be updated based on laser readings
-            // as a function of (r,j)
+            // as a function of (r,j,k)
             cv::Mat_<float> node_cost;
 
             // Search matrix for nearest neighbours.

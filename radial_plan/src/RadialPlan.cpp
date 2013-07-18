@@ -11,6 +11,7 @@ using namespace Nabo;
 using namespace Eigen;
 
 // #define SAVE_OUTPUT
+// #define SIGNED_DISTANCE
 
 RadialPlan::RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int num_connections,
         float dist_scale, float alpha_scale) :
@@ -19,8 +20,8 @@ RadialPlan::RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int
     // n_k and n_j must be odd
     assert(n_k & 1);
     assert(n_j & 1);
-    int conn_range = n_k/2;
-    int ang_range = n_j/2;
+    conn_range = n_k/2;
+    ang_range = n_j/2;
     neighbours.push_back(cv::Point3i(0,0,+1));
     neighbours.push_back(cv::Point3i(0,0,-1));
     neighbours.push_back(cv::Point3i(1,0,0));
@@ -49,7 +50,12 @@ RadialPlan::RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int
 #endif
         }
     }
+#ifdef SIGNED_DISTANCE
+    int dims[3] = {n_r,n_j,n_k};
+    node_cost = cv::Mat_<float>(3,dims);
+#else
     node_cost = cv::Mat_<float>(n_r,n_j);
+#endif
     nns_query = MatrixXf(2, n_r*n_j) ;
 #ifdef SAVE_OUTPUT
     printf("Node list:\n");
@@ -73,7 +79,6 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 #ifdef SAVE_OUTPUT
     FILE *pc = fopen("pc","w");
 #endif
-    int ang_range = n_j/2;
     std::vector<float> r_max(n_j,NAN);
     nns.reset();
    	nns_cloud.resize(2, pointCloud.size());
@@ -123,11 +128,40 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
     printf("Node costs\n");
 #endif
     for (int j=0;j < (signed)n_j; j++) {
-#ifdef SAVE_OUTPUT
         float alpha = (j-ang_range) * angle_scale / (2*ang_range);
-#endif
         for (unsigned int r = 0; r < n_r; r ++ ) {
-            float d = sqrt(dists2(0,r*n_j + j));
+            unsigned int ix = r*n_j + j;
+            float d = sqrt(dists2(0,ix));
+#if SIGNED_DISTANCE
+            float dx_near = nns_cloud(0,indices(0,ix)) - r*r_scale*cos(alpha);
+            float dy_near = nns_cloud(1,indices(0,ix)) - r*r_scale*sin(alpha);
+            for (unsigned int k=0;k<n_k;k++) {
+                // Compute the side of the closest point, to make sure the
+                // distance is signed 
+                float beta = (j-ang_range + k-conn_range) * angle_scale / (2*ang_range);
+                float side = remainder(atan2(dy_near, dx_near)-beta,2*M_PI);
+                if (side < 0) {
+                    d = -d;
+                }
+                if (isnan(r_max[j]) || (r * r_scale < r_max[j])) {
+                    float de = (d - d_desired) /* / (std::max(r,1u) * r_scale) */;
+                    // divide by (std::max(r,1) * r_scale) ?? 
+                    if (d > d_safety) {
+                        node_cost(r,j,k) = (de * de); 
+                    } else {
+                        // Adding obstacle repulsion
+                        node_cost(r,j,k) = (de * de) + d_safety/(d+1e-10) - 1;
+                    }
+                } else {
+                    // Behind the point cloud
+                    node_cost(r,j,k) = NAN;
+                }
+#ifdef SAVE_OUTPUT
+                printf("%3d,%3d,%d -> %6.2f %6.2f -> %6.2f (r_max %6.2f d %6.2f)\n",r,j,k,alpha,r*r_scale,node_cost(r,j,k),r_max[j],d);
+                fprintf(fp,"%e %e %e %e %e %e\n",r*r_scale*cos(alpha),r*r_scale*sin(alpha),r*r_scale,alpha,d,node_cost(r,j,conn_range));
+#endif
+            }
+#else
             if (isnan(r_max[j]) || (r * r_scale < r_max[j])) {
                 float de = (d - d_desired) /* / (std::max(r,1u) * r_scale) */;
                 // divide by (std::max(r,1) * r_scale) ?? 
@@ -142,8 +176,9 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
                 node_cost(r,j) = NAN;
             }
 #ifdef SAVE_OUTPUT
-            printf("%3d,%3d -> %6.2f %6.2f -> %6.2f (r_max %6.2f d %6.2f)\n",j,r,alpha,r*r_scale,node_cost(r,j),r_max[j],d);
+            printf("%3d,%3d -> %6.2f %6.2f -> %6.2f (r_max %6.2f d %6.2f)\n",r,j,alpha,r*r_scale,node_cost(r,j),r_max[j],d);
             fprintf(fp,"%e %e %e %e %e %e\n",r*r_scale*cos(alpha),r*r_scale*sin(alpha),r*r_scale,alpha,d,node_cost(r,j));
+#endif
 #endif
         }
     }
@@ -155,8 +190,6 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 
 std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K_length, float K_turn, float K_dist)
 {
-    int angle_range = n_j/2;
-    int conn_range = n_k/2;
     int dims[3] = {n_r, n_j, n_k};
     cv::Mat_<float> cell_value(3,dims, NAN);
     // For each cell we need to store a pointer to the coordinates of
@@ -165,14 +198,19 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
     // The core of Dijkstra's Algorithm, a sorted heap, where the first
     // element is always the closer to the start.
     Heap heap;
-    cell_value(0,angle_range,conn_range) = 0;
+    cell_value(0,ang_range,conn_range) = 0;
     for (int k = -conn_range;k<=conn_range;k++) {
-        float alpha = (k-conn_range) * angle_scale / angle_range;
-        float cost = r_scale + K_initial_angle * alpha * alpha + node_cost(1,angle_range+k);
+        float alpha = (k-conn_range) * angle_scale / (2*ang_range);
+        float cost = r_scale + K_initial_angle * alpha * alpha;
+#ifdef SIGNED_DISTANCE
+        cost += node_cost(1,ang_range+k,conn_range);
+#else
+        cost += node_cost(1,ang_range+k);
+#endif
         if (!isnan(cost)) {
-            heap.insert(Heap::value_type(cost, cv::Point3i(1,angle_range+k,conn_range)));
-            cell_value(1,angle_range+k,conn_range) = cost;
-            predecessor.at<cv::Vec3s>(1,angle_range+k,conn_range) = cv::Vec3s(0,angle_range,conn_range);
+            heap.insert(Heap::value_type(cost, cv::Point3i(1,ang_range+k,conn_range)));
+            cell_value(1,ang_range+k,conn_range) = cost;
+            predecessor.at<cv::Vec3s>(1,ang_range+k,conn_range) = cv::Vec3s(0,ang_range,conn_range);
         }
     }
     while (!heap.empty()) {
@@ -208,7 +246,11 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
 #endif
                 continue;
             }
+#ifdef SIGNED_DISTANCE
+            float cell_cost = node_cost(dest.x,dest.y,dest.z);
+#else
             float cell_cost = node_cost(dest.x,dest.y);
+#endif
             if (isnan(cell_cost)) {
                 // behind the point cloud
 #ifdef SAVE_OUTPUT
@@ -279,9 +321,9 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
     FILE * fp = fopen("path","w");
 #endif
     while (1) {
-        float j_f = (current.y - angle_range)*angle_scale / (2*angle_range);
+        float j_f = (current.y - ang_range)*angle_scale / (2*ang_range);
 #ifdef SAVE_OUTPUT
-        float k_f = (current.z - conn_range)*angle_scale / (2*angle_range);
+        float k_f = (current.z - conn_range)*angle_scale / (2*ang_range);
 #endif
         float x = current.x*r_scale*cos(j_f);
         float y = current.x*r_scale*sin(j_f);
