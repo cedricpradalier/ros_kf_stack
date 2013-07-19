@@ -17,9 +17,6 @@ tc.SetPTZ(pan=1.57, tilt=0.0)
 tc.AlignWithShore(angle=1.57, ang_velocity=1.5)
 tc.FollowShorePID(angle=1.57, velocity=0.3, p_d=0.15, p_alpha=0.3,  d_alpha=-0.1, d_d=-0.1, i_d=0.01, i_alpha=0.01, distance=8.0, task_timeout=-1.0)
 
-except TaskException, e:
-    rospy.logerr("Exception caught: " + str(e))
-
 if not rospy.core.is_shutdown():
     tc.SetManual()
 

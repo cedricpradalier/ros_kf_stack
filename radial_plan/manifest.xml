@@ -18,7 +18,7 @@
   <depend package="tf"/>
   <depend package="laser_geometry"/>
   <export>
-      <cpp cflags="-I${prefix}/include/radial_plan" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lradial_plan"/>
+      <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lradial_plan"/>
   </export>
 
 </package>

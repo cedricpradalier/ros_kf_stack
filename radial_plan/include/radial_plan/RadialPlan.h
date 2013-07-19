@@ -14,6 +14,8 @@
 	#include "Eigen/Array"
 #endif
 
+#define USE_FILTERED_OUTPUT
+
 namespace radial_plan {
 
     // Description of a radial network where each node is defined by coordinates
@@ -33,8 +35,10 @@ namespace radial_plan {
 
             ~RadialPlan() {}
 
+            typedef enum {LEFT, RIGHT} Side;
+
             // Update the node costs based on the point cloud.
-            void updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud, float d_desired, float d_safety);
+            void updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud, Side side, float d_desired, float d_safety);
 
             std::list<cv::Point2f> getOptimalPath(float K_initial_angle, float K_length, 
                     float K_turn, float K_dist);
@@ -52,6 +56,29 @@ namespace radial_plan {
             float r_scale;
             float angle_scale;
             int conn_range, ang_range;
+
+            struct NaboFilter : public Nabo::PointFilter {
+                const Eigen::MatrixXf & nns_cloud;
+                const Eigen::MatrixXf & nns_query;
+                float x_ref, y_ref;
+                float orientationOffset;
+                float u_sep, v_sep;
+                NaboFilter(const Eigen::MatrixXf & cloud, const Eigen::MatrixXf & query) : nns_cloud(cloud), nns_query(query){}
+                virtual ~NaboFilter(){}
+
+                virtual void setQueryIndex(int i_query) {
+                    x_ref = nns_query(0,i_query); y_ref = nns_query(1,i_query); 
+                    float alpha=atan2(y_ref,x_ref);
+                    u_sep = cos(alpha + orientationOffset); v_sep = sin(alpha + orientationOffset);
+                }
+                void setOrientationOffset(float theta) {
+                    orientationOffset = theta;
+                }
+                virtual bool acceptPoint(int index) const {
+                    return (u_sep*(nns_cloud(0,index)-x_ref)+v_sep*(nns_cloud(1,index)-y_ref)) >= 0.0;
+                }
+            };
+
             boost::shared_ptr<Nabo::NNSearchF> nns;
 
             bool isInGrid(const cv::Point3i & P) {
@@ -68,7 +95,7 @@ namespace radial_plan {
 
             // Cost of each node, to be updated based on laser readings
             // as a function of (r,j,k)
-            cv::Mat_<float> node_cost;
+            cv::Mat_<float> node_cost, node_safety;
 
             // Search matrix for nearest neighbours.
             Eigen::MatrixXf nns_cloud, nns_query;

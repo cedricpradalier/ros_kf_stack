@@ -29,7 +29,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     projector.projectLaser(*scan_in, cloud);
     pcl::fromROSMsg(cloud, pointCloud);
     double t0 = ros::Time::now().toSec();
-    RP.updateNodeCosts(pointCloud, 6.0, 2.0);
+    RP.updateNodeCosts(pointCloud, RadialPlan::LEFT, 6.0, 2.0);
     double t1 = ros::Time::now().toSec();
     std::list<cv::Point2f> lpath;
     lpath = RP.getOptimalPath(1.0, 1.0, 1.0, 10.0);
