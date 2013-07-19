@@ -64,7 +64,8 @@ namespace sim_tasks {
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
             kf_yaw_kf::Compass compass;
-            
+            geometry_msgs::Pose2D origin;
+
             // Specific variable for lake circumnavigation
             geometry_msgs::Pose2D finishLine2D;
 
@@ -88,6 +89,14 @@ namespace sim_tasks {
 
             double getBattery() const {
                 return sense.battery;
+            }
+
+            void setOrigin2D(const geometry_msgs::Pose2D & pose) {
+                origin = pose;
+            }
+
+            const geometry_msgs::Pose2D & getOrigin2D() const {
+                return origin;
             }
 
             geometry_msgs::Pose2D getPose2D() const ; 

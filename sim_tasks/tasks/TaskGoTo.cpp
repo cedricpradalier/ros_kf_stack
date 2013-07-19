@@ -13,6 +13,13 @@ using namespace sim_tasks;
 
 TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) 
 {
+    if (cfg.relative) {
+        tstart = env->getPose2D();
+        if (cfg.wrtOrigin) {
+            tstart.x -= env->getOrigin2D().x;
+            tstart.y -= env->getOrigin2D().y;
+        }
+    }
     ROS_INFO("Going to %.2f %.2f",cfg.goal_x,cfg.goal_y);
     return TaskStatus::TASK_INITIALISED;
 }
@@ -20,9 +27,18 @@ TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskGoTo::iterate()
 {
-    const geometry_msgs::Pose2D & tpose = env->getPose2D();
+    geometry_msgs::Pose2D tpose = env->getPose2D();
+    if (cfg.wrtOrigin) {
+        tpose.x -= env->getOrigin2D().x;
+        tpose.y -= env->getOrigin2D().y;
+    }
+    if (cfg.relative) { 
+        tpose.x -= tstart.x;
+        tpose.y -= tstart.y;
+    }
     double r = hypot(cfg.goal_y-tpose.y,cfg.goal_x-tpose.x);
     if (r < cfg.dist_threshold) {
+        env->publishVelocity(0,0);
 		return TaskStatus::TASK_COMPLETED;
     }
     double alpha = remainder(atan2((cfg.goal_y-tpose.y),cfg.goal_x-tpose.x)-tpose.theta,2*M_PI);
@@ -32,14 +48,15 @@ TaskIndicator TaskGoTo::iterate()
             cfg.goal_x,cfg.goal_y,r,alpha*180./M_PI);
 #endif
     if (fabs(alpha) > M_PI/6) {
-        double rot = ((alpha>0)?+1:-1)*M_PI/3;
+        int ska = (cfg.k_alpha>=0)?+1:-1;
+        double rot = ((alpha>0)?-ska:ska)*M_PI/3;
 #ifdef DEBUG_GOTO
         printf("Cmd v %.2f r %.2f\n",0.,rot);
 #endif
         env->publishVelocity(0,rot);
     } else {
         double vel = cfg.k_v * r;
-        double rot = cfg.k_alpha*alpha;
+        double rot = -cfg.k_alpha*alpha;
         if (vel > cfg.max_velocity) vel = cfg.max_velocity;
 #ifdef DEBUG_GOTO
         printf("Cmd v %.2f r %.2f\n",vel,rot);

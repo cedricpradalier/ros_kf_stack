@@ -10,7 +10,8 @@ using namespace task_manager_lib;
 namespace sim_tasks {
     class TaskGoTo : public TaskInstance<TaskGoToConfig,SimTasksEnv>
     {
-
+        protected:
+            geometry_msgs::Pose2D tstart;
         public:
             TaskGoTo(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskGoTo() {};

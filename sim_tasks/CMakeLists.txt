@@ -79,3 +79,6 @@ TARGET_LINK_LIBRARIES(TaskFollowShorePID dl)
 
 ROSBUILD_ADD_LIBRARY( TaskFollowShoreRP SHARED tasks/TaskFollowShoreRP.cpp)
 TARGET_LINK_LIBRARIES(TaskFollowShoreRP dl)
+
+ROSBUILD_ADD_LIBRARY( TaskSetOrigin SHARED tasks/TaskSetOrigin.cpp)
+TARGET_LINK_LIBRARIES(TaskSetOrigin dl)
