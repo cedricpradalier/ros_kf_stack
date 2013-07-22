@@ -64,7 +64,7 @@ namespace sim_tasks {
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
             kf_yaw_kf::Compass compass;
-            geometry_msgs::Pose2D origin;
+            geometry_msgs::Point origin;
 
             // Specific variable for lake circumnavigation
             geometry_msgs::Pose2D finishLine2D;
@@ -91,19 +91,19 @@ namespace sim_tasks {
                 return sense.battery;
             }
 
-            void setOrigin2D(const geometry_msgs::Pose2D & pose) {
-                origin = pose;
-            }
+            void setOrigin(const geometry_msgs::Point & pose);
 
-            const geometry_msgs::Pose2D & getOrigin2D() const {
-                return origin;
-            }
+            void setOrigin(const geometry_msgs::Pose2D & pose);
 
-            geometry_msgs::Pose2D getPose2D() const ; 
+            geometry_msgs::Pose2D getOrigin2D() const;
 
-            geometry_msgs::Pose getPose() const ;
+            const geometry_msgs::Point & getOrigin() const; 
 
-            geometry_msgs::PoseStamped getPoseStamped() const  ;
+            geometry_msgs::Pose2D getPose2D(bool wrtOrigin=false) const ; 
+
+            geometry_msgs::Pose getPose(bool wrtOrigin=false) const ;
+
+            geometry_msgs::PoseStamped getPoseStamped(bool wrtOrigin=false) const  ;
 
             const pcl::PointCloud<pcl::PointXYZ> & getPointCloud() const {return pointCloud;}
             const std_msgs::Header & getPointCloudHeader() const {return pointCloud_header;}

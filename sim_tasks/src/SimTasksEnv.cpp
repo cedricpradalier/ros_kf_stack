@@ -50,7 +50,7 @@ void SimTasksEnv::setComputerControl()
 }
 
 
-geometry_msgs::Pose2D SimTasksEnv::getPose2D() const {
+geometry_msgs::Pose2D SimTasksEnv::getPose2D(bool wrtOrigin) const {
     geometry_msgs::Pose2D pose;
     if (position_source == "tf") {
         tf::StampedTransform transform;
@@ -73,10 +73,14 @@ geometry_msgs::Pose2D SimTasksEnv::getPose2D() const {
     } else {
         ROS_ERROR("Parameter position_source undefined");
     }
+    if (wrtOrigin) {
+        pose.x -= origin.x;
+        pose.y -= origin.y;
+    }
     return pose;
 }
 
-geometry_msgs::Pose SimTasksEnv::getPose() const {
+geometry_msgs::Pose SimTasksEnv::getPose(bool wrtOrigin) const {
     geometry_msgs::Pose pose;
     if (position_source == "tf") {
         tf::StampedTransform transform;
@@ -94,10 +98,15 @@ geometry_msgs::Pose SimTasksEnv::getPose() const {
     } else {
         ROS_ERROR("Parameter position_source undefined");
     }
+    if (wrtOrigin) {
+        pose.position.x -= origin.x;
+        pose.position.y -= origin.y;
+        pose.position.z -= origin.z;
+    }
     return pose;
 }
 
-geometry_msgs::PoseStamped SimTasksEnv::getPoseStamped() const {
+geometry_msgs::PoseStamped SimTasksEnv::getPoseStamped(bool wrtOrigin) const {
     geometry_msgs::PoseStamped pose;
     if (position_source == "tf") {
         tf::StampedTransform transform;
@@ -118,8 +127,35 @@ geometry_msgs::PoseStamped SimTasksEnv::getPoseStamped() const {
     } else { 
         ROS_ERROR("Parameter position_source undefined");
     }
+    if (wrtOrigin) {
+        pose.pose.position.x -= origin.x;
+        pose.pose.position.y -= origin.y;
+        pose.pose.position.z -= origin.z;
+    }
     return pose;
 }
+void SimTasksEnv::setOrigin(const geometry_msgs::Point & pose) {
+    origin = pose;
+}
+
+void SimTasksEnv::setOrigin(const geometry_msgs::Pose2D & pose) {
+    origin.x = pose.x;
+    origin.y = pose.y;
+    origin.z = 0.0;
+}
+
+geometry_msgs::Pose2D SimTasksEnv::getOrigin2D() const {
+    geometry_msgs::Pose2D pose;
+    pose.x = origin.x;
+    pose.y = origin.y;
+    pose.theta = 0.0;
+    return pose;
+}
+
+const geometry_msgs::Point & SimTasksEnv::getOrigin() const {
+    return origin;
+}
+
 
 void SimTasksEnv::publishVelocity(double linear, double angular) {
     geometry_msgs::Twist cmd;

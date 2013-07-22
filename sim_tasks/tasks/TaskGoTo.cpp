@@ -15,11 +15,7 @@ using namespace sim_tasks;
 TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters) 
 {
     if (cfg.relative) {
-        tstart = env->getPose2D();
-        if (cfg.wrtOrigin) {
-            tstart.x -= env->getOrigin2D().x;
-            tstart.y -= env->getOrigin2D().y;
-        }
+        tstart = env->getPose2D(cfg.wrtOrigin);
     }
     ROS_INFO("Going to %.2f %.2f",cfg.goal_x,cfg.goal_y);
     return TaskStatus::TASK_INITIALISED;
@@ -28,11 +24,7 @@ TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskGoTo::iterate()
 {
-    geometry_msgs::Pose2D tpose = env->getPose2D();
-    if (cfg.wrtOrigin) {
-        tpose.x -= env->getOrigin2D().x;
-        tpose.y -= env->getOrigin2D().y;
-    }
+    geometry_msgs::Pose2D tpose = env->getPose2D(cfg.wrtOrigin);
     if (cfg.relative) { 
         tpose.x -= tstart.x;
         tpose.y -= tstart.y;

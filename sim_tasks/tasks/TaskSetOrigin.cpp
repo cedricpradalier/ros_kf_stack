@@ -16,12 +16,12 @@ TaskIndicator TaskSetOrigin::iterate()
 {
     if (cfg.current) {
         const geometry_msgs::Pose2D & tpose = env->getPose2D();
-        env->setOrigin2D(tpose);
+        env->setOrigin(tpose);
     } else {
         geometry_msgs::Pose2D tpose;
         tpose.x = cfg.x;
         tpose.y = cfg.y;
-        env->setOrigin2D(tpose);
+        env->setOrigin(tpose);
     }
     return TaskStatus::TASK_COMPLETED;
 }

@@ -75,3 +75,9 @@ TARGET_LINK_LIBRARIES(TaskFollowShoreRP dl)
 
 ROSBUILD_ADD_LIBRARY( TaskSetOrigin SHARED tasks/TaskSetOrigin.cpp)
 TARGET_LINK_LIBRARIES(TaskSetOrigin dl)
+
+ROSBUILD_ADD_LIBRARY( TaskWaitForROI SHARED tasks/TaskWaitForROI.cpp)
+TARGET_LINK_LIBRARIES(TaskWaitForROI dl)
+
+ROSBUILD_ADD_LIBRARY( TaskWaitForDistance SHARED tasks/TaskWaitForDistance.cpp)
+TARGET_LINK_LIBRARIES(TaskWaitForDistance dl)
