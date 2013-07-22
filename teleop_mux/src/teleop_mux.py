@@ -6,6 +6,7 @@ from std_msgs.msg import String
 from topic_tools.srv import MuxSelect
 
 mux_proxy = None
+safety_timeout = 1.0
 joystick_button = 0
 joystick_topic = "/joy/topic"
 auto_button = 1
@@ -36,7 +37,7 @@ def selected_cb(value):
 
 
 def init():
-    global mux_proxy, joystick_topic, joystick_button
+    global mux_proxy, joystick_topic, joystick_button, safety_timeout
     global auto_topic, auto_button, selected, last_joy
     rospy.init_node('vrep_ros_teleop_mux')
     rospy.wait_for_service('/mux/select')
@@ -48,9 +49,10 @@ def init():
     joystick_topic = rospy.get_param("~joystick_topic",joystick_topic)
     auto_button = rospy.get_param("~auto_button",auto_button)
     auto_topic = rospy.get_param("~auto_topic",auto_topic)
+    safety_timeout = rospy.get_param("~safety_timeout",safety_timeout)
     timeout = False
     while not rospy.is_shutdown():
-        if (rospy.rostime.get_time() - last_joy) < 0.5: 
+        if (safety_timeout < 0.0) or ((rospy.rostime.get_time() - last_joy) < safety_timeout): 
             if timeout:
                 timeout = False
         else:

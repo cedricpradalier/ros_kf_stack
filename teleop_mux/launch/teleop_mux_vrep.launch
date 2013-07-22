@@ -24,6 +24,7 @@
       <param name="joystick_topic" value="/teleop/twistCommand"/>
       <param name="auto_button" value="1" type="int"/>
       <param name="auto_topic" value="/mux/autoCommand"/>
+      <param name="safety_timeout" value="0.5"/>
       <remap from="/teleop_mux/joy" to="/joy"/>
   </node>
 
