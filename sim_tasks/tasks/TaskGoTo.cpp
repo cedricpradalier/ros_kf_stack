@@ -17,6 +17,7 @@ TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters)
     if (cfg.relative) {
         tstart = env->getPose2D(cfg.wrtOrigin);
     }
+    holding = false;
     ROS_INFO("Going to %.2f %.2f",cfg.goal_x,cfg.goal_y);
     return TaskStatus::TASK_INITIALISED;
 }
@@ -31,30 +32,37 @@ TaskIndicator TaskGoTo::iterate()
     }
     double r = hypot(cfg.goal_y-tpose.y,cfg.goal_x-tpose.x);
     if (r < cfg.dist_threshold) {
+        holding = true;
         env->publishVelocity(0,0);
-		return TaskStatus::TASK_COMPLETED;
-    }
-    double alpha = remainder(atan2((cfg.goal_y-tpose.y),cfg.goal_x-tpose.x)-tpose.theta,2*M_PI);
-#ifdef DEBUG_GOTO
-    printf("c %.1f %.1f %.1f g %.1f %.1f r %.3f alpha %.1f\n",
-            tpose.x, tpose.y, tpose.theta*180./M_PI,
-            cfg.goal_x,cfg.goal_y,r,alpha*180./M_PI);
-#endif
-    if (fabs(alpha) > M_PI/6) {
-        int ska = (cfg.k_alpha>=0)?+1:-1;
-        double rot = ((alpha>0)?-ska:ska)*M_PI/3;
-#ifdef DEBUG_GOTO
-        printf("Cmd v %.2f r %.2f\n",0.,rot);
-#endif
-        env->publishVelocity(0,rot);
+        if (!cfg.hold) {
+            return TaskStatus::TASK_COMPLETED;
+        }
+    } else if (holding && (r<(cfg.dist_threshold+cfg.dist_histeresis))) {
+        env->publishVelocity(0,0);
     } else {
-        double vel = cfg.k_v * r;
-        double rot = -cfg.k_alpha*alpha;
-        if (vel > cfg.max_velocity) vel = cfg.max_velocity;
+        holding = false;
+        double alpha = remainder(atan2((cfg.goal_y-tpose.y),cfg.goal_x-tpose.x)-tpose.theta,2*M_PI);
 #ifdef DEBUG_GOTO
-        printf("Cmd v %.2f r %.2f\n",vel,rot);
+        printf("c %.1f %.1f %.1f g %.1f %.1f r %.3f alpha %.1f\n",
+                tpose.x, tpose.y, tpose.theta*180./M_PI,
+                cfg.goal_x,cfg.goal_y,r,alpha*180./M_PI);
 #endif
-        env->publishVelocity(vel, rot);
+        if (fabs(alpha) > M_PI/6) {
+            int ska = (cfg.k_alpha>=0)?+1:-1;
+            double rot = ((alpha>0)?-ska:ska)*M_PI/3;
+#ifdef DEBUG_GOTO
+            printf("Cmd v %.2f r %.2f\n",0.,rot);
+#endif
+            env->publishVelocity(0,rot);
+        } else {
+            double vel = cfg.k_v * r;
+            double rot = -cfg.k_alpha*alpha;
+            if (vel > cfg.max_velocity) vel = cfg.max_velocity;
+#ifdef DEBUG_GOTO
+            printf("Cmd v %.2f r %.2f\n",vel,rot);
+#endif
+            env->publishVelocity(vel, rot);
+        }
     }
 	return TaskStatus::TASK_RUNNING;
 }

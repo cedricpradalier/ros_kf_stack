@@ -13,6 +13,7 @@ namespace sim_tasks {
     {
         protected:
             geometry_msgs::Pose2D tstart;
+            bool holding;
         public:
             TaskGoTo(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskGoTo() {};
