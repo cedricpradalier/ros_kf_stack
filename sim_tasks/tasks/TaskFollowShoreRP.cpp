@@ -21,6 +21,7 @@ TaskIndicator TaskFollowShoreRP::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskFollowShoreRP::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
 
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
 

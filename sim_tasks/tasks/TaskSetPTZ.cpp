@@ -26,6 +26,7 @@ TaskIndicator TaskSetPTZ::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskSetPTZ::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     const axis_camera::Axis &state = env->getAxisState();
     axis_camera::Axis cmd = state;
     double now = ros::Time::now().toSec();

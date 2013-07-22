@@ -10,7 +10,7 @@ using namespace sim_tasks;
 
 TaskIndicator TaskAlignWithShore::iterate()
 {
-    const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
 
     double vel = 0;
     double rot = 0;
@@ -21,6 +21,7 @@ TaskIndicator TaskAlignWithShore::iterate()
     float theta_i=0;
     float angle_error=0;
 
+    const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
     for (unsigned int i=0;i<pointCloud.size();i++) {
         theta_i=-atan2(pointCloud[i].y,pointCloud[i].x);
 //        if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {

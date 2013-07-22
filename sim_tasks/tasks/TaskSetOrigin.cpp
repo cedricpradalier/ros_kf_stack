@@ -14,6 +14,7 @@ using namespace sim_tasks;
 
 TaskIndicator TaskSetOrigin::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     if (cfg.current) {
         const geometry_msgs::Pose2D & tpose = env->getPose2D();
         env->setOrigin(tpose);
