@@ -1,8 +1,9 @@
 #include <math.h>
 #include "TaskFollowShore.h"
-#include "sim_tasks/TaskFollowShoreConfig.h"
+#include "sim_tasks_cfg/TaskFollowShoreConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
 // #define DEBUG_GOTO

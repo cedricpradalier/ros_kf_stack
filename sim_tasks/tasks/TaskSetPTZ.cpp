@@ -1,8 +1,9 @@
 #include <math.h>
 #include "TaskSetPTZ.h"
-#include "sim_tasks/TaskSetPTZConfig.h"
+#include "sim_tasks_cfg/TaskSetPTZConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
 // #define DEBUG_SETPTZ

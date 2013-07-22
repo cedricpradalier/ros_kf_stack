@@ -1,8 +1,9 @@
 #include <math.h>
 #include "TaskSetHeading.h"
-#include "sim_tasks/TaskSetHeadingConfig.h"
+#include "sim_tasks_cfg/TaskSetHeadingConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
 // #define DEBUG_GOTO

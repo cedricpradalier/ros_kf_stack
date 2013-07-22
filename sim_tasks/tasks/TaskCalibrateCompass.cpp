@@ -3,12 +3,13 @@
 #include "TaskCalibrateCompass.h"
 #include "kf_yaw_kf/SetMagOffset.h"
 #include "geometry_msgs/Vector3Stamped.h"
-#include "sim_tasks/TaskCalibrateCompassConfig.h"
+#include "sim_tasks_cfg/TaskCalibrateCompassConfig.h"
 
 #include <Eigen/Core>
 
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
 // #define DEBUG_GOTO

@@ -3,9 +3,10 @@
 
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
-#include "sim_tasks/TaskAlignWithShoreConfig.h"
+#include "sim_tasks_cfg/TaskAlignWithShoreConfig.h"
 
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 
 namespace sim_tasks {
     class TaskAlignWithShore : public TaskInstance<TaskAlignWithShoreConfig,SimTasksEnv>

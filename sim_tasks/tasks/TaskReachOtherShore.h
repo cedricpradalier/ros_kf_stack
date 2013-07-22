@@ -3,9 +3,10 @@
 
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
-#include "sim_tasks/TaskReachOtherShoreConfig.h"
+#include "sim_tasks_cfg/TaskReachOtherShoreConfig.h"
 
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 
 namespace sim_tasks {
     class TaskReachOtherShore : public TaskInstance<TaskReachOtherShoreConfig,SimTasksEnv>

@@ -3,9 +3,10 @@
 
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
-#include "sim_tasks/TaskFollowShoreConfig.h"
+#include "sim_tasks_cfg/TaskFollowShoreConfig.h"
 
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 
 namespace sim_tasks {
     class TaskFollowShore : public TaskInstance<TaskFollowShoreConfig,SimTasksEnv>

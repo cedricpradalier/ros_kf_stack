@@ -3,9 +3,10 @@
 
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
-#include "sim_tasks/TaskWaitForAutoConfig.h"
+#include "sim_tasks_cfg/TaskWaitForAutoConfig.h"
 
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 
 namespace sim_tasks {
     class TaskWaitForAuto : public TaskInstance<TaskWaitForAutoConfig,SimTasksEnv>

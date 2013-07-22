@@ -1,8 +1,9 @@
 #include <math.h>
 #include "TaskSetManual.h"
-#include "sim_tasks/TaskSetManualConfig.h"
+#include "sim_tasks_cfg/TaskSetManualConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
 

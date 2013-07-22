@@ -6,9 +6,10 @@
 #include "sim_tasks/SimTasksEnv.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Vector3Stamped.h"
-#include "sim_tasks/TaskCalibrateCompassConfig.h"
+#include "sim_tasks_cfg/TaskCalibrateCompassConfig.h"
 
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 
 namespace sim_tasks {
     class TaskCalibrateCompass : public TaskInstance<TaskCalibrateCompassConfig,SimTasksEnv>

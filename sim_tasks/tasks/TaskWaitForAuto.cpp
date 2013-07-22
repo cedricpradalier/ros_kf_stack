@@ -1,8 +1,9 @@
 #include <math.h>
 #include "TaskWaitForAuto.h"
-#include "sim_tasks/TaskWaitForAutoConfig.h"
+#include "sim_tasks_cfg/TaskWaitForAutoConfig.h"
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
 TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters) 

@@ -1,0 +1,19 @@
+<package>
+  <description brief="sim_tasks_cfg">
+
+     sim_tasks_cfg
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/sim_tasks_cfg</url>
+  <depend package="dynamic_reconfigure"/>
+  <depend package="task_manager_lib"/>
+  <export>
+      <cpp cflags="-I${prefix}/cfg/cpp"/>
+  </export>
+
+</package>
+
+

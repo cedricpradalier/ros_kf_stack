@@ -3,10 +3,11 @@
 
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
-#include "sim_tasks/TaskSetPTZConfig.h"
+#include "sim_tasks_cfg/TaskSetPTZConfig.h"
 #include "axis_camera/Axis.h"
 
 using namespace task_manager_lib;
+using namespace sim_tasks_cfg;
 
 namespace sim_tasks {
     class TaskSetPTZ : public TaskInstance<TaskSetPTZConfig,SimTasksEnv>

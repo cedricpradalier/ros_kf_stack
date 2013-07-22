@@ -15,6 +15,9 @@
   <depend package="laser_geometry"/>
   <depend package="nav_msgs"/>
   <depend package="task_manager_lib"/>
+  <depend package="sim_tasks_cfg"/>
+
+
   <depend package="button_server"/>
   <depend package="topic_tools"/>
   <depend package="tf"/>
