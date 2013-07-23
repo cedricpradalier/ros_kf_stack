@@ -13,22 +13,23 @@ rospy.loginfo("Mission connected to server: " + server_node)
 
 
 scale = 10.0 # Ok for the lake
-scale = -3.0 # better for VRep
+# scale = -3.0 # better for VRep
+vel = 0.0
 
 tc.WaitForAuto()
 tc.SetOrigin(current=True)
 try:
     # 10 meter east (of origin)
-    tc.GoTo(goal_x=scale,goal_y=0.0)
+    tc.GoTo(goal_x=scale,goal_y=0.0,wrtOrigin=True,max_velocity=vel)
     tc.Wait(duration=1.0)
     # 10 meter north
-    tc.GoTo(goal_x=scale,goal_y=scale)
+    tc.GoTo(goal_x=scale,goal_y=scale,wrtOrigin=True,max_velocity=vel)
     tc.Wait(duration=1.0)
     # 10 m west of current position
-    tc.GoTo(goal_x=-scale,goal_y=0.0, relative=True)
+    tc.GoTo(goal_x=-scale,goal_y=0.0, wrtOrigin=True,relative=True,max_velocity=vel)
     tc.Wait(duration=1.0)
     # 10 m south of current position
-    tc.GoTo(goal_x=0.0,goal_y=-scale, relative=True)
+    tc.GoTo(goal_x=0.0,goal_y=-scale, wrtOrigin=True,relative=True,max_velocity=vel)
     # We should be back home
 
 except TaskException, e:

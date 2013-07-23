@@ -6,7 +6,7 @@ using namespace task_manager_lib;
 using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
-// #define DEBUG_GOTO
+#define DEBUG_GOTO
 #ifdef DEBUG_GOTO
 #warning Debugging task GOTO
 #endif
@@ -47,9 +47,9 @@ TaskIndicator TaskGoTo::iterate()
                 tpose.x, tpose.y, tpose.theta*180./M_PI,
                 cfg.goal_x,cfg.goal_y,r,alpha*180./M_PI);
 #endif
-        if (fabs(alpha) > M_PI/6) {
+        if (fabs(alpha) > cfg.angle_threshold) {
             int ska = (cfg.k_alpha>=0)?+1:-1;
-            double rot = ((alpha>0)?-ska:ska)*M_PI/3;
+            double rot = ((alpha>0)?ska:-ska)*M_PI/3;
 #ifdef DEBUG_GOTO
             printf("Cmd v %.2f r %.2f\n",0.,rot);
 #endif

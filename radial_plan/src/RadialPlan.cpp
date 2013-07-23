@@ -77,8 +77,11 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 #endif
     std::vector<float> r_max(n_j,NAN);
     nns.reset();
+    unsigned int n1;
+    n1 = pointCloud.size();
    	nns_cloud.resize(2, pointCloud.size());
     for (unsigned int i=0;i<pointCloud.size();i++) {
+        assert(pointCloud.size() == n1);
         nns_cloud(0,i) = pointCloud[i].x;
         nns_cloud(1,i) = pointCloud[i].y;
         float alpha = round(atan2(pointCloud[i].y, pointCloud[i].x) * 2 * ang_range / angle_scale);
