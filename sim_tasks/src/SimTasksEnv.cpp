@@ -22,7 +22,7 @@ SimTasksEnv::SimTasksEnv(ros::NodeHandle & n) :
     buttonsSub = nh.subscribe("/buttons",10,&SimTasksEnv::buttonCallback,this);
     muxSub = nh.subscribe("/mux/selected",1,&SimTasksEnv::muxCallback,this);
     pointCloudSub = nh.subscribe("/vrep/hokuyoSensor",1,&SimTasksEnv::pointCloudCallback,this);
-    utmPositionSub = nh.subscribe("/gps/utm",1,&SimTasksEnv::utmPositionCallback,this);
+    utmPositionSub = nh.subscribe("/gps/odom",1,&SimTasksEnv::utmPositionCallback,this);
     scanSub = nh.subscribe("/lidar/scan",1,&SimTasksEnv::scanCallback,this);
     senseSub = nh.subscribe("/sense",1,&SimTasksEnv::senseCallback,this);
     compassSub = nh.subscribe("/compass/compass",1,&SimTasksEnv::compassCallback,this);
