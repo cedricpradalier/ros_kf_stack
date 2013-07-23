@@ -9,7 +9,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskSetManual::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
     env->setManualControl();
 	return TaskStatus::TASK_COMPLETED;
 }

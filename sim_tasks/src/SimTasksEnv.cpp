@@ -170,7 +170,7 @@ void SimTasksEnv::publishVelocity(double linear, double angular) {
 }
 
 void SimTasksEnv::buttonCallback(const std_msgs::String::ConstPtr& msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     if (boost::algorithm::to_lower_copy(msg->data) == "pause") {
         paused = !paused;
         if (paused) {
@@ -182,7 +182,7 @@ void SimTasksEnv::buttonCallback(const std_msgs::String::ConstPtr& msg) {
 }
 
 void SimTasksEnv::muxCallback(const std_msgs::String::ConstPtr& msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     if (msg->data == joystick_topic) {
         manualControl = true;
     } else if (msg->data == auto_topic) {
@@ -193,29 +193,29 @@ void SimTasksEnv::muxCallback(const std_msgs::String::ConstPtr& msg) {
 }
 
 void SimTasksEnv::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     pointCloud_header = msg->header;
     pcl::fromROSMsg(*msg, pointCloud);
 }
 
 void SimTasksEnv::utmPositionCallback(const nav_msgs::Odometry::ConstPtr& msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     utmPosition = *msg;
 }
 
 void SimTasksEnv::senseCallback(const kingfisher_msgs::Sense::ConstPtr& msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     sense = *msg;
 }
 
 void SimTasksEnv::compassCallback(const kf_yaw_kf::Compass::ConstPtr& msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     compass = *msg;
 }
 
 void SimTasksEnv::scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     pointCloud_header = scan_in->header;
     laser_geometry::LaserProjection projector;
     sensor_msgs::PointCloud2 cloud;
@@ -224,7 +224,7 @@ void SimTasksEnv::scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 }
 
 void SimTasksEnv::axisCallback(const axis_camera::AxisConstPtr & msg) {
-    boost::lock_guard<boost::mutex> guard(mutex);
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     axisState = *msg;
 }
 

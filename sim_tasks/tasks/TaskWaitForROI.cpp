@@ -21,7 +21,6 @@ TaskIndicator TaskWaitForROI::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskWaitForROI::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
     geometry_msgs::Pose2D tpose = env->getPose2D(cfg.wrtOrigin);
     double r = hypot(roi_y-tpose.y,roi_x-tpose.x);
     if (!exited && (cfg.histeresis_radius >= 0)) { 

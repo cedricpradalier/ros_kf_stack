@@ -10,7 +10,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskAlignWithShore::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
 
     double vel = 0;
     double rot = 0;

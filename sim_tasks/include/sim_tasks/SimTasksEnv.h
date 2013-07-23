@@ -22,6 +22,10 @@
 namespace sim_tasks {
     class SimTasksEnv: public task_manager_lib::TaskEnvironment
     {
+        // Warning, the parent class defines a mutex that is locked before any
+        // task function. As the task functions run asynchronously with ROS,
+        // the ROS callbacks must make sure to lock the mutex before changing
+        // any data.
         protected:
             ros::NodeHandle nh;
             bool paused;
@@ -55,10 +59,6 @@ namespace sim_tasks {
             void axisCallback(const axis_camera::AxisConstPtr & msg); 
 
             bool manualControl;
-            // Warning, this mutex is only locked on ROS callbacks defined in
-            // this function. Any other function does not lock to prevent
-            // deadlock when multiple objects are used
-            boost::mutex mutex;
             std::string joystick_topic;
             std::string auto_topic;
             std::string position_source;
@@ -94,8 +94,6 @@ namespace sim_tasks {
             double getBattery() const {
                 return sense.battery;
             }
-
-            boost::mutex & getMutex() {return mutex;}
 
             void setOrigin(const geometry_msgs::Point & pose);
 

@@ -36,7 +36,6 @@ void TaskCalibrateCompass::magCallback(const geometry_msgs::Vector3StampedConstP
 
 TaskIndicator TaskCalibrateCompass::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
     double heading = env->getHeading();
     double alpha = remainder(heading-initial_heading,2*M_PI);
     switch (state) {

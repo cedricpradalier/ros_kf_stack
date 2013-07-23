@@ -18,7 +18,6 @@ TaskIndicator TaskFollowShore::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskFollowShore::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
 
     geometry_msgs::Vector3 status;
     const geometry_msgs::Pose2D & tpose = env->getPose2D();

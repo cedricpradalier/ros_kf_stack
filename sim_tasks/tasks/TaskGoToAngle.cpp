@@ -10,7 +10,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskGoToAngle::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     double r = hypot(cfg.goal_y-tpose.y,cfg.goal_x-tpose.x);
     if ((r < cfg.dist_threshold) && (fabs(cfg.goal_theta - tpose.theta) < cfg.angle_threshold)) {

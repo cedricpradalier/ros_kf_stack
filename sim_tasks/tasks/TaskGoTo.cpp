@@ -25,7 +25,6 @@ TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskGoTo::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
     geometry_msgs::Pose2D tpose = env->getPose2D(cfg.wrtOrigin);
     if (cfg.relative) { 
         tpose.x -= tstart.x;

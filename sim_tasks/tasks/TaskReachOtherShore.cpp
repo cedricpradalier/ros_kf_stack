@@ -10,7 +10,6 @@ using namespace sim_tasks;
 
 TaskIndicator TaskReachOtherShore::iterate()
 {
-    boost::lock_guard<boost::mutex> guard(env->getMutex());
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     const geometry_msgs::Pose2D & finishLine = env->getFinishLine2D();
 
