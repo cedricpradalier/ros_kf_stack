@@ -25,6 +25,7 @@ TaskIndicator TaskFollowShorePID::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskFollowShorePID::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     geometry_msgs::Vector3 dist;
     geometry_msgs::Vector3 angle;
     const geometry_msgs::Pose2D & tpose = env->getPose2D();

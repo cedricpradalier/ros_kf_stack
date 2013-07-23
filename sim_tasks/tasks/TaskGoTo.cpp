@@ -25,6 +25,7 @@ TaskIndicator TaskGoTo::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskGoTo::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     geometry_msgs::Pose2D tpose = env->getPose2D(cfg.wrtOrigin);
     if (cfg.relative) { 
         tpose.x -= tstart.x;
@@ -47,24 +48,19 @@ TaskIndicator TaskGoTo::iterate()
                 tpose.x, tpose.y, tpose.theta*180./M_PI,
                 cfg.goal_x,cfg.goal_y,r,alpha*180./M_PI);
 #endif
-        if (fabs(alpha) > cfg.angle_threshold) {
-            int ska = (cfg.k_alpha>=0)?+1:-1;
-            double rot = ((alpha>0)?ska:-ska)*M_PI/3;
+        double rot = -cfg.k_alpha*alpha;
+        double vel = cfg.k_v * r;
+        if (rot > cfg.max_angular_velocity) rot = cfg.max_angular_velocity;
+        if (rot <-cfg.max_angular_velocity) rot =-cfg.max_angular_velocity;
+        double alpha_scale = alpha / cfg.angle_threshold;
+        vel *= exp(-alpha_scale * alpha_scale);
+
 #ifdef DEBUG_GOTO
-            printf("Cmd v %.2f r %.2f\n",0.,rot);
+        printf("Cmd v %.2f r %.2f\n",vel,rot);
 #endif
-            env->publishVelocity(0,rot);
-        } else {
-            double vel = cfg.k_v * r;
-            double rot = -cfg.k_alpha*alpha;
-            if (vel > cfg.max_velocity) vel = cfg.max_velocity;
-#ifdef DEBUG_GOTO
-            printf("Cmd v %.2f r %.2f\n",vel,rot);
-#endif
-            env->publishVelocity(vel, rot);
-        }
+        env->publishVelocity(vel, rot);
     }
-	return TaskStatus::TASK_RUNNING;
+    return TaskStatus::TASK_RUNNING;
 }
 
 TaskIndicator TaskGoTo::terminate()

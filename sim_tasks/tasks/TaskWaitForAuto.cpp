@@ -15,6 +15,7 @@ TaskIndicator TaskWaitForAuto::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskWaitForAuto::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     if (!env->getManualControl()) {
         ROS_INFO("Automatic control detected. We are free!");
 		return TaskStatus::TASK_COMPLETED;

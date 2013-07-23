@@ -55,6 +55,10 @@ namespace sim_tasks {
             void axisCallback(const axis_camera::AxisConstPtr & msg); 
 
             bool manualControl;
+            // Warning, this mutex is only locked on ROS callbacks defined in
+            // this function. Any other function does not lock to prevent
+            // deadlock when multiple objects are used
+            boost::mutex mutex;
             std::string joystick_topic;
             std::string auto_topic;
             std::string position_source;
@@ -91,6 +95,8 @@ namespace sim_tasks {
                 return sense.battery;
             }
 
+            boost::mutex & getMutex() {return mutex;}
+
             void setOrigin(const geometry_msgs::Point & pose);
 
             void setOrigin(const geometry_msgs::Pose2D & pose);
@@ -118,8 +124,12 @@ namespace sim_tasks {
             void publishAxisCommand(const axis_camera::Axis & cmd) {axisPub.publish(cmd);}
 
             // Specific variable for lake circumnavigation
-            void setFinishLine2D(geometry_msgs::Pose2D pose) {finishLine2D = pose;}
-            geometry_msgs::Pose2D getFinishLine2D() const {return finishLine2D;}
+            void setFinishLine2D(geometry_msgs::Pose2D pose) {
+                finishLine2D = pose;
+            }
+            geometry_msgs::Pose2D getFinishLine2D() const {
+                return finishLine2D;
+            }
         public: // To make point cloud work on 32bit system
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     };

@@ -16,6 +16,7 @@ TaskIndicator TaskWaitForDistance::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskWaitForDistance::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     geometry_msgs::Pose2D tpose = env->getPose2D();
     double r = hypot(start_y-tpose.y,start_x-tpose.x);
     if (r >= cfg.distance) {

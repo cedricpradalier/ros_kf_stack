@@ -16,6 +16,7 @@ TaskIndicator TaskSetHeading::initialise(const TaskParameters & parameters)
 
 TaskIndicator TaskSetHeading::iterate()
 {
+    boost::lock_guard<boost::mutex> guard(env->getMutex());
     const geometry_msgs::Pose2D & tpose = env->getPose2D();
     double alpha = remainder(cfg.target-tpose.theta,2*M_PI);
     if (fabs(alpha) < cfg.angle_threshold) {
