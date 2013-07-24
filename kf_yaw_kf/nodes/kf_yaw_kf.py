@@ -39,7 +39,10 @@ class KFYawKF:
             self.X = zeros((3,1))
             self.P = eye(3)
             self.first_rpy = True
-            self.first_gps = True
+            if self.use_gps:
+                self.first_gps = True
+            else:
+                self.first_gps = False
             self.first_mag = True
             self.first_imu = True
             rospy.loginfo("Updated Magnetometer offset to %.2f %.2f %.2f" % (self.mag_x_offset,self.mag_y_offset,self.mag_z_offset))
@@ -73,6 +76,7 @@ class KFYawKF:
             self.compass_pub.publish(self.compass)
             if self.debug_pub:
                 self.q_pub.publish(Vector3(self.X[0,0], self.X[1,0], self.X[2,0]))
+                self.p_pub.publish(Vector3(self.P[0,0], self.P[1,1], self.P[2,2]))
 
     def kf_predict(self, dt, Q, stamp):
         with self.mutex:
@@ -91,6 +95,7 @@ class KFYawKF:
             self.compass_pub.publish(self.compass)
             if self.debug_pub:
                 self.q_pub.publish(Vector3(self.X[0,0], self.X[1,0], self.X[2,0]))
+                self.p_pub.publish(Vector3(self.P[0,0], self.P[1,1], self.P[2,2]))
 
     def gps_cb(self,data):
         if data.speed < self.min_gps_speed:
@@ -110,8 +115,7 @@ class KFYawKF:
     def mag_cb(self,data):
         # TODO: Integrate roll and pitch...
         yaw_mag = math.atan2(-(data.vector.x-self.mag_x_offset),-(data.vector.y-self.mag_y_offset))
-        if self.debug_pub:
-            self.mag_pub.publish(Float32(yaw_mag))
+        self.mag_pub.publish(Float32(pi/2 - yaw_mag))
         if self.first_mag :
             self.X[0,0] = yaw_mag
             rospy.loginfo("Initialised main state from magnetometer")
@@ -134,7 +138,7 @@ class KFYawKF:
             self.yaw_pub.publish(Float32(yaw_imu))
         if self.first_rpy and not self.first_mag:
             self.X[2,0] = self.X[0,0] - yaw_imu
-            rospy.loginfo("Initialised IMU bias")
+            rospy.loginfo("Initialised IMU angular bias")
             self.first_rpy = False
             self.last_rpy = rospy.Time.now()
             return 
@@ -178,24 +182,18 @@ class KFYawKF:
         self.use_gps = rospy.get_param("~use_gps",False)
         # necessary to set fake time stamp when replaying
         self.replay = rospy.get_param("~replay",True)
-        if self.use_gps:
-            self.gps_sub = rospy.Subscriber("/gps/extfix",GPSFix,self.gps_cb)
-        else:
-            self.first_gps = False
-        self.imu_sub = rospy.Subscriber("/imu/data",Imu,self.imu_cb)
-        self.rpy_sub = rospy.Subscriber("/imu/rpy",Vector3Stamped,self.rpy_cb)
-        self.mag_sub = rospy.Subscriber("/imu/mag",Vector3Stamped,self.mag_cb)
+        self.mag_pub = rospy.Publisher("~mag",Float32) # Raw magnetic compass output
         if self.replay:
             self.compass_pub = rospy.Publisher("~compass2",Compass)
         else:
             self.compass_pub = rospy.Publisher("~compass",Compass)
         if self.debug_pub:
             self.q_pub = rospy.Publisher("~state",Vector3) # Convenience debug output
+            self.p_pub = rospy.Publisher("~cov",Vector3) # Convenience debug output
             self.emag_pub = rospy.Publisher("~emag",Float32) # Convenience debug output
             self.erpy_pub = rospy.Publisher("~erpy",Float32) # Convenience debug output
             self.egps_pub = rospy.Publisher("~egps",Float32) # Convenience debug output
             self.yaw_pub = rospy.Publisher("~yaw",Float32) # Convenience debug output
-            self.mag_pub = rospy.Publisher("~mag",Float32) # Convenience debug output
             self.gps_pub = rospy.Publisher("~gps",Float32) # Convenience debug output
             self.omega_pub = rospy.Publisher("~omega",Float32) # Convenience debug output
         else:
@@ -203,6 +201,13 @@ class KFYawKF:
             self.emag_pub = None
             self.erpy_pub = None
         self.compass.header.frame_id = self.frame_id
+        self.imu_sub = rospy.Subscriber("/imu/data",Imu,self.imu_cb)
+        self.rpy_sub = rospy.Subscriber("/imu/rpy",Vector3Stamped,self.rpy_cb)
+        self.mag_sub = rospy.Subscriber("/imu/mag",Vector3Stamped,self.mag_cb)
+        if self.use_gps:
+            self.gps_sub = rospy.Subscriber("/gps/extfix",GPSFix,self.gps_cb)
+        else:
+            self.first_gps = False
         self.mag_offset_service = rospy.Service('~mag_offset', SetMagOffset, self.set_mag_offset)
         rate = rospy.Rate(self.max_update_rate)
         Q = mat(diag([1e-5,1e-2,1e-3]))
