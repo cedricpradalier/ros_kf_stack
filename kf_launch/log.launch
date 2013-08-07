@@ -2,8 +2,35 @@
 
 <launch>
 
-    <node pkg="rosbag" type="record" name="record" output="screen" args="--size 50 --split 0 /axis/camera_info /axis/image_raw/compressed /axis/state /camera/camera_info /camera/image_color/compressed /cmd_drive
-        /cmd_vel /diagnostics /gps/extfix /gps/fix /gps/odom /gps/time_reference /gps/vel /has_wifi /imu/mag /imu/rpy /imu/data /motor_enable /reverse_time_ms /sense /lidar/scan /tf /axis/twist /compass/compass /task_server/status /task_server/angle_status /task_server/dist_status">
+    <node pkg="rosbag" type="record" name="record" output="screen" args="--size 50 --split 0 
+        /axis/camera_info 
+        /axis/image_raw/compressed 
+        /axis/state 
+        /camera/camera_info 
+        /camera/image_color/compressed 
+        /cmd_drive
+        /cmd_vel 
+        /diagnostics 
+        /gps/extfix 
+        /gps/fix 
+        /gps/odom 
+        /gps/time_reference 
+        /gps/vel 
+        /has_wifi 
+        /imu/mag 
+        /imu/rpy 
+        /imu/data 
+        /lm/sensors
+        /motor_enable 
+        /reverse_time_ms 
+        /sense 
+        /lidar/scan 
+        /tf 
+        /axis/twist 
+        /compass/compass 
+        /task_server/status 
+        /task_server/angle_status 
+        /task_server/dist_status">
     </node>
 
 </launch>
