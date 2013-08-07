@@ -19,8 +19,8 @@ def norm_angle(x):
 
 class KFYawKF:
     def __init__(self):
-        self.X = zeros((3,1))
-        self.P = eye(3)
+        self.X = zeros((4,1))
+        self.P = eye(4)
         self.first = True
         self.mag_x_offset = 0
         self.mag_y_offset = 0
@@ -44,7 +44,7 @@ class KFYawKF:
     def ready(self):
         return (not self.first_rpy) and (not self.first_imu) and (not self.first_mag)
 
-    def kf_update(self, Z, H, R, stamp, angle=False, pub=None):
+    def kf_update(self, Z, H, R):
         with self.mutex:
             # print "-----"
             I = Z - H * self.X
@@ -60,7 +60,7 @@ class KFYawKF:
     def kf_predict(self, dt, Q):
         with self.mutex:
             # X = [phi_i, phi_{i-1}, omega, omega_bias]
-            A = zeros(4)
+            A = zeros((4,4))
             A[0,0] = 1; A[0,1] = dt;
             A[1,0] = 1;
             A[2,2] = 1;
@@ -76,12 +76,12 @@ class KFYawKF:
         now = rospy.Time.now()
         omega = -arg[0].angular_velocity.z
         phi_mag = math.atan2(-(arg[2].vector.x-self.mag_x_offset),-(arg[2].vector.y-self.mag_y_offset))
-        self.mag_pub.publish(Float32(pi/2 - yaw_mag))
+        self.mag_pub.publish(Float32(pi/2 - phi_mag))
         if not self.first:
             dt = (now - self.last_stamp).to_sec()
             self.kf_predict(dt,self.Q) 
             dphi_gyro = arg[1].vector.z - self.last_phi_gyro
-            Z = mat([phi_mag, dphi_gyro, omega])
+            Z = mat([phi_mag, dphi_gyro, omega]).transpose()
             H = mat([[1,0,0,0],[1,-1,0,dt],[0,0,1,0]])
             self.kf_update(Z,H,self.R)
             self.compass.heading = self.X[0,0]
@@ -90,7 +90,7 @@ class KFYawKF:
             if self.replay:
                 self.compass.header.stamp = rospy.Time.now()
             else:
-                self.compass.header.stamp = stamp
+                self.compass.header.stamp = arg[2].header.stamp
             self.compass_pub.publish(self.compass)
             if self.debug_pub:
                 self.q_pub.publish(Vector3(self.X[0,0], self.X[1,0], self.X[2,0]))
