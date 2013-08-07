@@ -49,6 +49,7 @@ class KFYawKF:
             # print "-----"
             I = Z - H * self.X
             I[0,0] = norm_angle(I[0,0])
+            I[1,0] = norm_angle(I[1,0])
             K = self.P * H.T * inv(H * self.P * H.T + R)
             # print self.X
             # print H
@@ -76,11 +77,11 @@ class KFYawKF:
         now = rospy.Time.now()
         omega = -arg[0].angular_velocity.z
         phi_mag = math.atan2(-(arg[2].vector.x-self.mag_x_offset),-(arg[2].vector.y-self.mag_y_offset))
-        self.mag_pub.publish(Float32(pi/2 - phi_mag))
+        self.mag_pub.publish(Float32(norm_angle(pi/2 - phi_mag)))
         if not self.first:
             dt = (now - self.last_stamp).to_sec()
             self.kf_predict(dt,self.Q) 
-            dphi_gyro = arg[1].vector.z - self.last_phi_gyro
+            dphi_gyro = norm_angle(arg[1].vector.z - self.last_phi_gyro)
             Z = mat([phi_mag, dphi_gyro, omega]).transpose()
             H = mat([[1,0,0,0],[1,-1,0,dt],[0,0,1,0]])
             self.kf_update(Z,H,self.R)
@@ -88,9 +89,9 @@ class KFYawKF:
             self.compass.compass = norm_angle(pi/2 - self.compass.heading)
             self.compass.stddev = math.sqrt(self.P[0,0])
             if self.replay:
-                self.compass.header.stamp = rospy.Time.now()
+                self.compass.header.stamp = now
             else:
-                self.compass.header.stamp = arg[2].header.stamp
+                self.compass.header.stamp = arg[1].header.stamp
             self.compass_pub.publish(self.compass)
             if self.debug_pub:
                 self.q_pub.publish(Vector3(self.X[0,0], self.X[1,0], self.X[2,0]))
