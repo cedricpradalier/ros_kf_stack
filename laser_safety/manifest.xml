@@ -1,0 +1,21 @@
+<package>
+  <description brief="laser_safety">
+
+     laser_safety
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/laser_safety</url>
+  <depend package="pcl_ros"/>
+  <depend package="laser_geometry"/>
+  <depend package="std_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+
+</package>
+
+

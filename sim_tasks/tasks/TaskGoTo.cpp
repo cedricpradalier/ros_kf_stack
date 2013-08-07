@@ -47,7 +47,7 @@ TaskIndicator TaskGoTo::iterate()
                 tpose.x, tpose.y, tpose.theta*180./M_PI,
                 cfg.goal_x,cfg.goal_y,r,alpha*180./M_PI);
 #endif
-        double rot = -cfg.k_alpha*alpha;
+        double rot = cfg.k_alpha*alpha;
         double vel = cfg.k_v * r;
         if (rot > cfg.max_angular_velocity) rot = cfg.max_angular_velocity;
         if (rot <-cfg.max_angular_velocity) rot =-cfg.max_angular_velocity;

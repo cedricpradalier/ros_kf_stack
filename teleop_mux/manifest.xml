@@ -11,6 +11,7 @@
   <depend package="rospy"/>
   <depend package="sensor_msgs"/>
   <depend package="geometry_msgs"/>
+  <depend package="laser_safety"/>
 
 </package>
 
