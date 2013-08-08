@@ -61,10 +61,11 @@ TaskIndicator TaskFollowShoreRP::iterate()
         cv::Point2f P = lpath.front();
         // minus sign because the laser is upside down. 
         // Should probably be done through TF
-        float alpha = -atan2(P.y,P.x);
-        float rot = cfg.k_alpha * alpha;
-        float rot_scale = rot / cfg.velocity_scaling;
-        float vel = cfg.velocity * exp(-rot_scale*rot_scale);
+        double alpha = -atan2(P.y,P.x);
+        double rot = cfg.k_alpha * alpha;
+        rot = std::max(-cfg.max_ang_vel,std::min(cfg.max_ang_vel,rot));
+        double rot_scale = rot / cfg.velocity_scaling;
+        double vel = cfg.velocity * exp(-rot_scale*rot_scale);
         env->publishVelocity(vel, rot);
     }
 
