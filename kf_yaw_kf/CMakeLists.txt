@@ -21,10 +21,25 @@ rosbuild_genmsg()
 #uncomment if you have defined services
 rosbuild_gensrv()
 
+# eigen 2 or 3
+find_path(EIGEN_INCLUDE_DIR Eigen/Core
+	/usr/local/include/eigen3
+	/usr/local/include/eigen2
+	/usr/local/include/eigen
+	/usr/include/eigen3
+	/usr/include/eigen2
+	/usr/include/eigen
+	/opt/ros/diamondback/stacks/geometry/eigen/include
+)
+
+# include all libs so far
+include_directories(${EIGEN_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+rosbuild_add_executable(kf_yaw_kf src/kf_yaw_kf.cpp)
+target_link_libraries(kf_yaw_kf boost_signals)

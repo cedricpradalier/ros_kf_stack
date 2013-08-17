@@ -39,9 +39,6 @@ class KFYawKF:
             rospy.loginfo("Updated Magnetometer offset to %.2f %.2f %.2f" % (self.mag_x_offset,self.mag_y_offset,self.mag_z_offset))
         return SetMagOffsetResponse()
         
-    def ready(self):
-        return (not self.first_rpy) and (not self.first_imu) and (not self.first_mag)
-
     def kf_update(self, Z, H, R):
         with self.mutex:
             # print "-----"
