@@ -73,13 +73,13 @@ class KFYawKF:
             rospy.logerr("Invalid number of argument in run_kf")
             return
         now = rospy.Time.now()
-        omega = -arg[0].angular_velocity.z
+        omega = arg[0].angular_velocity.z
         phi_mag = math.atan2(-(arg[2].vector.x-self.mag_x_offset),-(arg[2].vector.y-self.mag_y_offset))
         self.mag_pub.publish(Float32(norm_angle(pi/2 - phi_mag)))
         if not self.first:
             dt = (now - self.last_stamp).to_sec()
             self.kf_predict(dt,self.Q) 
-            dphi_gyro = norm_angle(arg[1].vector.z - self.last_phi_gyro)
+            dphi_gyro = -norm_angle(arg[1].vector.z - self.last_phi_gyro)
             Z = mat([phi_mag, dphi_gyro, omega]).transpose()
             H = mat([[1,0,0,0],[1,-1,0,dt],[0,0,1,0]])
             self.kf_update(Z,H,self.R)

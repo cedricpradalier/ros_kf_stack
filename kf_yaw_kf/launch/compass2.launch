@@ -2,7 +2,7 @@
 
     <node pkg="kf_yaw_kf" type="kf_yaw_kf2.py" name="compass" output="screen">
         <param name="frame_id" value="/kingfisher/base"/>
-        <param name="stddev_yaw_mag" value="0.1"/>
+        <param name="stddev_yaw_mag" value="0.05"/>
         <param name="stddev_yaw_gyro" value="0.01"/>
         <param name="stddev_omega" value="0.01"/>
         <param name="debug_publishers" value="True"/>
