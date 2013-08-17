@@ -7,6 +7,10 @@
         <param name="stddev_omega" value="0.01"/>
         <param name="debug_publishers" value="True"/>
         <param name="replay" value="False"/>
+        <!-- office values -->
+        <param name="mag_offset_x" value="234.88"/>
+        <param name="mag_offset_y" value="-36.04"/>
+        <param name="mag_offset_z" value="-213.50"/>
     </node>
 
 </launch>

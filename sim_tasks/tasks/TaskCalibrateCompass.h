@@ -17,12 +17,14 @@ namespace sim_tasks {
 
         protected:
             ros::ServiceClient magOffsetClient;
-            ros::Subscriber magSub;
+            ros::Subscriber magSub,rpySub;
             std::vector<geometry_msgs::Vector3> readings;
+            geometry_msgs::Vector3 rpy;
             double initial_heading;
             void magCallback(const geometry_msgs::Vector3StampedConstPtr& msg);
+            void rpyCallback(const geometry_msgs::Vector3StampedConstPtr& msg);
             // Small state machine to control the rotation
-            enum {FIRST_HALF, SECOND_HALF} state;
+            enum {WAITING_INITIAL_HEADING,FIRST_HALF, SECOND_HALF,COMPLETED} state;
         public:
             TaskCalibrateCompass(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskCalibrateCompass() {};

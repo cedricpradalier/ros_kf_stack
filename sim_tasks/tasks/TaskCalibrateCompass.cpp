@@ -19,11 +19,11 @@ TaskIndicator TaskCalibrateCompass::initialise(const TaskParameters & parameters
     // Now we can do any required task-specific initialisation, for instance
     // creating the service proxy and subscriber. They will be destroyed when
     // the task terminates
-    initial_heading = env->getHeading();
-    state = FIRST_HALF;
+    state = WAITING_INITIAL_HEADING;
     readings.clear();
     magOffsetClient = env->getNodeHandle().serviceClient<kf_yaw_kf::SetMagOffset>("/compass/mag_offset");
     magSub = env->getNodeHandle().subscribe("/imu/mag",1,&TaskCalibrateCompass::magCallback,this);
+    rpySub = env->getNodeHandle().subscribe("/imu/rpy",1,&TaskCalibrateCompass::rpyCallback,this);
     ROS_INFO("Starting magnetometer calibration rotation");
     return TaskStatus::TASK_INITIALISED;
 }
@@ -32,18 +32,32 @@ void TaskCalibrateCompass::magCallback(const geometry_msgs::Vector3StampedConstP
     readings.push_back(msg->vector);
 }
 
+void TaskCalibrateCompass::rpyCallback(const geometry_msgs::Vector3StampedConstPtr& msg) {
+    rpy = msg->vector;
+    if (state == WAITING_INITIAL_HEADING) {
+        ROS_INFO("Got initial heading from gyros");
+        initial_heading = rpy.z;
+        state = FIRST_HALF;
+    }
+}
+
 
 
 TaskIndicator TaskCalibrateCompass::iterate()
 {
-    double heading = env->getHeading();
+    // We rely on the gyro for this rotation, since the magnetometer has not been calibrated yet
+    double heading = rpy.z;
     double alpha = remainder(heading-initial_heading,2*M_PI);
     switch (state) {
+        case WAITING_INITIAL_HEADING:
+            env->publishVelocity(0.0, 0.0);
+            break;
         case FIRST_HALF:
             if (fabs(alpha)>M_PI/2) {
                 state = SECOND_HALF;
                 ROS_INFO("Magnetometer calibration: waiting for rotation completion");
             }
+            env->publishVelocity(0.0, cfg.angular_velocity);
             break;
         case SECOND_HALF:
             if (fabs(alpha)<cfg.angle_threshold) {
@@ -51,18 +65,22 @@ TaskIndicator TaskCalibrateCompass::iterate()
                     ROS_ERROR("Did not receive enough magnetometer data while calibrating compass (%d).",(int)readings.size());
                     return TaskStatus::TASK_FAILED;
                 }
+                state = COMPLETED;
                 return TaskStatus::TASK_COMPLETED;
             }
+            env->publishVelocity(0.0, cfg.angular_velocity);
             break;
+        case COMPLETED:
+            env->publishVelocity(0.0, 0.0);
+            return TaskStatus::TASK_COMPLETED;
     };
-    env->publishVelocity(0.0, cfg.angular_velocity);
 	return TaskStatus::TASK_RUNNING;
 }
 
 TaskIndicator TaskCalibrateCompass::terminate()
 {
     env->publishVelocity(0,0);
-    if (readings.size() > 20) {
+    if ((state==COMPLETED) && (readings.size() > 20)) {
         ROS_INFO("Completed calibration rotation. Computing offset");
         // Now compute the circle center and udpate the estimator
         //  http://www.dtcenter.org/met/users/docs/write_ups/circle_fit.pdf

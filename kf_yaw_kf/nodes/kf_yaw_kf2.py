@@ -33,11 +33,9 @@ class KFYawKF:
             self.mag_x_offset = req.mag_x_offset
             self.mag_y_offset = req.mag_y_offset
             self.mag_z_offset = req.mag_z_offset
-            self.X = zeros((3,1))
-            self.P = eye(3)
-            self.first_rpy = True
-            self.first_mag = True
-            self.first_imu = True
+            self.X = zeros((4,1))
+            self.P = eye(4)
+            self.first = True
             rospy.loginfo("Updated Magnetometer offset to %.2f %.2f %.2f" % (self.mag_x_offset,self.mag_y_offset,self.mag_z_offset))
         return SetMagOffsetResponse()
         
@@ -111,6 +109,9 @@ class KFYawKF:
         self.stddev_yaw_mag = rospy.get_param("~stddev_yaw_mag",0.1)
         self.stddev_yaw_gyro = rospy.get_param("~stddev_yaw_gyro",0.01)
         self.stddev_omega = rospy.get_param("~stddev_omega",0.01)
+        self.mag_x_offset = rospy.get_param("~mag_offset_x",0.0)
+        self.mag_y_offset = rospy.get_param("~mag_offset_y",0.0)
+        self.mag_z_offset = rospy.get_param("~mag_offset_z",0.0)
         self.Q = mat(diag([1e-3,1e-5,1e-3,1e-5]))
         self.R = diag([self.stddev_yaw_mag*self.stddev_yaw_mag,self.stddev_yaw_gyro*self.stddev_yaw_gyro,self.stddev_omega*self.stddev_omega])
         self.debug_pub = rospy.get_param("~debug_publishers",True)
