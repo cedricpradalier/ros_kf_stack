@@ -35,6 +35,7 @@ class KFYawKF {
 
         ros::Time last_stamp;
         double last_yaw_gyro;
+        double heading_offset;
 
         ros::NodeHandle nh;
         ros::ServiceServer offsetService;
@@ -62,7 +63,6 @@ class KFYawKF {
             I = Z - H * X;
             I(0) = remainder(I(0),2*M_PI);
             I(1) = remainder(I(1),2*M_PI);
-            Eigen::MatrixXf K(4,3);
             Eigen::MatrixXf PHt = P * H.transpose();
             K = PHt * (H * PHt + R).inverse();
             X = X + K * I;
@@ -70,7 +70,7 @@ class KFYawKF {
         }
 
         void kf_predict(double dt) {
-            A(0,1) = dt;
+            A(0,2) = dt;
             X = A * X;
             X(0) = remainder(X(0),2*M_PI);
             P = A * P * A.transpose() + Q;
@@ -81,18 +81,18 @@ class KFYawKF {
                 const sensor_msgs::ImuConstPtr & imu) {
             std_msgs::Float32 magMsg;
             ros::Time now = mag->header.stamp;
-            double omega = imu->angular_velocity.z;
+            double omega = - imu->angular_velocity.z;
             double yaw_mag = atan2(-(mag->vector.x - mag_offset(0)),-(mag->vector.y - mag_offset(1)));
             magMsg.data = yaw_mag;
             magPub.publish(magMsg);
             if (!first) {
                 double dt = (now - last_stamp).toSec();
-                double dphi_gyro = rpy->vector.z - last_yaw_gyro;
+                double dphi_gyro = -(rpy->vector.z - last_yaw_gyro);
                 kf_predict(dt);
                 kf_update(dt,yaw_mag,dphi_gyro,omega);
 
-                compass.heading = X(0);
-                compass.compass = remainder(M_PI/2. - X(0),2*M_PI);
+                compass.heading = X(0) + heading_offset;
+                compass.compass = remainder(M_PI/2. - compass.heading,2*M_PI);
                 compass.stddev = sqrt(P(0,0));
                 if (replay) {
                     compass.header.stamp = ros::Time::now();
@@ -120,6 +120,10 @@ class KFYawKF {
     public:
         KFYawKF() : H(3,4), K(4,3), nh("~") {
             eye4.setIdentity();
+            A.setIdentity();
+            A(1,0) = 1; A(1,1) = 0;
+            X.setZero(4);
+            P = eye4;
             first = true;
             debug_pub = false;
             compass.header.frame_id = "/kingfisher/base";
@@ -129,9 +133,14 @@ class KFYawKF {
             double stddev_yaw_mag = 0.1; nh.getParam("stddev_yaw_mag",stddev_yaw_mag); 
             double stddev_yaw_gyro = 0.01; nh.getParam("stddev_yaw_gyro",stddev_yaw_gyro); 
             double stddev_omega = 0.01; nh.getParam("stddev_omega",stddev_omega); 
+            heading_offset = 0.0; nh.getParam("heading_offset",heading_offset); 
             double mag_x_offset = 0.0; nh.getParam("mag_offset_x",mag_x_offset); 
             double mag_y_offset = 0.0; nh.getParam("mag_offset_y",mag_y_offset); 
             double mag_z_offset = 0.0; nh.getParam("mag_offset_z",mag_z_offset); 
+            mag_offset(0) = mag_x_offset;
+            mag_offset(1) = mag_y_offset;
+            mag_offset(2) = mag_z_offset;
+            ROS_INFO("Updated Heading offset %.2f,  Magnetometer offset to %.2f %.2f %.2f",heading_offset,mag_offset(0),mag_offset(1),mag_offset(2));
             Q << 1e-3,0,0,0,
               0,1e-5,0,0,
               0,0,1e-3,0,

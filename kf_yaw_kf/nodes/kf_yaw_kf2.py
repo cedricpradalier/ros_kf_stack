@@ -60,7 +60,7 @@ class KFYawKF:
             A[0,0] = 1; A[0,1] = dt;
             A[1,0] = 1;
             A[2,2] = 1;
-            A[2,2] = 1;
+            A[3,3] = 1;
             self.X = A * self.X
             self.X[0,0] = norm_angle(self.X[0,0])
             self.P = A * self.P * A.T + Q
