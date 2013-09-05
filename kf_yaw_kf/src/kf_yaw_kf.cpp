@@ -89,7 +89,7 @@ class KFYawKF {
                 double dt = (now - last_stamp).toSec();
                 double dphi_gyro = -(rpy->vector.z - last_yaw_gyro);
                 kf_predict(dt);
-                kf_update(dt,yaw_mag,dphi_gyro,omega);
+                kf_update(dt,M_PI/2-yaw_mag,dphi_gyro,omega);
 
                 compass.heading = X(0) + heading_offset;
                 compass.compass = remainder(M_PI/2. - compass.heading,2*M_PI);
@@ -109,6 +109,7 @@ class KFYawKF {
                     pPub.publish(p);
                 }
             } else {
+                ROS_INFO("Initialised compass filter to magnetometer value: %.2f",yaw_mag);
                 X(0) = X(1) = yaw_mag;
             }
             first = false;

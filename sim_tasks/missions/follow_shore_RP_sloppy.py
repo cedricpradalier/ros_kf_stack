@@ -11,13 +11,14 @@ default_period = rospy.get_param("~period",0.05)
 tc = TaskClient(server_node,default_period)
 rospy.loginfo("Mission connected to server: " + server_node)
 
+tc.SetPTZ(pan=1.57,tilt=0.0)
 tc.AlignWithShore(angle=1.57, ang_velocity=1.0)
 # Set a distance trigger.
 w4dist = tc.WaitForDistance(foreground=False,distance=10.0)
 tc.addCondition(ConditionIsCompleted("Distance",tc,w4dist))
 try:
     # Follow shore until the condition get triggered
-    tc.FollowShoreRP(velocity=0.4, distance=10.0, side=+1, k_alpha=1.0)
+    tc.FollowShoreRP(velocity=0.4, distance=10.0, side=+1, k_alpha=0.5, max_ang_vel=0.6,velocity_scaling=0.6)
 except TaskConditionException, e:
     pass
 
@@ -28,7 +29,7 @@ w4roi = tc.WaitForROI(foreground=False,current=True,
 tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
 try:
     # Follow shore until the new condition get triggered
-    tc.FollowShoreRP(velocity=0.4, distance=10.0, side=+1, k_alpha=1.0)
+    tc.FollowShoreRP(velocity=0.4, distance=10.0, side=+1, k_alpha=0.5, max_ang_vel=0.6,velocity_scaling=0.6)
 except TaskConditionException, e:
     pass
 

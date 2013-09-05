@@ -1,0 +1,38 @@
+#!/usr/bin/python
+# ROS specific imports
+import roslib; roslib.load_manifest('sim_tasks')
+import rospy
+from math import *
+from task_manager_lib.TaskClient import *
+
+rospy.init_node('task_client')
+server_node = rospy.get_param("~server","/task_server")
+default_period = rospy.get_param("~period",0.05)
+tc = TaskClient(server_node,default_period)
+rospy.loginfo("Mission connected to server: " + server_node)
+
+tc.WaitForAuto()
+try:
+	tc.RecordFinishLine()
+	while True:
+		try:	
+			tc.AlignWithShore(angle=1.57, ang_velocity=0.0)
+			tc.SetPTZ(pan=-1.57, tilt=0.0, wait_timeout=10.0)
+			tc.FollowShorePID(angle=1.57, max_lin_vel=0.0, max_ang_vel=0.0, p_d=0.15, p_alpha=0.3,  d_alpha=-0.1, d_d=-0.1, i_d=0.01, i_alpha=0.01, distance=8.0, task_timeout=15.0)
+		except TaskException, e:
+			pass
+		try:
+			tc.AlignWithShore(angle=-1.57, ang_velocity=0.0)
+			tc.SetPTZ(pan=1.57, tilt=0.0, wait_timeout=10.0)
+			tc.FollowShorePID(angle=-1.57, max_lin_vel=0.0, max_ang_vel=0.0, p_d=0.15, p_alpha=0.3,  d_alpha=-0.1, d_d=-0.1, i_d=0.01, i_alpha=0.01, distance=8.0, task_timeout=15.0)
+		except TaskException, e:
+			pass
+
+except TaskException, e:
+    rospy.logerr("Exception caught: " + str(e))
+
+if not rospy.core.is_shutdown():
+    tc.SetManual()
+
+rospy.loginfo("Mission completed")
+
