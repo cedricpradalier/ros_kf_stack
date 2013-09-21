@@ -22,14 +22,11 @@ TaskIndicator TaskAlignWithShore::iterate()
 
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();
     for (unsigned int i=0;i<pointCloud.size();i++) {
-        theta_i=-atan2(pointCloud[i].y,pointCloud[i].x);
-//        if (fabs(remainder(cfg.angle-theta_i,2*M_PI))<cfg.angle_range) {
-            distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
-            if ((distance_i < mindistance)&&(distance_i > 0.01)) {
-                mindistance=distance_i;
-                theta_closest=theta_i;
-            }
-//        }
+        distance_i=hypot(pointCloud[i].y,pointCloud[i].x);
+        if ((distance_i < mindistance)&&(distance_i > 0.01)) {
+            mindistance=distance_i;
+            theta_closest=-atan2(pointCloud[i].y,pointCloud[i].x);
+        }
     }
 
 #ifdef DEBUG_GOTO
@@ -45,22 +42,19 @@ TaskIndicator TaskAlignWithShore::iterate()
         env->publishVelocity(0,0);
         return TaskStatus::TASK_FAILED;
     } else {
-        angle_error = remainder(cfg.angle-theta_closest,2*M_PI);
+        // This expression guarantee that whatever the error, we always try to
+        // align the boat front with the shore
+        angle_error = remainder(cfg.angle,2*M_PI)-theta_closest;
         if (fabs(angle_error)<cfg.angle_error) {
             return TaskStatus::TASK_COMPLETED;
         }
-        if (fabs(angle_error)<cfg.angle_range) {
-            rot = - ((angle_error>0)?+1:-1) * cfg.ang_velocity;
-        } else {
-            rot = - ((cfg.angle>0)?+1:-1) * cfg.ang_velocity;
-        }
-    }
+        rot = - ((angle_error>0)?+1:-1) * cfg.ang_velocity;
 #ifdef DEBUG_GOTO
-    ROS_INFO("Command vel %.2f angle_error %.2f rot %.2f\n",vel,angle_error,rot);
+        ROS_INFO("Command vel %.2f angle_error %.2f rot %.2f\n",vel,angle_error,rot);
 #endif
-
-    env->publishVelocity(vel, rot);
-    return TaskStatus::TASK_RUNNING;
+        env->publishVelocity(vel, rot);
+        return TaskStatus::TASK_RUNNING;
+    }
 }
 
 TaskIndicator TaskAlignWithShore::terminate()
