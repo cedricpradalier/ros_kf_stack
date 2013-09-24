@@ -37,14 +37,16 @@ tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
 follow_until_stopped(+1)
 
 # Now follow the island shore
+tc.SetPTZ(pan=-1.57,tilt=0.0)
 w4roi = tc.WaitForROI(foreground=False,wrtOrigin=False,roi_x=296871.51303, roi_y=5442696.42175, roi_radius=10.0)
 tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
 follow_until_stopped(-1)
 
 # Finally finish the run to home
+tc.SetPTZ(pan=1.57,tilt=0.0)
 w4roi = tc.WaitForROI(foreground=False,wrtOrigin=True,roi_x=0.0, roi_y=0.0, roi_radius=10.0)
 tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
-follow_until_stopped()
+follow_until_stopped(+1)
 
 # Finally mark completion by pointing toward the shore
 tc.AlignWithShore(angle=3.14, ang_velocity=1.0)
