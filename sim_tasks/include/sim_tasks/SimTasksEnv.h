@@ -10,7 +10,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/LaserScan.h"
-#include "kf_yaw_kf/Compass.h"
+#include "kf_yaw_kf/CompassKF.h"
 #include "nav_msgs/Odometry.h"
 #include "kingfisher_msgs/Sense.h"
 #include "pcl_ros/point_cloud.h"
@@ -52,7 +52,7 @@ namespace sim_tasks {
 
             void utmPositionCallback(const nav_msgs::Odometry::ConstPtr& msg) ;
 
-            void compassCallback(const kf_yaw_kf::Compass::ConstPtr& msg) ;
+            void compassCallback(const kf_yaw_kf::CompassKF::ConstPtr& msg) ;
 
             void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in) ;
 
@@ -67,7 +67,7 @@ namespace sim_tasks {
             std_msgs::Header pointCloud_header;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
-            kf_yaw_kf::Compass compass;
+            kf_yaw_kf::CompassKF compass;
             geometry_msgs::Point origin;
 
             // Specific variable for lake circumnavigation

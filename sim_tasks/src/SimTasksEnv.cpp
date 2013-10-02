@@ -208,7 +208,7 @@ void SimTasksEnv::senseCallback(const kingfisher_msgs::Sense::ConstPtr& msg) {
     sense = *msg;
 }
 
-void SimTasksEnv::compassCallback(const kf_yaw_kf::Compass::ConstPtr& msg) {
+void SimTasksEnv::compassCallback(const kf_yaw_kf::CompassKF::ConstPtr& msg) {
     boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     compass = *msg;
 }
