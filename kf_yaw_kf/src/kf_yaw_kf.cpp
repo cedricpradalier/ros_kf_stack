@@ -11,7 +11,7 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
-#include "kf_yaw_kf/Compass.h"
+#include "kf_yaw_kf/CompassKF.h"
 #include "kf_yaw_kf/SetMagOffset.h"
 
 using namespace message_filters;
@@ -31,7 +31,7 @@ class KFYawKF {
         bool first, replay, debug_pub;
         Eigen::Vector3f mag_offset;
 
-        kf_yaw_kf::Compass compass;
+        kf_yaw_kf::CompassKF compass;
 
         ros::Time last_stamp;
         double last_yaw_gyro;
@@ -93,6 +93,8 @@ class KFYawKF {
 
                 compass.heading = X(0) + heading_offset;
                 compass.compass = remainder(M_PI/2. - compass.heading,2*M_PI);
+                compass.heading_rate = X(2);
+                compass.gyro_bias = X(3);
                 compass.stddev = sqrt(P(0,0));
                 if (replay) {
                     compass.header.stamp = ros::Time::now();
@@ -159,9 +161,9 @@ class KFYawKF {
             magPub = nh.advertise<std_msgs::Float32>("mag",1);
             if (replay) {
                 // could be done through remap
-                compPub = nh.advertise<kf_yaw_kf::Compass>("compass2",1);
+                compPub = nh.advertise<kf_yaw_kf::CompassKF>("compass2",1);
             } else {
-                compPub = nh.advertise<kf_yaw_kf::Compass>("compass",1);
+                compPub = nh.advertise<kf_yaw_kf::CompassKF>("compass",1);
             }
             if (debug_pub) {
                 qPub = nh.advertise<geometry_msgs::Vector3>("state",1);
