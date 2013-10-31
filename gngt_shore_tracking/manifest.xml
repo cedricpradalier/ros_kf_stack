@@ -1,0 +1,21 @@
+<package>
+  <description brief="gngt_shore_tracking">
+
+     gngt_shore_tracking
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/gngt_shore_tracking</url>
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="pcl_ros"/>
+  <depend package="tf"/>
+  <depend package="std_msgs"/>
+  <depend package="visualization_msgs"/>
+  <depend package="laser_geometry"/>
+
+</package>
+
+
