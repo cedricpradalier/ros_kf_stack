@@ -21,30 +21,16 @@ def follow_until_stopped(shore_side):
     except TaskConditionException, e:
         pass
 
-tc.SetPTZ(pan=1.57,tilt=0.20)
-tc.AlignWithShore(angle=-1.57, ang_velocity=1.0)
-# Set a distance trigger.
-w4dist = tc.WaitForDistance(foreground=False,distance=10.0)
-tc.addCondition(ConditionIsCompleted("Distance",tc,w4dist))
-follow_until_stopped(+1)
-
-# Store the current pose as origin
-tc.SetOrigin(current=True)
-
-# add a trigger for the point between the island and the shore
-w4roi = tc.WaitForROI(foreground=False,wrtOrigin=False,roi_x=296871.51303, roi_y=5442696.42175, roi_radius=10.0, histeresis_radius=10.0)
-tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
-follow_until_stopped(+1)
 
 # Now follow the island shore
-tc.SetPTZ(pan=-1.57,tilt=0.20)
-w4roi = tc.WaitForROI(foreground=False,wrtOrigin=False,roi_x=296871.51303, roi_y=5442696.42175, roi_radius=10.0, histeresis_radius=10.0)
+tc.SetPTZ(pan=-1.57,tilt=0.2)
+w4roi = tc.WaitForROI(foreground=False,wrtOrigin=False,roi_x=296871.51303, roi_y=5442696.42175, roi_radius=10.0)
 tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
 follow_until_stopped(-1)
 
 # Finally finish the run to home
-tc.SetPTZ(pan=1.57,tilt=0.20)
-w4roi = tc.WaitForROI(foreground=False,wrtOrigin=True,roi_x=0.0, roi_y=0.0, roi_radius=10.0, histeresis_radius=10.0)
+tc.SetPTZ(pan=1.57,tilt=0.2)
+w4roi = tc.WaitForROI(foreground=False,wrtOrigin=True,roi_x=0.0, roi_y=0.0, roi_radius=10.0)
 tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
 follow_until_stopped(+1)
 
