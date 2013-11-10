@@ -108,60 +108,66 @@ class GNGTShoreTracking {
 
         // A value extraction functor.... identity here.
         static double value_of(double x) {return x;}
+        
+#define DELTA .75
+#define EVOL_LOWPASSCOEF .4
+#define EVOL_LOWPASSMARGIN .2
+
 
         class Evolution {
             public:
 
-                // TODO: understand and improve...
-
                 std::vector<double> disto_distrib;
+                double min,max,target;
+                bool first_run;
+                size_t nb_samples;
 
-                // Bounds of the confidence interval.
-                double min,max;
-                // Decisions for nb of vertices evolution.
-                unsigned int add,remove;
-                double target, confidence;
+                Evolution() : target(TARGET), first_run(true) {}
 
-                Evolution(double target=TARGET, double confidence=CONFIDENCE) 
-                    : add(0), remove(0), target(target), confidence(confidence) {}
-
-                void clear(void)              {disto_distrib.clear();}
-                void operator+=(double value) {disto_distrib.push_back(value);}
-
-                void setParams(double tgt, double conf) {
+                void setTarget(double tgt) {
                     target = tgt;
-                    confidence = conf;
                 }
 
+                void setNbSamples(size_t nb_spls) {
+                    nb_samples = nb_spls;
+                }
 
-                // returns -1 if there are too many prototypes, 1 if prototypes should be added, 0 otherwise.
+                void clear(void) {
+                    disto_distrib.clear();
+                }
+
+                void operator+=(double value) {disto_distrib.push_back(value);}
+
                 int operator()() {
                     int res = 0;
-                    // Let us find where main values of the distortion distribution stands.
+                    double a,b;
                     vq2::proba::shortest_confidence_interval(disto_distrib.begin(),
                             disto_distrib.end(),
                             value_of,
-                            confidence,min,max);
-                    if(target<min) {
-                        remove = 0;
-                        ++add;
-                        if(add >= EVOLUTION_DECISION_THRES)
-                            res = 1;
-                    }
-                    else if(target>max) {
-                        ++remove;
-                        add = 0;
-                        if(remove >= EVOLUTION_DECISION_THRES)
-                            res = -1;
+                            DELTA,a,b);
+                    if(first_run) {
+                        min = a;
+                        max = b;
+                        first_run = false;
                     }
                     else {
-                        remove = 0;
-                        add = 0;
+                        min += EVOL_LOWPASSCOEF*(a-min);
+                        max += EVOL_LOWPASSCOEF*(b-max);
                     }
+
+                    double width;
+
+                    width = (max-min);
+                    double _min = min + EVOL_LOWPASSMARGIN*width;
+                    double _max = min + (1-EVOL_LOWPASSMARGIN)*width;
+
+                    if(nb_samples*target< _min)
+                        res = 1;
+                    else if(nb_samples*target> _max)
+                        res = -1;
                     return res;
                 }
         };
-
 
 
         Graph g;
@@ -232,6 +238,7 @@ class GNGTShoreTracking {
                 PointOp&         op,
                 Evolution&        evolution) {
             pcl::PointCloud<pcl::PointXYZ>::const_iterator iter,end;
+            evolution.setNbSamples(pointCloud.size());
             vq2::algo::gngt::open_epoch(g,evolution);
             for(iter=pointCloud.begin(),end=pointCloud.end(); iter != end; ++iter) {
                 vq2::algo::gngt::submit(p,g,distance,learn,*iter,growing);
@@ -342,11 +349,11 @@ class GNGTShoreTracking {
             unit_distance(distance), unit_learn(learn) {
 
                 nh.param("target",target_value,(double)TARGET);
-                nh.param("confidence",confidence_value,(double)CONFIDENCE);
+                // nh.param("confidence",confidence_value,(double)CONFIDENCE);
                 nh.param("step_frozen",step_frozen,(int)N_STEP_FROZEN);
                 nh.param("step_changing",step_changing,(int)N_STEP_CHANGING);
 
-                evolution.setParams(target_value,confidence_value);
+                evolution.setTarget(target_value);
 
                 ls_sub = nh.subscribe("laserscan",1,&GNGTShoreTracking::laserScanCallback,this);
                 pc_sub = nh.subscribe("pointcloud",1,&GNGTShoreTracking::pointCloudCallback,this);

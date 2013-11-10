@@ -3,7 +3,7 @@
 <launch>
    <node name="gngt_shore_tracking" pkg="gngt_shore_tracking" type="gngt_shore_tracking" clear_params="true" output="screen">
     <param name="confidence" value="0.75"/>
-    <param name="target" value="1.0"/>
+    <param name="target" value="0.001"/>
     <param name="step_frozen" value="20"/>
     <param name="step_changing" value="1"/>
     <remap from="/gngt_shore_tracking/laserscan" to="/lidar/scan"/>
