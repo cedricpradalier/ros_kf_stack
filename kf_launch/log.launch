@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <launch>
+    <node pkg="kf_launch" type="beat.py" name="logbeat" output="screen">
+        <param name="rate" value="4"/>
+    </node>
 
     <node pkg="rosbag" type="record" name="record" output="screen" args="--size 50 --split 0 
         /axis/camera_info 
