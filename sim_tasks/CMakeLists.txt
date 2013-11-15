@@ -84,3 +84,6 @@ TARGET_LINK_LIBRARIES(TaskWaitForDistance dl)
 
 ROSBUILD_ADD_LIBRARY( TaskConstant SHARED tasks/TaskConstant.cpp)
 TARGET_LINK_LIBRARIES(TaskConstant dl)
+
+ROSBUILD_ADD_LIBRARY( TaskCheckReadiness SHARED tasks/TaskCheckReadiness.cpp)
+TARGET_LINK_LIBRARIES(TaskCheckReadiness dl)

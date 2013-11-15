@@ -2,6 +2,7 @@
 #define SIM_TASKS_ENV_H
 
 #include <ros/ros.h>
+#include "sim_tasks/SubscriberStatistics.h"
 #include "task_manager_lib/TaskDefinition.h"
 #include "std_msgs/String.h"
 #include "geometry_msgs/Twist.h"
@@ -20,6 +21,7 @@
 #include <tf/transform_datatypes.h>
 
 namespace sim_tasks {
+
     class SimTasksEnv: public task_manager_lib::TaskEnvironment
     {
         // Warning, the parent class defines a mutex that is locked before any
@@ -29,6 +31,7 @@ namespace sim_tasks {
         protected:
             ros::NodeHandle nh;
             bool paused;
+            SubscriberStatMap statMap;
             ros::Subscriber buttonsSub;
             ros::Subscriber muxSub;
             ros::Subscriber pointCloudSub;
@@ -93,6 +96,14 @@ namespace sim_tasks {
 
             double getBattery() const {
                 return sense.battery;
+            }
+
+            const SubscriberStatMap & getStatisticsMap() const {
+                return statMap;
+            }
+
+            SubscriberStatMap & getStatisticsMap() {
+                return statMap;
             }
 
             void setOrigin(const geometry_msgs::Point & pose);
