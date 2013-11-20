@@ -29,6 +29,9 @@ TaskIndicator TaskSetPTZ::iterate()
     const axis_camera::Axis &state = env->getAxisState();
     axis_camera::Axis cmd = state;
     double now = ros::Time::now().toSec();
+    cmd.fields = axis_camera::Axis::SELECT_PAN 
+        | axis_camera::Axis::SELECT_TILT
+        | axis_camera::Axis::SELECT_ZOOM; 
     cmd.pan = cfg.pan * 180./M_PI;
     cmd.tilt = cfg.tilt * 180./M_PI;
     cmd.zoom = cfg.zoom;

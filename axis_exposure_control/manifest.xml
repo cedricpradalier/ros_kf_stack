@@ -1,0 +1,21 @@
+<package>
+  <description brief="axis_exposure_control">
+
+     axis_exposure_control
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/axis_exposure_control</url>
+  <depend package="roscpp"/>
+  <depend package="opencv2"/>
+  <depend package="axis_camera"/>
+  <depend package="sensor_msgs"/>
+  <depend package="cv_bridge"/>
+  <depend package="image_transport"/>
+  <depend package="tf"/>
+
+</package>
+
+

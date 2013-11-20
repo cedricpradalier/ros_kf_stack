@@ -7,8 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-# set(ROS_BUILD_TYPE RelWithDebInfo)
-set(ROS_BUILD_TYPE Debug)
+#set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -22,15 +21,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-FIND_PACKAGE(Ceres REQUIRED)
-INCLUDE_DIRECTORIES(${CERES_INCLUDES})
-
 #common commands for building c++ executables and libraries
-rosbuild_add_library(${PROJECT_NAME} src/RadialPlan.cpp)
+#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
+#target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
-rosbuild_add_executable(test_rp src/test_rp.cpp)
-target_link_libraries(test_rp ${PROJECT_NAME} ${CERES_LIBRARIES})
-
-rosbuild_add_executable(live_rp src/live_rp.cpp)
-target_link_libraries(live_rp ${PROJECT_NAME} ${CERES_LIBRARIES})
+rosbuild_add_executable(axis_exposure_control src/axis_exposure_control.cpp)
+#target_link_libraries(example ${PROJECT_NAME})
