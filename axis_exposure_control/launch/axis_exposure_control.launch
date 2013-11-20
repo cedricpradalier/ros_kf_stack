@@ -5,6 +5,7 @@
         <param name="sampling" value="10"/>
         <param name="first_row" value="250"/>
         <param name="last_row" value="450"/>
+        <param name="target" value="128"/>
         <param name="gain" value="10.0"/>
         <param name="initial_exposure" value="5000"/>
         <!-- "fixed" or "laser" -->

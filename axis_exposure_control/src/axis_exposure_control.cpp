@@ -40,6 +40,7 @@ class AxisExposureControl {
         int sampling;
         int first_row, last_row;
         int exposure;
+        int target;
 
     public:
         AxisExposureControl() : nh_("~"), it_(nh_) {
@@ -49,6 +50,7 @@ class AxisExposureControl {
             nh_.param("sampling",sampling,10);
             nh_.param("first_row",first_row,0);
             nh_.param("last_row",last_row,0);
+            nh_.param("target",target,128);
             nh_.param("gain",gain,10.0);
             nh_.param("initial_exposure",exposure,5000);
             nh_.param("control_type",ctrl,ctrl);
@@ -87,7 +89,7 @@ class AxisExposureControl {
                             }
                         }
                         avg /= count;
-                        exposure += gain * (128-avg);
+                        exposure += gain * (target-avg);
                         break;
                     }
                 default:
