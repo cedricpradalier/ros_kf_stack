@@ -27,6 +27,7 @@ class GNGTShoreTracking {
         ros::Subscriber ls_sub;
         ros::Publisher marker_pub;
 
+        double min_dt;
         double target_value;
         double confidence_value;
         int step_frozen;
@@ -196,7 +197,6 @@ class GNGTShoreTracking {
             projector.projectLaser(*msg, ros_cloud);
             pcl::fromROSMsg(ros_cloud, pointCloud);
             run_gngt();
-            previous = header.stamp;
         }
 
         void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg)  {
@@ -208,13 +208,16 @@ class GNGTShoreTracking {
             header = msg->header;
             pcl::fromROSMsg(*msg, pointCloud);
             run_gngt();
-            previous = header.stamp;
         }
 
         void run_gngt() {
-            DisplayVertex        display_vertex(header,markers);
-            DisplayEdge        display_edge(header,markers);
+            DisplayVertex        display_vertex(header,markers,min_dt+0.1);
+            DisplayEdge        display_edge(header,markers,min_dt+0.1);
             double dt = (header.stamp - previous).toSec();
+            if (dt < min_dt) {
+                return;
+            }
+            previous = header.stamp;
             ros::Time t1 = ros::Time::now();
             vq2::temporal::tick(g,op,dt); // Here, speeds are updated. // TODO, dt = 1.0
             for (int i=0;i<step_frozen;++i) {
@@ -253,8 +256,9 @@ class GNGTShoreTracking {
             protected:
                 const std_msgs::Header & header;
                 visualization_msgs::MarkerArray & markers;
+                double lifetime;
             public:
-                DisplayEdge(const std_msgs::Header & h,visualization_msgs::MarkerArray & m):header(h),markers(m) {}
+                DisplayEdge(const std_msgs::Header & h,visualization_msgs::MarkerArray & m, double lt):header(h),markers(m),lifetime(lt) {}
                 bool operator()(Edge& e) {
                     pcl::PointXYZ p1, p2;
                     p1 = (*(e.n1)).value.prototype();
@@ -276,7 +280,7 @@ class GNGTShoreTracking {
                     marker.points[0].y = p1.y;
                     marker.points[1].x = p2.x;
                     marker.points[1].y = p2.y;
-                    marker.lifetime = ros::Duration(0.1);
+                    marker.lifetime = ros::Duration(lifetime);
 
                     markers.markers.push_back(marker);
 
@@ -289,8 +293,9 @@ class GNGTShoreTracking {
             protected:
                 const std_msgs::Header & header;
                 visualization_msgs::MarkerArray & markers;
+                double lifetime;
             public:
-                DisplayVertex(const std_msgs::Header & h,visualization_msgs::MarkerArray & m):header(h),markers(m) {}
+                DisplayVertex(const std_msgs::Header & h,visualization_msgs::MarkerArray & m, double lt):header(h),markers(m),lifetime(lt) {}
                 bool operator()(Vertex& n) { 
                     pcl::PointXYZ p,v;
                     p = n.value.prototype();
@@ -310,7 +315,7 @@ class GNGTShoreTracking {
                     marker.color.r = 0.0;
                     marker.color.g = 0.0;
                     marker.color.b = 1.0;
-                    marker.lifetime = ros::Duration(0.1);
+                    marker.lifetime = ros::Duration(lifetime);
 
                     markers.markers.push_back(marker);
 
@@ -328,7 +333,7 @@ class GNGTShoreTracking {
                     marker.color.r = 1.0;
                     marker.color.g = 0.0;
                     marker.color.b = 0.0;
-                    marker.lifetime = ros::Duration(0.1);
+                    marker.lifetime = ros::Duration(lifetime);
                     marker.points.resize(2);
                     marker.points[0].x = p.x;
                     marker.points[0].y = p.y;
@@ -348,6 +353,7 @@ class GNGTShoreTracking {
             nh("~"), target_value(TARGET), confidence_value(CONFIDENCE), 
             unit_distance(distance), unit_learn(learn) {
 
+                nh.param("min_dt",min_dt,0.0);
                 nh.param("target",target_value,(double)TARGET);
                 // nh.param("confidence",confidence_value,(double)CONFIDENCE);
                 nh.param("step_frozen",step_frozen,(int)N_STEP_FROZEN);
