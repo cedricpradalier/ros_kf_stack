@@ -31,7 +31,7 @@ namespace radial_plan {
     class RadialPlan {
         public:
             RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int num_connections,
-                    float dist_scale = 1.0, float alpha_scale = M_PI);
+                    bool filter_glare, float dist_scale = 1.0, float alpha_scale = M_PI);
 
             ~RadialPlan() {}
 
@@ -53,6 +53,8 @@ namespace radial_plan {
             unsigned int n_r;
             unsigned int n_j;
             unsigned int n_k;
+            float r_glare;
+            bool filter_glare;
             float r_scale;
             float angle_scale;
             int conn_range, ang_range;

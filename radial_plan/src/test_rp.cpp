@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    RadialPlan RP(10, 15, 11, 1.0, M_PI);
+    RadialPlan RP(10, 15, 11, false, 1.0, M_PI);
     double t0 = ros::Time::now().toSec();
     RP.updateNodeCosts(pointCloud, RadialPlan::RIGHT, 6.0, 4.0);
     double t1 = ros::Time::now().toSec();

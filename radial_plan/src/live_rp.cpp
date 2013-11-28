@@ -16,7 +16,7 @@ using namespace radial_plan;
 
 ros::Publisher pathPub;
 ros::Subscriber pcSub;
-RadialPlan RP(10, 15, 11, 1.0, M_PI);
+RadialPlan RP(10, 15, 11, false, 1.0, M_PI);
 double dt_update=0.0, dt_path=0.0;
 unsigned long num_iter = 0;
 
