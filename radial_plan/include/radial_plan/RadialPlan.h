@@ -40,7 +40,7 @@ namespace radial_plan {
             // Update the node costs based on the point cloud.
             void updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud, Side side, float d_desired, float d_safety);
 
-            std::list<cv::Point2f> getOptimalPath(float K_initial_angle, float K_length, 
+            std::list<cv::Point3f> getOptimalPath(float K_initial_angle, float K_length, 
                     float K_turn, float K_dist);
 
             boost::shared_ptr<Nabo::NNSearchF const> getNearestNeighbourSearch() {

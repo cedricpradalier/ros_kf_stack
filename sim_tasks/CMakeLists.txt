@@ -46,8 +46,8 @@ TARGET_LINK_LIBRARIES(TaskGoTo dl)
 ROSBUILD_ADD_LIBRARY( TaskGoToAngle SHARED tasks/TaskGoToAngle.cpp)
 TARGET_LINK_LIBRARIES(TaskGoToAngle dl)
 
-ROSBUILD_ADD_LIBRARY( TaskFollowShore SHARED tasks/TaskFollowShore.cpp)
-TARGET_LINK_LIBRARIES(TaskFollowShore dl)
+# ROSBUILD_ADD_LIBRARY( TaskFollowShore SHARED tasks/TaskFollowShore.cpp)
+# TARGET_LINK_LIBRARIES(TaskFollowShore dl)
 
 ROSBUILD_ADD_LIBRARY( TaskAlignWithShore SHARED tasks/TaskAlignWithShore.cpp)
 TARGET_LINK_LIBRARIES(TaskAlignWithShore dl)
@@ -67,8 +67,8 @@ TARGET_LINK_LIBRARIES(TaskSetManual dl)
 ROSBUILD_ADD_LIBRARY( TaskSetPTZ SHARED tasks/TaskSetPTZ.cpp)
 TARGET_LINK_LIBRARIES(TaskSetPTZ dl)
 
-ROSBUILD_ADD_LIBRARY( TaskFollowShorePID SHARED tasks/TaskFollowShorePID.cpp)
-TARGET_LINK_LIBRARIES(TaskFollowShorePID dl)
+# ROSBUILD_ADD_LIBRARY( TaskFollowShorePID SHARED tasks/TaskFollowShorePID.cpp)
+# TARGET_LINK_LIBRARIES(TaskFollowShorePID dl)
 
 ROSBUILD_ADD_LIBRARY( TaskFollowShoreRP SHARED tasks/TaskFollowShoreRP.cpp)
 TARGET_LINK_LIBRARIES(TaskFollowShoreRP dl)

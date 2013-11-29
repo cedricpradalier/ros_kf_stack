@@ -204,7 +204,7 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 
 }
 
-std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K_length, float K_turn, float K_dist)
+std::list<cv::Point3f> RadialPlan::getOptimalPath(float K_initial_angle, float K_length, float K_turn, float K_dist)
 {
     int dims[3] = {n_r, n_j, n_k};
     cv::Mat_<float> cell_value(3,dims, NAN);
@@ -314,7 +314,7 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
         }
     }
 
-    std::list<cv::Point2f> lpath;
+    std::list<cv::Point3f> lpath;
     if (isnan(best_potential)) {
         // No path found
         ROS_ERROR("No path found to desired r_max");
@@ -340,7 +340,7 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
                 current.x*r_scale, j_f, k_f, x, y);
         fprintf(fp,"%e %e %e\n",x,y,0.0);
 #endif
-        lpath.push_front(cv::Point2f(x,y));
+        lpath.push_front(cv::Point3f(x,y,0.0));
         if (current.x == 0) {
             // Terminate when r == 0
             break;
@@ -354,6 +354,13 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
 #ifdef SAVE_OUTPUT
     fclose(fp);
 #endif
+    std::list<cv::Point3f>::iterator it = lpath.begin(), itp = it++; 
+    while (it != lpath.end()) {
+        // time stamp is not updated because we're not creating a
+        // trajectory at this stage
+        it->z = atan2(it->y-itp->y,it->x-itp->x);
+        it ++;
+    }
 
     return lpath;
 }

@@ -4,7 +4,10 @@
 #include <ros/ros.h>
 #include <tf/tf.h>
 
+#include <dynamic_reconfigure/server.h>
+
 #include "radial_plan/LocalPlan.h"
+#include "radial_plan/LocalPlanConfig.h"
 
 #include <pcl_ros/point_cloud.h>
 #include <geometry_msgs/Point.h>
@@ -16,9 +19,16 @@ using namespace radial_plan;
 
 ros::Publisher pathPub;
 ros::Subscriber pcSub;
-LocalPlan LP(radial_plan::LocalPlan::RIGHT, 6.0, 4.0, 20.0, 5.0, 0.5, 8);
+LocalPlan LP(radial_plan::LocalPlan::RIGHT, 8.0, 2.0, 20.0, 5.0, 0.5, 8);
 double dt_update=0.0, dt_path=0.0;
 unsigned long num_iter = 0;
+radial_plan::LocalPlanConfig config;
+
+void callback(radial_plan::LocalPlanConfig &cfg, uint32_t level)
+{
+    config = cfg;
+}
+
 
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
@@ -31,8 +41,8 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     double t0 = ros::Time::now().toSec();
     LP.updateCellCosts(pointCloud);
     double t1 = ros::Time::now().toSec();
-    std::list<cv::Point2f> lpath;
-    lpath = LP.getOptimalPath(1.0, 1.0, 1.0, 10.0);
+    std::list<cv::Point3f> lpath;
+    lpath = LP.getOptimalPath(config.initial_angle, config.length, config.turn, config.distance);
     double t2 = ros::Time::now().toSec();
     dt_update += t1 - t0;
     dt_path += t2 - t1;
@@ -47,7 +57,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     nav_msgs::Path path;
     path.header = scan_in->header;
     path.poses.resize(lpath.size());
-    std::list<cv::Point2f>::const_iterator it = lpath.begin();
+    std::list<cv::Point3f>::const_iterator it = lpath.begin();
     unsigned int ipose = 0;
     while (it != lpath.end()) {
         // time stamp is not updated because we're not creating a
@@ -55,14 +65,8 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
         path.poses[ipose].header = path.header;
         path.poses[ipose].pose.position.x = it->x;
         path.poses[ipose].pose.position.y = it->y;
-        if (ipose > 0) {
-            const geometry_msgs::Point & prev = path.poses[ipose-1].pose.position;
-            tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,atan2(it->y-prev.y,it->x-prev.x));
-            tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
-        } else {
-            tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,0);
-            tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
-        }
+        tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,it->z);
+        tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
         ipose++;
         it ++;
     }
@@ -75,6 +79,11 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 
 int main(int argc, char *argv[]) {
     ros::init(argc,argv,"live_rp");
+    dynamic_reconfigure::Server<radial_plan::LocalPlanConfig> srv;
+    dynamic_reconfigure::Server<radial_plan::LocalPlanConfig>::CallbackType f;
+    f = boost::bind(&callback, _1, _2);
+    srv.setCallback(f);
+
     ros::NodeHandle nh("~");
     pathPub = nh.advertise<nav_msgs::Path>("path",1);
     pcSub = nh.subscribe("/lidar/scan",1,scanCallback);

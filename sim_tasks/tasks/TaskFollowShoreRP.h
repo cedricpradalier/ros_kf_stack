@@ -2,6 +2,7 @@
 #define TASK_FOLLOW_SHORE_RP_H
 
 #include "radial_plan/RadialPlan.h"
+#include "radial_plan/LocalPlan.h"
 #include "task_manager_lib/TaskDefinition.h"
 #include "sim_tasks/SimTasksEnv.h"
 #include "sim_tasks_cfg/TaskFollowShoreRPConfig.h"
@@ -16,6 +17,7 @@ namespace sim_tasks {
         protected:
             ros::Publisher path_pub;
             boost::shared_ptr<radial_plan::RadialPlan> RP;
+            boost::shared_ptr<radial_plan::LocalPlan> LP;
         public:
             TaskFollowShoreRP(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {}
             virtual ~TaskFollowShoreRP() {};

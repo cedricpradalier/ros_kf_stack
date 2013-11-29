@@ -31,7 +31,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     double t0 = ros::Time::now().toSec();
     RP.updateNodeCosts(pointCloud, RadialPlan::LEFT, 6.0, 2.0);
     double t1 = ros::Time::now().toSec();
-    std::list<cv::Point2f> lpath;
+    std::list<cv::Point3f> lpath;
     lpath = RP.getOptimalPath(1.0, 1.0, 1.0, 10.0);
     double t2 = ros::Time::now().toSec();
     dt_update += t1 - t0;
@@ -47,24 +47,18 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     nav_msgs::Path path;
     path.header = scan_in->header;
     path.poses.resize(lpath.size());
-    std::list<cv::Point2f>::const_iterator it = lpath.begin();
-    unsigned int ipose = 0;
+    std::list<cv::Point3f>::const_iterator it = lpath.begin();
+    size_t ipose = 0;
     while (it != lpath.end()) {
         // time stamp is not updated because we're not creating a
         // trajectory at this stage
         path.poses[ipose].header = path.header;
         path.poses[ipose].pose.position.x = it->x;
         path.poses[ipose].pose.position.y = it->y;
-        if (ipose > 0) {
-            const geometry_msgs::Point & prev = path.poses[ipose-1].pose.position;
-            tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,atan2(it->y-prev.y,it->x-prev.x));
-            tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
-        } else {
-            tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,0);
-            tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
-        }
-        ipose++;
+        tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,it->z);
+        tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
         it ++;
+        ipose ++;
     }
     pathPub.publish(path);
     // ROS_INFO("Request completed");

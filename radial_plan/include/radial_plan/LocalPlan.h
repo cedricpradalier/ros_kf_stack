@@ -19,7 +19,7 @@ namespace radial_plan {
             // Update the node costs based on the point cloud.
             void updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud);
 
-            std::list<cv::Point2f> getOptimalPath(float K_initial_angle, float K_length, 
+            std::list<cv::Point3f> getOptimalPath(float K_initial_angle, float K_length, 
                     float K_turn, float K_dist);
 
             void saveCellMaps();
@@ -43,6 +43,13 @@ namespace radial_plan {
                 return cv::Point2f(-backward_range + P.x * spatial_resolution,
                         -forward_range + P.y * spatial_resolution);
             }
+            bool isInMap(const cv::Point2i & P) {
+                return (P.x>=0) && (P.y>=0) && (P.x<occupancy_map.cols) && (P.y<occupancy_map.rows);
+            }
+            bool isInMap(const cv::Point2f & P) {
+                return (P.x>=-backward_range) && (P.y>=-forward_range) && (P.x<=forward_range) && (P.y<=forward_range);
+            }
+
             // P = {x, y, theta}
             cv::Point3f conf2world(const cv::Point3i & P) {
                 return cv::Point3f(-backward_range + P.z * spatial_resolution,
@@ -57,15 +64,8 @@ namespace radial_plan {
                         round((P.x + backward_range)/spatial_resolution));
             }
 
-            bool isInMap(const cv::Point2i & P) {
-                return (P.x>=0) && (P.y>=0) && (P.x<occupancy_map.cols) && (P.y<occupancy_map.rows);
-            }
-            bool isInMap(const cv::Point2f & P) {
-                return (P.x>=-backward_range) && (P.y>=-forward_range) && (P.x<=forward_range) && (P.y<=forward_range);
-            }
-
             bool isInConf(const cv::Point3i & P) {
-                return (P.x>=0) && (P.y>=0) && (P.z>=0) && (P.x<(signed)num_angles) && (P.y<occupancy_map.cols) && (P.z<occupancy_map.rows);
+                return (P.x>=0) && (P.y>=0) && (P.z>=0) && (P.x<(signed)num_angles) && (P.y<occupancy_map.rows) && (P.z<occupancy_map.cols);
             }
             bool isInConf(const cv::Point3f & P) {
                 return (P.x>=-backward_range) && (P.y>=-forward_range) && (P.x<=forward_range) && (P.y<=forward_range);
@@ -76,9 +76,12 @@ namespace radial_plan {
             cv::Mat1b dsafe_pattern;
             cv::Mat1b safety_map;
 
+            cv::Mat1s ddes_pattern[2];
             std::vector<cv::Mat1f> rotations; 
+            std::vector<cv::Mat1f> rotations_inv; 
             std::vector<cv::Mat1b> rotocc; 
             std::vector<cv::Mat1f> distances; 
+            std::vector<cv::Mat1s> desired_map;
     };
 
 };
