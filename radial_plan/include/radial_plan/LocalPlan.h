@@ -12,7 +12,9 @@ namespace radial_plan {
             typedef enum {LEFT, RIGHT} Side;
 
         public:
-            LocalPlan(Side side, float d_desired, float d_safety, double forward_range, double backward_range, double spatial_resolution, unsigned int num_angles);
+            LocalPlan(Side side, float d_desired, float d_safety, double forward_range, 
+                    double backward_range, double spatial_resolution, 
+                    unsigned int num_angles, bool filter_glare);
 
             ~LocalPlan() {}
 
@@ -34,6 +36,8 @@ namespace radial_plan {
             double backward_range;
             double spatial_resolution;
             unsigned int num_angles, num_safe, num_desired;
+            double r_glare;
+            bool filter_glare;
 
             cv::Point2i world2map(const cv::Point2f & P) {
                 return cv::Point2i(round((P.x + backward_range)/spatial_resolution),

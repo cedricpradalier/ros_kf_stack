@@ -15,10 +15,10 @@ TaskIndicator TaskFollowShoreRP::initialise(const TaskParameters & parameters)
     path_pub = env->getNodeHandle().advertise<nav_msgs::Path>("follow_shore/path",1);
     if (cfg.radial) {
         RP.reset(new RadialPlan(cfg.radial_steps,cfg.angular_steps,cfg.connection_steps,
-                    cfg.radial_resolution,cfg.angular_range));
+                    cfg.filter_glare,cfg.radial_resolution,cfg.angular_range));
     } else {
         LP.reset(new LocalPlan((cfg.side>0)?LocalPlan::LEFT:LocalPlan::RIGHT, cfg.distance, cfg.safety_distance,
-                    cfg.forward_range,cfg.backward_range,cfg.radial_resolution,cfg.angular_steps));
+                    cfg.forward_range,cfg.backward_range,cfg.radial_resolution,cfg.angular_steps,cfg.filter_glare));
     }
     return TaskStatus::TASK_INITIALISED;
 }

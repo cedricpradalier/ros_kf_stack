@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     fclose(fp);
 
 
-    LocalPlan LP(radial_plan::LocalPlan::RIGHT, 6.0, 2.0, 20.0, 5.0, 0.5, 8);
+    LocalPlan LP(radial_plan::LocalPlan::RIGHT, 6.0, 2.0, 20.0, 5.0, 0.5, 8, true);
     double t0 = ros::Time::now().toSec();
     LP.updateCellCosts(pointCloud);
     double t1 = ros::Time::now().toSec();

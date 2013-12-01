@@ -4,9 +4,14 @@
 
 using namespace radial_plan;
 
-LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_range, double backward_range, double spatial_resolution, unsigned int num_angles):
-    side(side), d_desired(d_desired), d_safety(d_safety), forward_range(forward_range), backward_range(backward_range), spatial_resolution(spatial_resolution), num_angles(num_angles)
+LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_range, 
+        double backward_range, double spatial_resolution, 
+        unsigned int num_angles, bool filter_glare):
+    side(side), d_desired(d_desired), d_safety(d_safety), forward_range(forward_range), 
+    backward_range(backward_range), spatial_resolution(spatial_resolution), 
+    num_angles(num_angles), filter_glare(filter_glare)
 {
+    r_glare = 2.0;
     occmap_size = cv::Size(round((backward_range + forward_range)/spatial_resolution),
             round(2*forward_range/spatial_resolution));
     occupancy_map = cv::Mat1b(occmap_size);
@@ -56,7 +61,25 @@ void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClou
     occupancy_map = 0x00;
     safety_map = 0xFF;
     ROS_INFO("%d points in point cloud",(int)pointCloud.size());
+    bool ignore_glare_point = false;
+    size_t count_glare = 0;
+    if (filter_glare) {
+        for (unsigned int i=0;i<pointCloud.size();i++) {
+            double r = hypot(pointCloud[i].x,pointCloud[i].y);
+            if (r < r_glare) {
+                count_glare += 1;
+            }
+        }
+        ignore_glare_point = (count_glare>0) && (count_glare < 4);
+        ROS_INFO("%d glare point: ignoring %d",(int)count_glare,(int)ignore_glare_point);
+    }
+
+
     for (size_t i=0;i<pointCloud.size();++i) {
+        double r = hypot(pointCloud[i].x,pointCloud[i].y);
+        if (ignore_glare_point && (r < r_glare)) {
+            continue;
+        }
         cv::Point2i P = world2map(cv::Point2f(pointCloud[i].x,pointCloud[i].y));
         if (isInMap(P)) {
             occupancy_map(P) = 0xFF;
