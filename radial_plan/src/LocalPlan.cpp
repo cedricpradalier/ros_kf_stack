@@ -60,7 +60,7 @@ LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_
 void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud) {
     occupancy_map = 0x00;
     safety_map = 0xFF;
-    ROS_INFO("%d points in point cloud",(int)pointCloud.size());
+    // ROS_INFO("%d points in point cloud",(int)pointCloud.size());
     bool ignore_glare_point = false;
     size_t count_glare = 0;
     if (filter_glare) {
@@ -71,7 +71,7 @@ void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClou
             }
         }
         ignore_glare_point = (count_glare>0) && (count_glare < 4);
-        ROS_INFO("%d glare point: ignoring %d",(int)count_glare,(int)ignore_glare_point);
+        // ROS_INFO("%d glare point: ignoring %d",(int)count_glare,(int)ignore_glare_point);
     }
 
 
