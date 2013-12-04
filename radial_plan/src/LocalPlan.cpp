@@ -12,6 +12,7 @@ LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_
     num_angles(num_angles), filter_glare(filter_glare)
 {
     r_glare = 2.0;
+    r_max = std::max(hypot(forward_range,forward_range),hypot(forward_range,backward_range)) + d_desired;
     occmap_size = cv::Size(round((backward_range + forward_range)/spatial_resolution),
             round(2*forward_range/spatial_resolution));
     occupancy_map = cv::Mat1b(occmap_size);
@@ -42,10 +43,12 @@ LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_
 
     desired_map.resize(num_angles);
     rotations.resize(num_angles);
+    trigo.resize(num_angles);
     rotations_inv.resize(num_angles);
     rotocc.resize(num_angles);
     distances.resize(num_angles);
     for (unsigned int i=0;i<num_angles;i++) {
+        trigo[i] = cv::Point2f(cos(M_PI + i*2*M_PI/num_angles),sin(M_PI + i*2*M_PI/num_angles));
         rotations[i] = cv::getRotationMatrix2D(
                 cv::Point2f(backward_range/spatial_resolution,forward_range/spatial_resolution),
                 180. + i*360./num_angles, 1.0);
@@ -75,66 +78,70 @@ void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClou
     }
 
 
+    DiscretizedCloud discretized_cloud;
+    std::vector<DiscretizedCloud> rotated_cloud(num_angles);
     for (size_t i=0;i<pointCloud.size();++i) {
         double r = hypot(pointCloud[i].x,pointCloud[i].y);
+        if (r > r_max) {
+            continue;
+        }
         if (ignore_glare_point && (r < r_glare)) {
             continue;
         }
-        cv::Point2i P = world2map(cv::Point2f(pointCloud[i].x,pointCloud[i].y));
-        if (isInMap(P)) {
-            occupancy_map(P) = 0xFF;
+        cv::Point2f pf = cv::Point2f(pointCloud[i].x,pointCloud[i].y);
+        cv::Point2i P = world2map(pf);
+        discretized_cloud.insert(P);
+        for (size_t a = 0; a < num_angles; ++a) {
+            rotated_cloud[a].insert(world2map(cv::Point2f(pf.x*trigo[a].x+pf.y*trigo[a].y,
+                            -pf.x*trigo[a].y+pf.y*trigo[a].x)));
         }
     }
     // Compute the safety map by pasting the safety pattern on the occupancy
     // grid, basically a big dilate from a morphology point of view
-    for (int x=0;x < occupancy_map.cols; ++x) {
-        for (int y=0;y < occupancy_map.rows; ++y) {
-            if (!occupancy_map(y,x)) continue;
-
-            int x_min_dest = std::max<int>(x - num_safe/2,0);
-            int x_max_dest = std::min<int>(x + num_safe/2,occupancy_map.cols);
-            int y_min_dest = std::max<int>(y - num_safe/2,0);
-            int y_max_dest = std::min<int>(y + num_safe/2,occupancy_map.rows);
-            int x_min_src = num_safe/2 - x + x_min_dest;
-            int x_max_src = num_safe/2 + x_max_dest - x;
-            int y_min_src = num_safe/2 - y + y_min_dest;
-            int y_max_src = num_safe/2 + y_max_dest - y;
-            cv::Range s_src[2] = { cv::Range(y_min_src,y_max_src), cv::Range(x_min_src,x_max_src) };
-            cv::Range s_dest[2] = { cv::Range(y_min_dest,y_max_dest), cv::Range(x_min_dest,x_max_dest) };
-            safety_map(s_dest) &= dsafe_pattern(s_src);
-        }
+    for (DiscretizedCloud::const_iterator it=discretized_cloud.begin(); 
+            it != discretized_cloud.end(); it++) {
+        int x_min_dest = std::max<int>(it->x - num_safe/2,0);
+        int x_max_dest = std::min<int>(it->x + num_safe/2,occupancy_map.cols);
+        int y_min_dest = std::max<int>(it->y - num_safe/2,0);
+        int y_max_dest = std::min<int>(it->y + num_safe/2,occupancy_map.rows);
+        int x_min_src = num_safe/2 - it->x + x_min_dest;
+        int x_max_src = num_safe/2 + x_max_dest - it->x;
+        int y_min_src = num_safe/2 - it->y + y_min_dest;
+        int y_max_src = num_safe/2 + y_max_dest - it->y;
+        if (y_max_src - y_min_src <= 0) continue;
+        if (x_max_src - x_min_src <= 0) continue;
+        cv::Range s_src[2] = { cv::Range(y_min_src,y_max_src), cv::Range(x_min_src,x_max_src) };
+        cv::Range s_dest[2] = { cv::Range(y_min_dest,y_max_dest), cv::Range(x_min_dest,x_max_dest) };
+        safety_map(s_dest) &= dsafe_pattern(s_src);
     }
 
     // Now compute the distance from the safety map, but only orthogonally
     for (unsigned int i=0;i<num_angles;i++) {
         cv::Mat1s dmap(occmap_size,num_desired*2);
-        cv::warpAffine(occupancy_map,rotocc[i],rotations_inv[i],occmap_size, cv::INTER_NEAREST | cv::WARP_INVERSE_MAP, 
-                cv::BORDER_CONSTANT, cv::Scalar(0));
-        for (int y=0;y < rotocc[i].rows; ++y) {
-            for (int x=0;x < rotocc[i].cols; ++x) {
-                if (!rotocc[i](y,x)) continue;
+        for (DiscretizedCloud::const_iterator it=rotated_cloud[i].begin(); 
+                it != rotated_cloud[i].end(); it++) {
 
-                int x_min_dest = std::max<int>(x - num_desired,0);
-                int x_max_dest = std::min<int>(x + num_desired,occupancy_map.cols);
-                int x_min_src = num_desired - x + x_min_dest;
-                int x_max_src = num_desired + x_max_dest - x;
-                int y_min_src, y_max_src, y_min_dest, y_max_dest;
-                if (side == LEFT) {
-                    y_min_dest = y;
-                    y_max_dest = std::min<int>(y + 2*num_desired,occupancy_map.rows);
-                    y_min_src = 0;
-                    y_max_src = y_max_dest - y_min_dest;
-                } else {
-                    y_min_dest = std::max<int>(0,y - 2*num_desired);
-                    y_max_dest = y;
-                    y_min_src = 2*num_desired - (y_max_dest-y_min_dest);
-                    y_max_src = 2*num_desired;
-                }
-                if ((y_max_src - y_min_src) == 0) continue; // nothing to do
-                cv::Range s_src[2] = { cv::Range(y_min_src,y_max_src), cv::Range(x_min_src,x_max_src) };
-                cv::Range s_dest[2] = { cv::Range(y_min_dest,y_max_dest), cv::Range(x_min_dest,x_max_dest) };
-                dmap(s_dest) = cv::min(dmap(s_dest),ddes_pattern[side](s_src));
+            int x_min_dest = std::max<int>(it->x - num_desired,0);
+            int x_max_dest = std::min<int>(it->x + num_desired,occupancy_map.cols);
+            int x_min_src = num_desired - it->x + x_min_dest;
+            int x_max_src = num_desired + x_max_dest - it->x;
+            int y_min_src, y_max_src, y_min_dest, y_max_dest;
+            if (side == LEFT) {
+                y_min_dest = it->y;
+                y_max_dest = std::min<int>(it->y + 2*num_desired,occupancy_map.rows);
+                y_min_src = 0;
+                y_max_src = y_max_dest - y_min_dest;
+            } else {
+                y_min_dest = std::max<int>(0,it->y - 2*num_desired);
+                y_max_dest = it->y;
+                y_min_src = 2*num_desired - (y_max_dest-y_min_dest);
+                y_max_src = 2*num_desired;
             }
+            if ((y_max_src - y_min_src) <= 0) continue; // nothing to do
+            if ((x_max_src - x_min_src) <= 0) continue; // nothing to do
+            cv::Range s_src[2] = { cv::Range(y_min_src,y_max_src), cv::Range(x_min_src,x_max_src) };
+            cv::Range s_dest[2] = { cv::Range(y_min_dest,y_max_dest), cv::Range(x_min_dest,x_max_dest) };
+            dmap(s_dest) = cv::min(dmap(s_dest),ddes_pattern[side](s_src));
         }
         dmap = cv::abs(dmap - d_desired/spatial_resolution);
         cv::warpAffine(dmap,desired_map[i],rotations[i],occmap_size, cv::INTER_NEAREST | cv::WARP_INVERSE_MAP, 
@@ -200,7 +207,7 @@ void LocalPlan::saveCellMaps() {
 }
 
 std::list<cv::Point3f> LocalPlan::getOptimalPath(float K_initial_angle, float K_length, 
-                    float K_turn, float K_dist) {
+        float K_turn, float K_dist) {
 
     assert(num_angles == 8); // other angles not yet implemented
     assert(K_length < K_turn * (2*M_PI)/sqrt(2.));
