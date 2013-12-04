@@ -36,7 +36,7 @@ namespace radial_plan {
             double backward_range;
             double spatial_resolution;
             unsigned int num_angles, num_safe, num_desired;
-            double r_glare;
+            double r_glare,r_max;
             bool filter_glare;
 
             cv::Point2i world2map(const cv::Point2f & P) {
@@ -81,11 +81,20 @@ namespace radial_plan {
             cv::Mat1b safety_map;
 
             cv::Mat1s ddes_pattern[2];
+            std::vector<cv::Point2f> trigo; 
             std::vector<cv::Mat1f> rotations; 
             std::vector<cv::Mat1f> rotations_inv; 
             std::vector<cv::Mat1b> rotocc; 
             std::vector<cv::Mat1f> distances; 
             std::vector<cv::Mat1s> desired_map;
+            struct Pt2iLess {
+                bool operator()(const cv::Point2i & p, const cv::Point2i & q) {
+                    if (p.x < q.x) return true;
+                    if (p.x > q.x) return false;
+                    return p.y < q.y;
+                }
+            };
+            typedef std::set<cv::Point2i,Pt2iLess> DiscretizedCloud;
     };
 
 };
