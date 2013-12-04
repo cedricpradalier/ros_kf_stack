@@ -22,6 +22,7 @@ TaskIndicator TaskCheckReadiness::initialise(const TaskParameters & parameters)
     }
     jpegSub = env->getNodeHandle().subscribe("/axis/image_raw/compressed",1,&TaskCheckReadiness::jpegCallback,this);
     logbeatSub = env->getNodeHandle().subscribe("/logbeat/beat",1,&TaskCheckReadiness::logbeatCallback,this);
+    tfbeatSub = env->getNodeHandle().subscribe("/tfbeat/beat",1,&TaskCheckReadiness::tfbeatCallback,this);
 }
 
 void TaskCheckReadiness::jpegCallback(const sensor_msgs::CompressedImage::ConstPtr& msg) {
@@ -34,16 +35,21 @@ void TaskCheckReadiness::logbeatCallback(const std_msgs::Header::ConstPtr& msg) 
     statMap["logbeat"].tick();
 }
 
+void TaskCheckReadiness::tfbeatCallback(const std_msgs::Header::ConstPtr& msg) {
+    // don't care about the value here
+    statMap["tfbeat"].tick();
+}
+
 #define L_TEST(field,min_freq,text) \
         if (statMap[field].getFrequency(true)<min_freq) { \
-            ROS_ERROR("Not enough messages received for %s",text); \
+            ROS_ERROR("Not enough messages received for %s: %d msg in %.1f",text,statMap[field].getCount(true),cfg.duration); \
             setStatusString(std::string("Not enough messages received for ")+text); \
             return TaskStatus::TASK_FAILED; \
         }
 
 #define E_TEST(field,min_freq,text) \
         if (env->getStatisticsMap()[field].getFrequency(true)<min_freq) { \
-            ROS_ERROR("Not enough messages received for %s",text); \
+            ROS_ERROR("Not enough messages received for %s: %d msg in %.1f",text,env->getStatisticsMap()[field].getCount(true),cfg.duration); \
             setStatusString(std::string("Not enough messages received for ")+text); \
             return TaskStatus::TASK_FAILED; \
         }

@@ -1,4 +1,8 @@
 <launch>
+    <node pkg="kf_launch" type="beat.py" name="tfbeat" output="screen">
+        <param name="rate" value="4"/>
+    </node>
+
 
     <node pkg="tf" type="static_transform_publisher" name="gps_broadcaster" args="0.08 -0.1183 0.01 0 0 0 /kingfisher/base /kingfisher/gps 100" />
 

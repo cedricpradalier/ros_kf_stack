@@ -22,7 +22,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-FIND_PACKAGE(Ceres REQUIRED)
+# Maybe integrated later
+# FIND_PACKAGE(Ceres REQUIRED)
 INCLUDE_DIRECTORIES(${CERES_INCLUDES})
 
 #common commands for building c++ executables and libraries

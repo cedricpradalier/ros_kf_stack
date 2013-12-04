@@ -19,13 +19,16 @@ namespace sim_tasks {
             ros::Time initial_time;
             ros::Subscriber jpegSub;
             ros::Subscriber logbeatSub;
+            ros::Subscriber tfbeatSub;
             SubscriberStatMap statMap;
             void jpegCallback(const sensor_msgs::CompressedImage::ConstPtr& msg);
             void logbeatCallback(const std_msgs::Header::ConstPtr& msg);
+            void tfbeatCallback(const std_msgs::Header::ConstPtr& msg);
         public:
             TaskCheckReadiness(TaskDefinitionPtr def, TaskEnvironmentPtr env) : Parent(def,env) {
                 statMap["jpeg"] = SubscriberStatistics();
                 statMap["logbeat"] = SubscriberStatistics();
+                statMap["tfbeat"] = SubscriberStatistics();
             }
             virtual ~TaskCheckReadiness() {};
 
