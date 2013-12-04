@@ -19,7 +19,7 @@ LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_
     safety_map = cv::Mat1b(occmap_size);
     int nsafe = ceil(2*d_safety/spatial_resolution);
     num_safe = nsafe | 1; // make it odd
-    dsafe_pattern = cv::Mat1b(nsafe,nsafe);
+    dsafe_pattern = cv::Mat1b(num_safe,num_safe);
     dsafe_pattern = 0xFF;
     int r = num_safe / 2;
     cv::circle(dsafe_pattern,cv::Point(r,r), r, 0, -1);
@@ -100,19 +100,12 @@ void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClou
     // grid, basically a big dilate from a morphology point of view
     for (DiscretizedCloud::const_iterator it=discretized_cloud.begin(); 
             it != discretized_cloud.end(); it++) {
-        int x_min_dest = std::max<int>(it->x - num_safe/2,0);
-        int x_max_dest = std::min<int>(it->x + num_safe/2,occupancy_map.cols);
-        int y_min_dest = std::max<int>(it->y - num_safe/2,0);
-        int y_max_dest = std::min<int>(it->y + num_safe/2,occupancy_map.rows);
-        int x_min_src = num_safe/2 - it->x + x_min_dest;
-        int x_max_src = num_safe/2 + x_max_dest - it->x;
-        int y_min_src = num_safe/2 - it->y + y_min_dest;
-        int y_max_src = num_safe/2 + y_max_dest - it->y;
-        if (y_max_src - y_min_src <= 0) continue;
-        if (x_max_src - x_min_src <= 0) continue;
-        cv::Range s_src[2] = { cv::Range(y_min_src,y_max_src), cv::Range(x_min_src,x_max_src) };
-        cv::Range s_dest[2] = { cv::Range(y_min_dest,y_max_dest), cv::Range(x_min_dest,x_max_dest) };
-        safety_map(s_dest) &= dsafe_pattern(s_src);
+        cv::Rect r_dest(0,0,safety_map.cols,safety_map.rows);
+        cv::Rect r_src(it->x-num_safe/2,it->y-num_safe/2,num_safe,num_safe);
+        cv::Rect inter_in_dest = r_dest & r_src;
+        if (inter_in_dest.area()==0) continue; // nothing to do
+        cv::Rect inter_in_src = inter_in_dest - r_src.tl();
+        safety_map(inter_in_dest) &= dsafe_pattern(inter_in_src);
     }
 
     // Now compute the distance from the safety map, but only orthogonally
@@ -120,60 +113,21 @@ void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClou
         cv::Mat1s dmap(occmap_size,num_desired*2);
         for (DiscretizedCloud::const_iterator it=rotated_cloud[i].begin(); 
                 it != rotated_cloud[i].end(); it++) {
-
-            int x_min_dest = std::max<int>(it->x - num_desired,0);
-            int x_max_dest = std::min<int>(it->x + num_desired,occupancy_map.cols);
-            int x_min_src = num_desired - it->x + x_min_dest;
-            int x_max_src = num_desired + x_max_dest - it->x;
-            int y_min_src, y_max_src, y_min_dest, y_max_dest;
+            cv::Rect r_dest(0,0,dmap.cols,dmap.rows);
+            cv::Rect r_src;
             if (side == LEFT) {
-                y_min_dest = it->y;
-                y_max_dest = std::min<int>(it->y + 2*num_desired,occupancy_map.rows);
-                y_min_src = 0;
-                y_max_src = y_max_dest - y_min_dest;
+                r_src = cv::Rect(it->x-num_desired,it->y,2*num_desired,2*num_desired);
             } else {
-                y_min_dest = std::max<int>(0,it->y - 2*num_desired);
-                y_max_dest = it->y;
-                y_min_src = 2*num_desired - (y_max_dest-y_min_dest);
-                y_max_src = 2*num_desired;
+                r_src = cv::Rect(it->x-num_desired,it->y-2*num_desired,2*num_desired,2*num_desired);
             }
-            if ((y_max_src - y_min_src) <= 0) continue; // nothing to do
-            if ((x_max_src - x_min_src) <= 0) continue; // nothing to do
-            cv::Range s_src[2] = { cv::Range(y_min_src,y_max_src), cv::Range(x_min_src,x_max_src) };
-            cv::Range s_dest[2] = { cv::Range(y_min_dest,y_max_dest), cv::Range(x_min_dest,x_max_dest) };
-            dmap(s_dest) = cv::min(dmap(s_dest),ddes_pattern[side](s_src));
+            cv::Rect inter_in_dest = r_dest & r_src;
+            if (inter_in_dest.area()==0) continue; // nothing to do
+            cv::Rect inter_in_src = inter_in_dest - r_src.tl();
+            dmap(inter_in_dest) = cv::min(dmap(inter_in_dest),ddes_pattern[side](inter_in_src));
         }
         dmap = cv::abs(dmap - d_desired/spatial_resolution);
         cv::warpAffine(dmap,desired_map[i],rotations[i],occmap_size, cv::INTER_NEAREST | cv::WARP_INVERSE_MAP, 
                 cv::BORDER_CONSTANT, cv::Scalar(2*d_desired));
-#if 0
-        cv::Mat1f D = cv::Mat1f(occmap_size,2*d_desired);
-        unsigned int j = (side==RIGHT)?(num_angles/2):0;
-        cv::warpAffine(safety_map,rotocc[i],rotations_inv[(i+j)%num_angles],occmap_size, cv::INTER_NEAREST | cv::WARP_INVERSE_MAP, 
-                cv::BORDER_CONSTANT, cv::Scalar(0xFF));
-        for (int c=0;c<rotocc[i].cols;++c) {
-            bool distance_to_something = false;
-            if (rotocc[i](0,c)==0x00) {
-                distance_to_something = true;
-                D(0,c) = 0.0;
-            } else {
-                D(0,c) = 2*d_desired;
-            }
-
-            for (int r=1;r<rotocc[i].rows;++r) {
-                if (rotocc[i](r,c)==0x00) {
-                    distance_to_something = true;
-                    D(r,c) = 0.0;
-                } else if (!distance_to_something) {
-                    D(r,c) = 2*d_desired;
-                } else {
-                    D(r,c) = D(r-1,c) + 1.0;
-                }
-            }
-        }
-        cv::warpAffine(D,distances[i],rotations[(i+j)%num_angles],occmap_size, cv::INTER_NEAREST | cv::WARP_INVERSE_MAP, 
-                cv::BORDER_CONSTANT, cv::Scalar(2*d_desired));
-#endif
 #if 0
         char C[2] = {'A' + i, 0};
         cv::imwrite(std::string("drot")+std::string(C)+".png",D*5);

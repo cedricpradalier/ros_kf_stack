@@ -19,7 +19,7 @@ using namespace radial_plan;
 
 ros::Publisher pathPub;
 ros::Subscriber pcSub;
-LocalPlan LP(radial_plan::LocalPlan::RIGHT, 8.0, 2.0, 20.0, 5.0, 0.5, 8, true);
+LocalPlan LP(radial_plan::LocalPlan::RIGHT, 8.0, 2.0, 10.0, 5.0, 0.5, 8, true);
 double dt_update=0.0, dt_path=0.0;
 unsigned long num_iter = 0;
 radial_plan::LocalPlanConfig config;
