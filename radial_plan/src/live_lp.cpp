@@ -4,7 +4,10 @@
 #include <ros/ros.h>
 #include <tf/tf.h>
 
-#include "radial_plan/RadialPlan.h"
+#include <dynamic_reconfigure/server.h>
+
+#include "radial_plan/LocalPlan.h"
+#include "radial_plan/LocalPlanConfig.h"
 
 #include <pcl_ros/point_cloud.h>
 #include <geometry_msgs/Point.h>
@@ -16,9 +19,16 @@ using namespace radial_plan;
 
 ros::Publisher pathPub;
 ros::Subscriber pcSub;
-RadialPlan RP(10, 15, 11, false, 1.0, M_PI);
+LocalPlan LP(radial_plan::LocalPlan::RIGHT, 8.0, 2.0, 20.0, 5.0, 0.5, 8, true);
 double dt_update=0.0, dt_path=0.0;
 unsigned long num_iter = 0;
+radial_plan::LocalPlanConfig config;
+
+void callback(radial_plan::LocalPlanConfig &cfg, uint32_t level)
+{
+    config = cfg;
+}
+
 
 void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
@@ -29,17 +39,17 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     projector.projectLaser(*scan_in, cloud);
     pcl::fromROSMsg(cloud, pointCloud);
     double t0 = ros::Time::now().toSec();
-    RP.updateNodeCosts(pointCloud, RadialPlan::LEFT, 6.0, 2.0);
+    LP.updateCellCosts(pointCloud);
     double t1 = ros::Time::now().toSec();
     std::list<cv::Point3f> lpath;
-    lpath = RP.getOptimalPath(1.0, 1.0, 1.0, 10.0);
+    lpath = LP.getOptimalPath(config.initial_angle, config.length, config.turn, config.distance);
     double t2 = ros::Time::now().toSec();
     dt_update += t1 - t0;
     dt_path += t2 - t1;
     num_iter += 1;
     // Here we could add some path optimisation, in particular using the 
     // search datastructure on the point cloud: 
-    // nss = RP.getNearestNeighbourSearch()
+    // nss = LP.getNearestNeighbourSearch()
     //
     // TODO
     //
@@ -48,7 +58,7 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
     path.header = scan_in->header;
     path.poses.resize(lpath.size());
     std::list<cv::Point3f>::const_iterator it = lpath.begin();
-    size_t ipose = 0;
+    unsigned int ipose = 0;
     while (it != lpath.end()) {
         // time stamp is not updated because we're not creating a
         // trajectory at this stage
@@ -57,8 +67,8 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
         path.poses[ipose].pose.position.y = it->y;
         tf::Quaternion Q = tf::createQuaternionFromRPY(0,0,it->z);
         tf::quaternionTFToMsg(Q,path.poses[ipose].pose.orientation);
+        ipose++;
         it ++;
-        ipose ++;
     }
     pathPub.publish(path);
     // ROS_INFO("Request completed");
@@ -69,6 +79,11 @@ void scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 
 int main(int argc, char *argv[]) {
     ros::init(argc,argv,"live_rp");
+    dynamic_reconfigure::Server<radial_plan::LocalPlanConfig> srv;
+    dynamic_reconfigure::Server<radial_plan::LocalPlanConfig>::CallbackType f;
+    f = boost::bind(&callback, _1, _2);
+    srv.setCallback(f);
+
     ros::NodeHandle nh("~");
     pathPub = nh.advertise<nav_msgs::Path>("path",1);
     pcSub = nh.subscribe("/lidar/scan",1,scanCallback);

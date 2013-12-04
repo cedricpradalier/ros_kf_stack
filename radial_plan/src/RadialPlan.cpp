@@ -13,9 +13,11 @@ using namespace Eigen;
 #define SIGNED_DISTANCE
 
 RadialPlan::RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int num_connections,
-        float dist_scale, float alpha_scale) :
-    n_r(max_r+1), n_j(num_angles), n_k(num_connections), r_scale(dist_scale), angle_scale(alpha_scale)
+        bool filter_glare, float dist_scale, float alpha_scale) :
+    n_r(max_r+1), n_j(num_angles), n_k(num_connections), filter_glare(filter_glare), 
+    r_scale(dist_scale), angle_scale(alpha_scale)
 {
+    r_glare = 2.0;
     // n_k and n_j must be odd
     assert(n_k & 1);
     assert(n_j & 1);
@@ -75,15 +77,34 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 #ifdef SAVE_OUTPUT
     FILE *pc = fopen("pc","w");
 #endif
+    bool ignore_glare_point = false;
+    size_t count_glare = 0;
+    if (filter_glare) {
+        for (unsigned int i=0;i<pointCloud.size();i++) {
+            double r = hypot(pointCloud[i].x,pointCloud[i].y);
+            if (r < r_glare) {
+                count_glare += 1;
+            }
+        }
+        ignore_glare_point = (count_glare>0) && (count_glare < 4);
+        ROS_INFO("%d glare point: ignoring %d",(int)count_glare,(int)ignore_glare_point);
+    }
+
     std::vector<float> r_max(n_j,NAN);
     nns.reset();
-    unsigned int n1;
-    n1 = pointCloud.size();
-   	nns_cloud.resize(2, pointCloud.size());
+    unsigned int j = 0, n_useful = pointCloud.size();
+    if (ignore_glare_point) {
+        n_useful -= count_glare;
+    }
+   	nns_cloud.resize(2, n_useful);
     for (unsigned int i=0;i<pointCloud.size();i++) {
-        assert(pointCloud.size() == n1);
-        nns_cloud(0,i) = pointCloud[i].x;
-        nns_cloud(1,i) = pointCloud[i].y;
+        double r = hypot(pointCloud[i].x,pointCloud[i].y);
+        if (ignore_glare_point && (r < r_glare)) {
+            continue;
+        }
+        assert(j < n_useful);
+        nns_cloud(0,j) = pointCloud[i].x;
+        nns_cloud(1,j) = pointCloud[i].y;
         float alpha = round(atan2(pointCloud[i].y, pointCloud[i].x) * 2 * ang_range / angle_scale);
         int i_alpha = (int)alpha;
         if (abs(i_alpha) <= ang_range) {
@@ -95,6 +116,7 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 #ifdef SAVE_OUTPUT
         fprintf(pc,"%e %e %e\n",pointCloud[i].x,pointCloud[i].y,0.0);
 #endif
+        j += 1;
     }
 #ifdef SAVE_OUTPUT
     fclose(pc);
@@ -182,7 +204,7 @@ void RadialPlan::updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClo
 
 }
 
-std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K_length, float K_turn, float K_dist)
+std::list<cv::Point3f> RadialPlan::getOptimalPath(float K_initial_angle, float K_length, float K_turn, float K_dist)
 {
     int dims[3] = {n_r, n_j, n_k};
     cv::Mat_<float> cell_value(3,dims, NAN);
@@ -292,7 +314,7 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
         }
     }
 
-    std::list<cv::Point2f> lpath;
+    std::list<cv::Point3f> lpath;
     if (isnan(best_potential)) {
         // No path found
         ROS_ERROR("No path found to desired r_max");
@@ -318,7 +340,7 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
                 current.x*r_scale, j_f, k_f, x, y);
         fprintf(fp,"%e %e %e\n",x,y,0.0);
 #endif
-        lpath.push_front(cv::Point2f(x,y));
+        lpath.push_front(cv::Point3f(x,y,0.0));
         if (current.x == 0) {
             // Terminate when r == 0
             break;
@@ -332,6 +354,13 @@ std::list<cv::Point2f> RadialPlan::getOptimalPath(float K_initial_angle, float K
 #ifdef SAVE_OUTPUT
     fclose(fp);
 #endif
+    std::list<cv::Point3f>::iterator it = lpath.begin(), itp = it++; 
+    while (it != lpath.end()) {
+        // time stamp is not updated because we're not creating a
+        // trajectory at this stage
+        it->z = atan2(it->y-itp->y,it->x-itp->x);
+        it ++;
+    }
 
     return lpath;
 }

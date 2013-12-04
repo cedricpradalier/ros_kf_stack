@@ -31,7 +31,7 @@ namespace radial_plan {
     class RadialPlan {
         public:
             RadialPlan(unsigned int max_r, unsigned int num_angles, unsigned int num_connections,
-                    float dist_scale = 1.0, float alpha_scale = M_PI);
+                    bool filter_glare, float dist_scale = 1.0, float alpha_scale = M_PI);
 
             ~RadialPlan() {}
 
@@ -40,7 +40,7 @@ namespace radial_plan {
             // Update the node costs based on the point cloud.
             void updateNodeCosts(const pcl::PointCloud<pcl::PointXYZ> & pointCloud, Side side, float d_desired, float d_safety);
 
-            std::list<cv::Point2f> getOptimalPath(float K_initial_angle, float K_length, 
+            std::list<cv::Point3f> getOptimalPath(float K_initial_angle, float K_length, 
                     float K_turn, float K_dist);
 
             boost::shared_ptr<Nabo::NNSearchF const> getNearestNeighbourSearch() {
@@ -53,6 +53,8 @@ namespace radial_plan {
             unsigned int n_r;
             unsigned int n_j;
             unsigned int n_k;
+            float r_glare;
+            bool filter_glare;
             float r_scale;
             float angle_scale;
             int conn_range, ang_range;

@@ -2,6 +2,7 @@
 
 <launch>
    <node name="gngt_shore_tracking" pkg="gngt_shore_tracking" type="gngt_shore_tracking" clear_params="true" output="screen">
+    <param name="min_dt" value="0.0"/>
     <param name="confidence" value="0.75"/>
     <param name="target" value="0.001"/>
     <param name="step_frozen" value="20"/>

@@ -17,6 +17,7 @@
   <depend package="nav_msgs"/>
   <depend package="tf"/>
   <depend package="laser_geometry"/>
+  <depend package="dynamic_reconfigure"/>
   <export>
       <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lradial_plan"/>
   </export>
