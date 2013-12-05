@@ -12,7 +12,6 @@ using namespace sim_tasks;
 TaskIndicator TaskCheckReadiness::initialise(const TaskParameters & parameters) 
 {
     initial_time = ros::Time::now();
-    return TaskStatus::TASK_INITIALISED;
     SubscriberStatMap::iterator it;
     for (it=statMap.begin();it!=statMap.end();it++) {
         it->second.setMark();
@@ -23,10 +22,13 @@ TaskIndicator TaskCheckReadiness::initialise(const TaskParameters & parameters)
     jpegSub = env->getNodeHandle().subscribe("/axis/image_raw/compressed",1,&TaskCheckReadiness::jpegCallback,this);
     logbeatSub = env->getNodeHandle().subscribe("/logbeat/beat",1,&TaskCheckReadiness::logbeatCallback,this);
     tfbeatSub = env->getNodeHandle().subscribe("/tfbeat/beat",1,&TaskCheckReadiness::tfbeatCallback,this);
+    ROS_INFO("TaskCheckReadiness: subscribed to additional topics");
+    return TaskStatus::TASK_INITIALISED;
 }
 
 void TaskCheckReadiness::jpegCallback(const sensor_msgs::CompressedImage::ConstPtr& msg) {
     // don't care about the value here
+    ROS_INFO("tick");
     statMap["jpeg"].tick();
 }
 
