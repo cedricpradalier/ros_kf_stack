@@ -11,7 +11,7 @@ LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_
     backward_range(backward_range), spatial_resolution(spatial_resolution), 
     num_angles(num_angles), filter_glare(filter_glare)
 {
-    r_glare = 2.0;
+    r_glare = 3.0;
     r_max = std::max(hypot(forward_range,forward_range),hypot(forward_range,backward_range)) + d_desired;
     occmap_size = cv::Size(round((backward_range + forward_range)/spatial_resolution),
             round(2*forward_range/spatial_resolution));

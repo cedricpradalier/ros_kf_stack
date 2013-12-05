@@ -30,10 +30,10 @@ TaskIndicator TaskFollowShoreRP::iterate()
 
     // TODO: add parameters for these values
     std::list<cv::Point3f> lpath;
-    if (cfg.radial) {
+    if (RP) {
         RP->updateNodeCosts(pointCloud, (cfg.side>0)?RadialPlan::LEFT:RadialPlan::RIGHT, cfg.distance, cfg.safety_distance);
         lpath = RP->getOptimalPath(cfg.k_initial_angle, cfg.k_length, cfg.k_turn, cfg.k_dist);
-    } else {
+    } else if (LP) {
         LP->updateCellCosts(pointCloud);
         lpath = LP->getOptimalPath(cfg.k_initial_angle, cfg.k_length, cfg.k_turn, cfg.k_dist);
     }
@@ -64,9 +64,9 @@ TaskIndicator TaskFollowShoreRP::iterate()
         // minus sign because the laser is upside down. 
         // Should probably be done through TF
         double alpha;
-        if (cfg.radial) {
+        if (RP) {
             alpha = -atan2(P.y,P.x);
-        } else {
+        } else if (LP) {
             alpha = P.z;
         }
         int salpha = (alpha<0)?-1:1;

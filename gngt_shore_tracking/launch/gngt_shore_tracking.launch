@@ -3,10 +3,15 @@
 <launch>
    <node name="gngt_shore_tracking" pkg="gngt_shore_tracking" type="gngt_shore_tracking" clear_params="true" output="screen">
     <param name="min_dt" value="0.0"/>
-    <param name="confidence" value="0.75"/>
-    <param name="target" value="0.001"/>
+    <param name="lowpass_coef" value="0.4"/>
+    <param name="lowpass_margin" value="0.2"/>
+    <param name="delta" value="0.75"/>
+    <param name="target" value="0.100"/>
     <param name="step_frozen" value="20"/>
-    <param name="step_changing" value="1"/>
+    <param name="step_changing" value="5"/>
+    <param name="ageMax" value="5"/>
+    <param name="num_scans" value="1"/>
+    <param name="firstLearningRate" value="0.002"/>
     <remap from="/gngt_shore_tracking/laserscan" to="/lidar/scan"/>
    </node>
 </launch>

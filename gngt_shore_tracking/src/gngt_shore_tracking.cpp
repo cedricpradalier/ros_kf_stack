@@ -17,6 +17,11 @@
 #define TARGET  1   // Adjust to adjust neuron creation rate
 #define CONFIDENCE .75
 #define EVOLUTION_DECISION_THRES 3
+#define DELTA .75
+#define EVOL_LOWPASSCOEF .4
+#define EVOL_LOWPASSMARGIN .2
+
+
 
 
 class GNGTShoreTracking {
@@ -100,8 +105,13 @@ class GNGTShoreTracking {
         // This is the parameter set for GNG-T
         class Params {
             public:
-                int ageMax(void)                {return 20;}
-                double firstLearningRate(void)  {return .01;}
+                int ageMax_;
+                double firstLearningRate_;
+            
+            public:
+                Params() : ageMax_(20), firstLearningRate_(0.01) {}
+                int ageMax(void)                {return ageMax_;}
+                double firstLearningRate(void)  {return firstLearningRate_;}
                 double secondLearningRate(void) {return .2*firstLearningRate();}
                 double lambda(void)             {return .001;}
                 double infinity(void)           {return 1e12;}
@@ -110,23 +120,23 @@ class GNGTShoreTracking {
         // A value extraction functor.... identity here.
         static double value_of(double x) {return x;}
         
-#define DELTA .75
-#define EVOL_LOWPASSCOEF .4
-#define EVOL_LOWPASSMARGIN .2
-
-
         class Evolution {
             public:
 
                 std::vector<double> disto_distrib;
-                double min,max,target;
+                double min,max,target,delta,lowpass_coef,lowpass_margin;
                 bool first_run;
                 size_t nb_samples;
 
-                Evolution() : target(TARGET), first_run(true) {}
+                Evolution() : 
+                    target(TARGET),delta(DELTA),
+                    lowpass_coef(EVOL_LOWPASSCOEF),lowpass_margin(EVOL_LOWPASSMARGIN), first_run(true) {}
 
-                void setTarget(double tgt) {
+                void setParameters(double tgt,double dlta, double lowpass, double margin) {
                     target = tgt;
+                    delta = dlta;
+                    lowpass_coef = lowpass;
+                    lowpass_margin = margin;
                 }
 
                 void setNbSamples(size_t nb_spls) {
@@ -145,22 +155,22 @@ class GNGTShoreTracking {
                     vq2::proba::shortest_confidence_interval(disto_distrib.begin(),
                             disto_distrib.end(),
                             value_of,
-                            DELTA,a,b);
+                            delta,a,b);
                     if(first_run) {
                         min = a;
                         max = b;
                         first_run = false;
                     }
                     else {
-                        min += EVOL_LOWPASSCOEF*(a-min);
-                        max += EVOL_LOWPASSCOEF*(b-max);
+                        min += lowpass_coef*(a-min);
+                        max += lowpass_coef*(b-max);
                     }
 
                     double width;
 
                     width = (max-min);
-                    double _min = min + EVOL_LOWPASSMARGIN*width;
-                    double _max = min + (1-EVOL_LOWPASSMARGIN)*width;
+                    double _min = min + lowpass_margin*width;
+                    double _max = min + (1-lowpass_margin)*width;
 
                     if(nb_samples*target< _min)
                         res = 1;
@@ -184,6 +194,7 @@ class GNGTShoreTracking {
         pcl::PointCloud<pcl::PointXYZ> pointCloud;
         visualization_msgs::MarkerArray markers;
         laser_geometry::LaserProjection projector;
+        int num_scans;
 
 
         void laserScanCallback(const sensor_msgs::LaserScanConstPtr msg)  {
@@ -241,7 +252,8 @@ class GNGTShoreTracking {
                 PointOp&         op,
                 Evolution&        evolution) {
             pcl::PointCloud<pcl::PointXYZ>::const_iterator iter,end;
-            evolution.setNbSamples(pointCloud.size());
+            std::random_shuffle(pointCloud.begin(),pointCloud.end());
+            evolution.setNbSamples(num_scans);
             vq2::algo::gngt::open_epoch(g,evolution);
             for(iter=pointCloud.begin(),end=pointCloud.end(); iter != end; ++iter) {
                 vq2::algo::gngt::submit(p,g,distance,learn,*iter,growing);
@@ -298,6 +310,7 @@ class GNGTShoreTracking {
                 DisplayVertex(const std_msgs::Header & h,visualization_msgs::MarkerArray & m, double lt):header(h),markers(m),lifetime(lt) {}
                 bool operator()(Vertex& n) { 
                     pcl::PointXYZ p,v;
+                    // printf("%.3f\n", n.value.e / n.value.n);
                     p = n.value.prototype();
                     visualization_msgs::Marker marker;
                     marker.header = header;
@@ -337,8 +350,8 @@ class GNGTShoreTracking {
                     marker.points.resize(2);
                     marker.points[0].x = p.x;
                     marker.points[0].y = p.y;
-                    marker.points[1].x = p.x+v.x;
-                    marker.points[1].y = p.y+v.y;
+                    marker.points[1].x = p.x-v.x;
+                    marker.points[1].y = p.y-v.y;
 
                     markers.markers.push_back(marker);
 
@@ -352,14 +365,20 @@ class GNGTShoreTracking {
         GNGTShoreTracking()  : 
             nh("~"), target_value(TARGET), confidence_value(CONFIDENCE), 
             unit_distance(distance), unit_learn(learn) {
+                double delta_value, lowpass_coef, lowpass_margin;
 
+                nh.param("num_scans",num_scans,1);
                 nh.param("min_dt",min_dt,0.0);
                 nh.param("target",target_value,(double)TARGET);
-                // nh.param("confidence",confidence_value,(double)CONFIDENCE);
+                nh.param("delta",delta_value,(double)DELTA);
+                nh.param("lowpass_coef",lowpass_coef,(double)EVOL_LOWPASSCOEF);
+                nh.param("lowpass_margin",lowpass_margin,(double)EVOL_LOWPASSMARGIN);
                 nh.param("step_frozen",step_frozen,(int)N_STEP_FROZEN);
                 nh.param("step_changing",step_changing,(int)N_STEP_CHANGING);
+                nh.param("ageMax",params.ageMax_,params.ageMax_);
+                nh.param("firstLearningRate",params.firstLearningRate_,params.firstLearningRate_);
 
-                evolution.setTarget(target_value);
+                evolution.setParameters(target_value,delta_value,lowpass_coef,lowpass_margin);
 
                 ls_sub = nh.subscribe("laserscan",1,&GNGTShoreTracking::laserScanCallback,this);
                 pc_sub = nh.subscribe("pointcloud",1,&GNGTShoreTracking::pointCloudCallback,this);

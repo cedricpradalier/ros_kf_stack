@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
 
     ros::NodeHandle nh("~");
     pathPub = nh.advertise<nav_msgs::Path>("path",1);
-    pcSub = nh.subscribe("/lidar/scan_throttle",1,scanCallback);
+    // pcSub = nh.subscribe("/lidar/scan_throttle",1,scanCallback);
+    pcSub = nh.subscribe("/lidar/scan",1,scanCallback);
     ros::spin();
 
     printf("Average computation time: %ld iter, update %.2f ms, path %.2f\n",num_iter, 1e3*dt_update/num_iter, 1e3*dt_path/num_iter);
