@@ -63,7 +63,7 @@ TaskIndicator TaskFollowShoreRP::iterate()
         cv::Point3f P = lpath.front();
         // minus sign because the laser is upside down. 
         // Should probably be done through TF
-        double alpha;
+        double alpha = 0;
         if (RP) {
             alpha = -atan2(P.y,P.x);
         } else if (LP) {
