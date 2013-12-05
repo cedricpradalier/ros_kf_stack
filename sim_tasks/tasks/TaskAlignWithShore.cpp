@@ -6,7 +6,7 @@ using namespace task_manager_lib;
 using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 
-// #define DEBUG_GOTO
+#define DEBUG_AWS
 
 TaskIndicator TaskAlignWithShore::iterate()
 {
@@ -28,7 +28,7 @@ TaskIndicator TaskAlignWithShore::iterate()
         }
     }
 
-#ifdef DEBUG_GOTO
+#ifdef DEBUG_AWS
     ROS_INFO("mindistance %.3f - theta_closest %.3f",mindistance, theta_closest);
 #endif
     
@@ -48,7 +48,7 @@ TaskIndicator TaskAlignWithShore::iterate()
             return TaskStatus::TASK_COMPLETED;
         }
         rot = - ((angle_error>0)?+1:-1) * cfg.ang_velocity;
-#ifdef DEBUG_GOTO
+#ifdef DEBUG_AWS
         ROS_INFO("Command vel %.2f angle_error %.2f rot %.2f\n",vel,angle_error,rot);
 #endif
         env->publishVelocity(vel, rot);

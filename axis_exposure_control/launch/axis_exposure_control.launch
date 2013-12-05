@@ -1,18 +1,19 @@
 <launch>
 
-    <node pkg="axis_exposure_control" type="axis_exposure_control" name="aec">
+    <node pkg="axis_exposure_control" type="axis_exposure_control" name="aec" output="screen">
         <param name="transport" value="raw"/>
-        <param name="sampling" value="10"/>
+        <param name="sampling" value="20"/>
         <param name="first_row" value="250"/>
         <param name="last_row" value="450"/>
-        <param name="target" value="128"/>
+        <param name="target" value="90"/>
         <param name="gain" value="10.0"/>
+        <param name="max_command_rate" value="2.0"/>
         <param name="initial_exposure" value="5000"/>
         <!-- "fixed" or "laser" -->
         <param name="control_type" value="fixed"/>
 
-        <remap from="/aec/axis" to="/axis/command"/>
-        <remap from"/aec/image" to="/axis/repub/image_raw/>
+        <remap from="/aec/axis" to="/axis/cmd"/>
+        <remap from="/aec/image" to="/axis/repub/image_raw"/>
 
     </node>
 

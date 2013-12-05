@@ -51,7 +51,7 @@ tc.addCondition(ConditionIsCompleted("ROI detector",tc,w4roi))
 follow_until_stopped(+1)
 
 # Finally mark completion by pointing toward the shore
-tc.AlignWithShore(angle=3.14, ang_velocity=1.0)
+tc.AlignWithShore(angle=3.14, ang_velocity=0.5)
 
 rospy.loginfo("Mission completed")
 
