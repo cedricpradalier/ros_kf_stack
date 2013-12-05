@@ -202,13 +202,6 @@ void SimTasksEnv::muxCallback(const std_msgs::String::ConstPtr& msg) {
     }
 }
 
-void SimTasksEnv::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg) {
-    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
-    statMap["pointcloud"].tick();
-    pointCloud_header = msg->header;
-    pcl::fromROSMsg(*msg, pointCloud);
-}
-
 void SimTasksEnv::utmPositionCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     statMap["utm"].tick();
@@ -227,15 +220,35 @@ void SimTasksEnv::compassCallback(const kf_yaw_kf::CompassKF::ConstPtr& msg) {
     compass = *msg;
 }
 
+void SimTasksEnv::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr msg) {
+    boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
+    statMap["pointcloud"].tick();
+    pointCloud_header = msg->header;
+    ros_pc = msg;
+}
+
 void SimTasksEnv::scanCallback (const sensor_msgs::LaserScan::ConstPtr& scan_in)
 {
     boost::unique_lock<boost::shared_mutex> guard(environment_mutex);
     statMap["scan"].tick();
     pointCloud_header = scan_in->header;
-    laser_geometry::LaserProjection projector;
-    sensor_msgs::PointCloud2 cloud;
-    projector.projectLaser(*scan_in, cloud);
-    pcl::fromROSMsg(cloud, pointCloud);
+    ros_ls = scan_in;
+}
+
+const pcl::PointCloud<pcl::PointXYZ> & SimTasksEnv::getPointCloud() {
+    // If there was any data in waiting, process it to make sur it is available
+    // immediately.
+    if (ros_ls) {
+        laser_geometry::LaserProjection projector;
+        sensor_msgs::PointCloud2 cloud;
+        projector.projectLaser(*ros_ls, cloud);
+        pcl::fromROSMsg(cloud, pointCloud);
+        ros_ls.reset();
+    } else if (ros_pc) {
+        pcl::fromROSMsg(*ros_pc, pointCloud);
+        ros_pc.reset();
+    }
+    return pointCloud;
 }
 
 void SimTasksEnv::axisCallback(const axis_camera::AxisConstPtr & msg) {

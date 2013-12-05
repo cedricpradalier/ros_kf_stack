@@ -21,6 +21,8 @@ def follow_until_stopped(shore_side):
     except TaskConditionException, e:
         pass
 
+tc.CheckReadiness()
+
 tc.SetPTZ(pan=1.57,tilt=0.20)
 tc.AlignWithShore(angle=-1.57, ang_velocity=1.0)
 # Set a distance trigger.

@@ -17,7 +17,6 @@ TaskIndicator TaskAlignWithShore::iterate()
     float mindistance=1000;
     float theta_closest=0;
     float distance_i=0;
-    float theta_i=0;
     float angle_error=0;
 
     const pcl::PointCloud<pcl::PointXYZ> & pointCloud = env->getPointCloud();

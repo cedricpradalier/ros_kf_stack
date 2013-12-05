@@ -68,6 +68,8 @@ namespace sim_tasks {
             kingfisher_msgs::Sense sense;
             axis_camera::Axis axisState;
             std_msgs::Header pointCloud_header;
+            sensor_msgs::PointCloud2ConstPtr ros_pc;
+            sensor_msgs::LaserScanConstPtr ros_ls;
             pcl::PointCloud<pcl::PointXYZ> pointCloud;
             nav_msgs::Odometry utmPosition;
             kf_yaw_kf::CompassKF compass;
@@ -79,7 +81,7 @@ namespace sim_tasks {
         public:
             SimTasksEnv(ros::NodeHandle & nh);
             ~SimTasksEnv() {};
-
+            
             ros::NodeHandle & getNodeHandle() {return nh;}
 
             // Returns the current heading in ENU frame, with 0 to the east,
@@ -120,7 +122,10 @@ namespace sim_tasks {
 
             geometry_msgs::PoseStamped getPoseStamped(bool wrtOrigin=false) const  ;
 
-            const pcl::PointCloud<pcl::PointXYZ> & getPointCloud() const {return pointCloud;}
+            // Can't be const, because we maybe creating the point cloud on
+            // demand if this is the first expression of interest
+            const pcl::PointCloud<pcl::PointXYZ> & getPointCloud(); 
+
             const std_msgs::Header & getPointCloudHeader() const {return pointCloud_header;}
 
             void publishVelocity(double linear, double angular) ;
@@ -139,6 +144,7 @@ namespace sim_tasks {
             geometry_msgs::Pose2D getFinishLine2D() const {
                 return finishLine2D;
             }
+
         public: // To make point cloud work on 32bit system
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     };
