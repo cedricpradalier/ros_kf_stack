@@ -1,6 +1,7 @@
 #ifndef TASK_FOLLOW_SHORE_RP_H
 #define TASK_FOLLOW_SHORE_RP_H
 
+#include <std_srvs/Empty.h>
 #include "radial_plan/RadialPlan.h"
 #include "radial_plan/LocalPlan.h"
 #include "task_manager_lib/TaskDefinition.h"
@@ -16,6 +17,10 @@ namespace sim_tasks {
 
         protected:
             ros::Publisher path_pub;
+            ros::ServiceServer dump_srv;
+            bool dump_images(std_srvs::Empty::Request  &req,
+                    std_srvs::Empty::Response &res);
+            
             boost::shared_ptr<radial_plan::RadialPlan> RP;
             boost::shared_ptr<radial_plan::LocalPlan> LP;
         public:

@@ -16,6 +16,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+set(CGNUPLOT $ENV{HOME}/sources/gtl/vsv_stack/cgnuplot)
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
@@ -26,7 +27,8 @@ find_path(vq2_INCLUDES vq2.h
 	/usr/local/include/vq2
 	/usr/include/vq2
 )
-include_directories(${vq2_INCLUDES})
+include_directories(${vq2_INCLUDES} ${CGNUPLOT}/include)
+LINK_DIRECTORIES(${CGNUPLOT}/lib)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
@@ -34,4 +36,4 @@ include_directories(${vq2_INCLUDES})
 #rosbuild_add_boost_directories()
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 rosbuild_add_executable(gngt_shore_tracking src/gngt_shore_tracking.cpp)
-target_link_libraries(gngt_shore_tracking )
+target_link_libraries(gngt_shore_tracking cgnuplot)

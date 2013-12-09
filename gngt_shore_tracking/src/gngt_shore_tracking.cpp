@@ -4,11 +4,13 @@
 #include <assert.h>
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
+#include <sensor_msgs/Imu.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <laser_geometry/laser_geometry.h>
+#include <cgnuplot/CGnuplot.h>
 
 #include <vq2.h>
 
@@ -28,6 +30,7 @@ class GNGTShoreTracking {
     protected:
         
         ros::NodeHandle nh;
+        ros::Subscriber imu_sub;
         ros::Subscriber pc_sub;
         ros::Subscriber ls_sub;
         ros::Publisher marker_pub;
@@ -194,8 +197,14 @@ class GNGTShoreTracking {
         pcl::PointCloud<pcl::PointXYZ> pointCloud;
         visualization_msgs::MarkerArray markers;
         laser_geometry::LaserProjection projector;
+        sensor_msgs::Imu imu;
         int num_scans;
+        cgnuplot::CGnuplot plot;
 
+
+        void imuCallback(const sensor_msgs::ImuConstPtr msg)  {
+            imu = *msg;
+        }
 
         void laserScanCallback(const sensor_msgs::LaserScanConstPtr msg)  {
             if (previous.toSec() < 1.0) {
@@ -222,7 +231,9 @@ class GNGTShoreTracking {
         }
 
         void run_gngt() {
-            DisplayVertex        display_vertex(header,markers,min_dt+0.1);
+            pcl::PointXYZ omega(imu.angular_velocity.x,
+                    imu.angular_velocity.y,imu.angular_velocity.z);
+            DisplayVertex        display_vertex(omega,header,markers,min_dt+0.1);
             DisplayEdge        display_edge(header,markers,min_dt+0.1);
             double dt = (header.stamp - previous).toSec();
             if (dt < min_dt) {
@@ -243,6 +254,17 @@ class GNGTShoreTracking {
             g.for_each_edge(display_edge);
             g.for_each_vertex(display_vertex);
             marker_pub.publish(markers);
+
+#if 0
+            FILE * fp = fopen("vel.csv","w");
+            for (size_t i=0;i<display_vertex.getVelocities().size();++i) {
+                fprintf(fp,"%d %e %e\n",(int)i,
+                        display_vertex.getVelocities()[i].x,
+                        display_vertex.getVelocities()[i].y);
+            }
+            fclose(fp);
+            plot.plot("set grid ; plot [-1:2][-1:1] \"vel.csv\" u 2:3 w p");
+#endif
         }
         
         void make_epoch(bool growing, Params&           p, 
@@ -304,10 +326,17 @@ class GNGTShoreTracking {
         class DisplayVertex {
             protected:
                 const std_msgs::Header & header;
+                pcl::PointXYZ omega;
+                std::vector<pcl::PointXYZ> velocity;
                 visualization_msgs::MarkerArray & markers;
                 double lifetime;
             public:
-                DisplayVertex(const std_msgs::Header & h,visualization_msgs::MarkerArray & m, double lt):header(h),markers(m),lifetime(lt) {}
+                DisplayVertex(const pcl::PointXYZ & omega, const std_msgs::Header & h,
+                        visualization_msgs::MarkerArray & m, double lt):header(h),omega(omega),markers(m),lifetime(lt) {}
+                const std::vector<pcl::PointXYZ> getVelocities() const {
+                    return velocity;
+                }
+
                 bool operator()(Vertex& n) { 
                     pcl::PointXYZ p,v;
                     // printf("%.3f\n", n.value.e / n.value.n);
@@ -355,6 +384,13 @@ class GNGTShoreTracking {
 
                     markers.markers.push_back(marker);
 
+                    // Not working, probably because omega is not correct in
+                    // the current test bags. To be evaluated on-board
+                    velocity.push_back(pcl::PointXYZ(
+                                v.x - omega.z*p.y,
+                                v.y + omega.z*p.x,
+                                0.0 ));
+
                     return false; // the element should not be removed.
                 }
         };
@@ -382,6 +418,7 @@ class GNGTShoreTracking {
 
                 ls_sub = nh.subscribe("laserscan",1,&GNGTShoreTracking::laserScanCallback,this);
                 pc_sub = nh.subscribe("pointcloud",1,&GNGTShoreTracking::pointCloudCallback,this);
+                imu_sub = nh.subscribe("imu",1,&GNGTShoreTracking::imuCallback,this);
                 marker_pub = nh.advertise<visualization_msgs::MarkerArray>("markers",1);
         }
 };

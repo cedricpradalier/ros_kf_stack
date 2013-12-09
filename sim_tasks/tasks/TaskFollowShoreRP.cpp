@@ -2,11 +2,25 @@
 #include "TaskFollowShoreRP.h"
 #include "sim_tasks_cfg/TaskFollowShoreConfig.h"
 #include <nav_msgs/Path.h>
+
+
+
+
 using namespace task_manager_msgs;
 using namespace task_manager_lib;
 using namespace sim_tasks_cfg;
 using namespace sim_tasks;
 using namespace radial_plan;
+
+bool TaskFollowShoreRP::dump_images(std_srvs::Empty::Request  &req,
+        std_srvs::Empty::Response &res)
+{
+    if (LP) {
+        ROS_INFO("Dumping cell maps");
+        LP->saveCellMaps();
+    }
+    return true;
+}
 
 // #define DEBUG_GOTO
 
@@ -19,6 +33,7 @@ TaskIndicator TaskFollowShoreRP::initialise(const TaskParameters & parameters)
     } else {
         LP.reset(new LocalPlan((cfg.side>0)?LocalPlan::LEFT:LocalPlan::RIGHT, cfg.distance, cfg.safety_distance,
                     cfg.forward_range,cfg.backward_range,cfg.radial_resolution,cfg.angular_steps,cfg.filter_glare));
+        dump_srv = env->getNodeHandle().advertiseService("dump",&TaskFollowShoreRP::dump_images,this);
     }
     return TaskStatus::TASK_INITIALISED;
 }
