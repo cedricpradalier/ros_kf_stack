@@ -17,16 +17,14 @@ def follow_until_stopped(shore_side):
     global tc
     try:
         # Follow shore until the condition get triggered
-        tc.FollowShoreRP(velocity=0.5, distance=10.0, side=shore_side, k_alpha=0.75, max_ang_vel=0.7,velocity_scaling=0.4)
+        tc.FollowShoreRP(velocity=0.35, distance=7.0, side=shore_side, k_alpha=0.60, max_ang_vel=0.60,velocity_scaling=0.1,radial=True)
     except TaskConditionException, e:
         pass
 
-tc.CheckReadiness()
-
 tc.SetPTZ(pan=1.57,tilt=0.20)
-tc.AlignWithShore(angle=-1.57, ang_velocity=1.0)
+tc.AlignWithShore(angle=-1.57, ang_velocity=0.5)
 # Set a distance trigger.
-w4dist = tc.WaitForDistance(foreground=False,distance=10.0)
+w4dist = tc.WaitForDistance(foreground=False,distance=100.0)
 tc.addCondition(ConditionIsCompleted("Distance",tc,w4dist))
 follow_until_stopped(+1)
 
