@@ -32,8 +32,8 @@ LocalPlan::LocalPlan(Side side, float d_desired, float d_safety, double forward_
     for (unsigned int r=0;r<2*num_desired;++r) {
         for (unsigned int c=0;c<2*num_desired;++c) {
             if (fabs(atan2(float(c)-num_desired,float(r))) < M_PI/3) {
-                ddes_pattern[0](r,c) = (unsigned int)hypot(float(r),float(c)-num_desired);
-                ddes_pattern[1](r,c) = (unsigned int)hypot(2*num_desired - float(r),float(c)-num_desired);
+                ddes_pattern[1](r,c) = (unsigned int)hypot(float(r),float(c)-num_desired);
+                ddes_pattern[0](r,c) = (unsigned int)hypot(2*num_desired - float(r),float(c)-num_desired);
             }
         }
     }
@@ -115,7 +115,7 @@ void LocalPlan::updateCellCosts(const pcl::PointCloud<pcl::PointXYZ> & pointClou
                 it != rotated_cloud[i].end(); it++) {
             cv::Rect r_dest(0,0,dmap.cols,dmap.rows);
             cv::Rect r_src;
-            if (side == LEFT) {
+            if (side == RIGHT) {
                 r_src = cv::Rect(it->x-num_desired,it->y,2*num_desired,2*num_desired);
             } else {
                 r_src = cv::Rect(it->x-num_desired,it->y-2*num_desired,2*num_desired,2*num_desired);
