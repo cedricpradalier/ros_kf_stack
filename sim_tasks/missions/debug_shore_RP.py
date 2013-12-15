@@ -13,7 +13,7 @@ rospy.loginfo("Mission connected to server: " + server_node)
 
 
 
-tc.FollowShoreRP(velocity=0.35, distance=10.0, side=1, k_alpha=0.60, max_ang_vel=0.60,velocity_scaling=0.1,radial=False, \
+tc.FollowShoreRP(velocity=0.35, distance=8.0, side=1, k_alpha=0.60, max_ang_vel=0.60,velocity_scaling=0.1,radial=False, \
         angular_steps=8, forward_range=10.0, backward_range=5.0, radial_resolution=0.5, \
         k_initial_angle=1.0, k_dist=1.0, k_length=0.0, k_turn=3.0)
 
