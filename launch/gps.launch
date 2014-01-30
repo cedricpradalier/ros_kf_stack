@@ -1,0 +1,25 @@
+<launch>
+  <!-- Port splitter -->
+  <!-- Start NMEA GPS driver -->
+  <node ns="gps" pkg="nmea_gps_driver" type="nmea_gps_driver.py" name="nmea_gps" respawn="true" output="screen">
+    <param name="port" value="/dev/ublox" />
+    <param name="baud" value="19200" />
+    <param name="useRMC" value="false" />
+    <param name="trigger" value="GGA" />
+    <param name="frame_id" value="/kingfisher/gps" />
+  </node>
+  <node ns="gps" name="utm_odometry_node" pkg="gps_common" type="utm_odometry_node"  >
+  </node>
+
+  <node name="button_server" pkg="kf_button_server" type="button_server.py" output="screen">
+      <param name="button0" value="Go"/>
+      <param name="button0_color" value="lightgreen"/>
+      <param name="button1" value="Abort"/>
+      <param name="button1_color" value="red"/>
+      <param name="button2" value="Pause"/>
+      <param name="button2_style" value="background-color:black;color:white;"/>
+      <param name="button3" value="Home"/>
+      <param name="button3_text" value="Go Home"/>
+      <param name="button3_color" value="blue"/>
+  </node>
+</launch>

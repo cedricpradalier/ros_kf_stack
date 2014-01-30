@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find kingfisher_node)/base.launch" />
+  <!-- <include file="$(find teleop_mux)/launch/teleop_mux.launch" /> -->
+  <include file="$(find rate_control)/launch/teleop_mux.launch" />
+
+  <node pkg="lm_sensors" type="lm_sensors" name="lm"/>
+</launch>

@@ -1,0 +1,51 @@
+<launch>
+<!-- 
+    <node pkg="imu_um6" type="imu_um6_node.py" name="imu_um6_node" respawn="false" output="screen">
+        <param name="port" type="string" value="/dev/clearpath/imu"/>
+        <param name="throttle_rate" value="20.0"/>
+        <param name="frame_id" type="string" value="/kingfisher/imu"/>
+        <param name="mag_zero_x" value="208.292"/>
+        <param name="mag_zero_y" value="-70.454"/>
+        <param name="mag_zero_z" value="-224.979"/>
+    </node>
+    <node pkg="kf_yaw_kf" type="kf_yaw_kf.py" name="compass" output="screen">
+        <param name="frame_id" value="/kingfisher/base"/>
+        <param name="use_gps" value="False"/>
+        <param name="stddev_yaw_mag" value="0.1"/>
+        <param name="stddev_yaw_gps" value="0.5"/>
+        <param name="stddev_yaw_gyro" value="0.01"/>
+        <param name="stddev_omega" value="0.01"/>
+        <param name="min_gps_speed" value="0.3"/>
+        <param name="debug_publishers" value="False"/>
+        <param name="replay" value="False"/>
+    </node>
+-->
+
+    <node pkg="um6cp" type="um6cp_driver" name="um6_driver" output="screen" respawn="false">
+        <param name="port" type="string" value="/dev/clearpath/imu"/>
+        <param name="frame_id" type="string" value="/kingfisher/imu"/>
+        <param name="mag_updates" type="bool" value="false"/>
+        <param name="accel_updates" type="bool" value="true"/>
+        <param name="zero_gyros" type="bool" value="true"/>
+        <param name="raw_mag" type="bool" value="true"/>
+<!-- Does not work yet
+        <param name="mag_ref/x" value="208.292"/>
+        <param name="mag_ref/y" value="-70.454"/>
+        <param name="mag_ref/z" value="-224.979"/>
+-->
+    </node>
+
+    <node pkg="kf_yaw_kf" type="kf_yaw_kf" name="compass" output="screen">
+        <param name="frame_id" value="/kingfisher/base"/>
+        <param name="stddev_yaw_mag" value="0.05"/>
+        <param name="stddev_yaw_gyro" value="0.01"/>
+        <param name="stddev_omega" value="0.01"/>
+        <param name="debug_publishers" value="False"/>
+        <param name="replay" value="False"/>
+        <!-- office values -->
+        <param name="mag_offset_x" value="234.88"/>
+        <param name="mag_offset_y" value="-36.04"/>
+        <param name="mag_offset_z" value="-213.50"/>
+    </node>
+
+</launch>

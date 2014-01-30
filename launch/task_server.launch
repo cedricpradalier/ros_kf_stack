@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<launch>
+    
+    <node name="task_server" pkg="sim_tasks" type="task_server" output="screen" >
+        <param name="lib_path" value="$(find sim_tasks)/lib"/>
+        <param name="position_source" value="utm"/>
+        <param name="auto_topic" value="/mux/safeCommand"/>
+    </node> 
+
+
+</launch>

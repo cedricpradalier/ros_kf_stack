@@ -1,0 +1,10 @@
+<launch>
+  <group ns="lidar">
+    <node pkg="LMS1xx" type="LMS100" name="lidar">
+      <param name="host" value="192.168.1.14" />
+      <param name="frame_id" value="/kingfisher/laser"/>
+    </node>
+    <node pkg="topic_tools" type="throttle" name="lidar_throttle" args="messages /lidar/scan 10">
+    </node>
+  </group>
+</launch>

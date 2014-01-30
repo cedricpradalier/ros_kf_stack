@@ -13,7 +13,7 @@
         <param name="control_type" value="fixed"/>
 
         <remap from="/aec/axis" to="/axis/cmd"/>
-        <remap from="/aec/image" to="/axis/repub/image_raw"/>
+        <remap from="/aec/image" to="/axis/image_raw"/>
 
     </node>
 
