@@ -75,15 +75,20 @@ TaskIndicator TaskFollowShoreRP::iterate()
     } else {
         // remove the first element, this is the current position
         lpath.pop_front();
-        cv::Point3f P = lpath.front();
+        std::list<cv::Point3f>::const_iterator it = lpath.begin();
         // minus sign because the laser is upside down. 
         // Should probably be done through TF
         double alpha = 0;
-        if (RP) {
-            alpha = -atan2(P.y,P.x);
-        } else if (LP) {
-            alpha = P.z;
+        double sum_discount = 0.0;
+        double discount = 1.0;
+        while (it != lpath.end()) {
+            alpha += -atan2(it->y,it->x) * discount;
+            sum_discount += discount;
+            discount *= cfg.alpha_discount;
+            it ++;
         }
+        alpha /= sum_discount;
+
         int salpha = (alpha<0)?-1:1;
         double rot = cfg.k_alpha * salpha * pow(fabs(alpha),cfg.alpha_power);
         rot = std::max(-cfg.max_ang_vel,std::min(cfg.max_ang_vel,rot));
