@@ -73,8 +73,8 @@ class AxisExposureControl {
             }
             last_command = now;
             size_t first = first_row;
-            size_t last = (last_row?(std::max(first_row, last_row)):msg->width);
-            cv::Rect rect(0,first,msg->height,last-first);
+            size_t last = (last_row?(std::max(first_row, last_row)):msg->height);
+            cv::Rect rect(0,first,msg->width,last-first);
             if (msg->encoding == "mono8") {
                 view = (cv_bridge::toCvShare(msg,"mono8")->image)(rect);
             } else if (msg->encoding == "rgb8") {
