@@ -47,6 +47,7 @@ if(USE_ROSBUILD)
     rosbuild_add_executable(kf_yaw_kf src/kf_yaw_kf.cpp)
     target_link_libraries(kf_yaw_kf boost_signals)
 else()
+    add_definitions(-g -ggdb -O0)
     find_package(catkin REQUIRED
       COMPONENTS
       geometry_msgs
@@ -68,12 +69,13 @@ else()
     )
 
     # include all libs so far
-    include_directories(${EIGEN_INCLUDE_DIR} ${Boost_INCLUDE_DIRS})
+    include_directories(${EIGEN_INCLUDE_DIR} ${Boost_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS})
 
     catkin_python_setup()
 
     # ROS message generation
-    add_message_files(DIRECTORY msg FILES Compass.msg CompassKF.msg)
+    add_message_files(DIRECTORY msg FILES Compass.msg CompassKF.msg PoseKF.msg)
     add_service_files(DIRECTORY srv FILES SetMagOffset.srv)
     generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
@@ -88,6 +90,11 @@ else()
     )
 
     add_executable(kf_yaw_kf src/kf_yaw_kf.cpp)
+    add_dependencies(kf_yaw_kf kf_yaw_kf_generate_messages_cpp)
     target_link_libraries(kf_yaw_kf ${catkin_LIBRARIES})
+
+    add_executable(kf_pose_kf src/kf_pose_kf.cpp)
+    add_dependencies(kf_pose_kf kf_yaw_kf_generate_messages_cpp)
+    target_link_libraries(kf_pose_kf ${catkin_LIBRARIES})
 
 endif()

@@ -11,6 +11,7 @@
   <depend package="tf"/>
   <depend package="sensor_msgs"/>
   <depend package="nav_msgs"/>
+  <depend package="kf_yaw_kf"/>
 
 </package>
 

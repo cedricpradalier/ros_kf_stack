@@ -34,12 +34,12 @@ if(USE_ROSBUILD)
 else()
 
   find_package(catkin REQUIRED 
-    COMPONENTS roscpp sensor_msgs image_transport cv_bridge tf)
+    COMPONENTS roscpp sensor_msgs image_transport cv_bridge tf axis_camera)
 
     find_package(OpenCV REQUIRED)
 
   catkin_package(
-    CATKIN_DEPENDS roscpp sensor_msgs image_transport cv_bridge tf
+    CATKIN_DEPENDS roscpp sensor_msgs image_transport cv_bridge tf axis_camera
     )
 
   include_directories(
@@ -48,6 +48,9 @@ else()
     )
 
     add_executable(axis_exposure_control src/axis_exposure_control.cpp)
+    add_dependencies(axis_exposure_control 
+        ${${PROJECT_NAME}_EXPORTED_TARGETS}
+        axis_camera_generate_message_cpp)
     target_link_libraries(axis_exposure_control ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
     install(TARGETS axis_exposure_control 
